@@ -1,0 +1,7 @@
+# The rig folder has files of the game and of the NVCS mod. tools/make_rig.py makes it from
+# your own files. Only the measurements of the hand meshes are in the repository.
+rig/*
+!rig/finger_tips.json
+
+__pycache__/
+*.pyc

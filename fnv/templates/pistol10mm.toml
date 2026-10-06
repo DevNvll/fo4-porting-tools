@@ -1,0 +1,74 @@
+# The vanilla 10mm pistol of Fallout 4 as the template of a conversion.
+# The template gives the weapon bones, the names of the sounds in the clip events and the
+# weapon motion of each first-person clip that the source mod does not have.
+
+# The sound name in the events of a clip (SoundPlay.<sound>Reload<NAME>).
+sound = "WPNPistol10mm"
+# The first-person clips of the template, in rig/ (the folder Pistol of the game).
+clips = "pistol10mm"
+# The folder of these clips in the game (Meshes/Actors/Character/_1stPerson/Animations).
+game_clips = "Pistol"
+# The reload sounds that the template weapon has.
+reload_sounds = ["MagOut", "MagIn", "BoltClose"]
+# In the sights the weapon bone is this far in front of the camera. It is the value of the
+# vanilla Deliverer clip, a pistol of the size of a pocket pistol. The 10mm clip has 22.4.
+sighted_distance = 17.6
+# The center of the trigger of the 10mm pistol in Fallout 4 weapon space (the trigger bone is
+# at 0.238, 4.678, 1.148, and the blade is below it). The center of the trigger of the ported
+# gun goes here, so the hands of the vanilla clips hold the grip.
+trigger_pivot = [0.0, 4.78, 0.05]
+
+# The rest place of each weapon bone relative to its parent bone, from the vanilla clips
+# (the walk clip, where each part is at rest).
+#   WeaponBolt            the slide
+#   WeaponMagazine        the magazine
+#   WeaponMagazineChild1  the top cartridge. The vanilla fire clips throw it out as the casing.
+#   WeaponMagazineChild2  a bone that the vanilla fire and reload clips do not move
+#   WeaponTrigger         the trigger. The vanilla clips do not move it.
+#   WeaponExtra2          the hammer
+#   WeaponOptics1         a bone that the vanilla clips do not move
+[pivots]
+WeaponBolt = [-0.092392, 6.950954, 0.27699]
+WeaponMagazine = [-0.016713, 0.135154, -1.274208]
+WeaponMagazineChild1 = [-0.003602, 0.118873, 6.916055]
+WeaponMagazineChild2 = [0.0, 0.0, 2.499905]
+WeaponTrigger = [0.237744, 4.677546, 1.14845]
+WeaponExtra2 = [-0.018979, -0.972711, 3.371141]
+WeaponOptics1 = [-0.001663, 0.913132, 7.997834]
+
+# The rest rotation of a bone relative to its parent bone (x, y, z, w). A bone with no entry
+# has no rotation.
+[rotations]
+WeaponMagazine = [-0.22931, -0.00004, 0.0, 0.97335]
+WeaponMagazineChild1 = [0.22918, 0.0, 0.0, 0.97338]
+WeaponTrigger = [0.12789, -0.00004, 0.0, 0.99179]
+WeaponExtra2 = [0.42246, 0.0, 0.00004, 0.90638]
+
+[parents]
+WeaponBolt = "Weapon"
+WeaponMagazine = "Weapon"
+WeaponMagazineChild1 = "WeaponMagazine"
+WeaponMagazineChild2 = "WeaponMagazine"
+WeaponTrigger = "Weapon"
+WeaponExtra2 = "Weapon"
+WeaponOptics1 = "Weapon"
+
+# The bone of each kind of gun part. The tools give each gun node its bone by these roles
+# (tools/port_defaults.py). `spare` are bones for nodes that have no role.
+[roles]
+bolt = "WeaponBolt"
+magazine = "WeaponMagazine"
+cartridges = "WeaponMagazineChild2"
+trigger = "WeaponTrigger"
+hammer = "WeaponExtra2"
+spare = ["WeaponOptics1"]
+
+# The vanilla automatic fire clips: 67 frames with 20 shot times.
+[auto]
+frames = 67
+shot_frames = [1, 4, 8, 11, 14, 17, 21, 24, 27, 31, 34, 38, 41, 44, 47, 51, 54, 57, 61, 64]
+
+# The vanilla clips whose first frame has the weapon at the ready and in the sights.
+[synth]
+ready = "wpnfiresingleready"
+sighted = "wpnfiresinglesighted"

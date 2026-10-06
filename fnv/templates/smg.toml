@@ -1,0 +1,52 @@
+# The vanilla submachine gun of Fallout 4 as the template of a conversion.
+# The template gives the weapon bones, the names of the sounds in the clip events and the
+# weapon motion of each first-person clip that the source mod does not have.
+
+# The sound name in the events of a clip (SoundPlay.<sound>Reload<NAME>).
+sound = "WPNRifleSubmachineGun"
+# The first-person clips of the template, in rig/. Each name is in lower case.
+clips = "smg"
+# The folder of these clips in the game (Meshes/Actors/Character/_1stPerson/Animations).
+game_clips = "SubmachineGun"
+# The reload sounds that the template weapon has.
+reload_sounds = ["MagOut", "MagIn", "BoltOpen", "BoltClose"]
+# The trigger pivot in Fallout 4 weapon space. The trigger of the gun of the mod goes here,
+# so the hands of the vanilla clips (third person) hold the grip.
+trigger_pivot = [-0.047043, 17.142828, 0.323534]
+
+# The rest place of each weapon bone relative to its parent bone, with no rotation
+# (TGunReceiver.nif and the vanilla clips). A vanilla clip then shows the part at its rest place.
+[pivots]
+WeaponBolt = [-2.953681, 18.846939, 2.647394]
+WeaponMagazine = [-0.047043, 21.833923, 0.041482]
+WeaponMagazineChild1 = [0.0, -18.427551, -8.501050]
+WeaponTrigger = [-0.047043, 17.142828, 0.323534]
+WeaponExtra1 = [0.0, 6.010485, -7.909503]
+WeaponExtra2 = [0.0, 6.010485, -7.909503]
+
+[parents]
+WeaponBolt = "Weapon"
+WeaponMagazine = "Weapon"
+WeaponMagazineChild1 = "WeaponMagazine"
+WeaponTrigger = "Weapon"
+WeaponExtra1 = "Weapon"
+WeaponExtra2 = "Weapon"
+
+# The bone of each kind of gun part. The tools give each gun node its bone by these roles
+# (tools/port_defaults.py). `spare` are bones for nodes that have no role.
+[roles]
+bolt = "WeaponBolt"
+magazine = "WeaponMagazine"
+cartridges = "WeaponMagazineChild1"
+trigger = "WeaponTrigger"
+spare = ["WeaponExtra1", "WeaponExtra2"]
+
+# The vanilla automatic fire clips: 67 frames (2.2 s) with 20 shots.
+[auto]
+frames = 67
+shot_frames = [0, 3, 7, 10, 13, 16, 20, 23, 26, 30, 33, 37, 40, 43, 46, 50, 53, 56, 60, 64]
+
+# The vanilla clips whose first frame has the weapon at the ready and in the sights.
+[synth]
+ready = "wpnfiresingleready"
+sighted = "wpnfiresinglesighted"
