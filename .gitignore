@@ -1,0 +1,10 @@
+# Everything that is not source is in data/: files of the games, extracted assets, work files,
+# results, validation pictures and videos, built mods, local tools and the local configuration.
+# data/README.md describes the layout.
+/data/*
+!/data/README.md
+
+__pycache__/
+*.pyc
+.venv/
+target/
