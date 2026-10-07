@@ -1,0 +1,10 @@
+# The mods have no command of their own (`./port mod ...` is a part of ./port). This file
+# names their stored results for `./port baseline check`.
+
+[[baseline]]
+files = "data/mods/*/behavior/*/animations/*/*.hkx"
+what = "The clips of each mod: baselines of `destiny regress`, and the clips of the two New Vegas mods."
+
+[[baseline]]
+files = "data/mods/*/build/release/*"
+what = "The release of each mod (the plugin and the two archives)."

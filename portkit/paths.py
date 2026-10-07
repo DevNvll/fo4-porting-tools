@@ -12,9 +12,9 @@ so that no program has a path of one computer in it.
 A setting comes from, in this order: its environment variable, the file data/config.toml,
 its default (for a program: the PATH). config.example.toml lists the settings.
 
-    python3 -m portkit.paths                # each setting with its value and where it comes from
-    python3 -m portkit.paths --json
-    python3 -m portkit.paths get blender    # one value, for a shell script (exit 1: not set)
+    ./port paths                            # each setting with its value and where it comes from
+    ./port paths --json
+    python3 portkit/paths.py get blender    # one value, for a shell script (exit 1: not set)
 
 A program that ./port does not start (a program in Blender, for example) finds this package
 with these lines at its top:
@@ -75,9 +75,21 @@ def config():
         _config = {}
         if os.path.isfile(CONFIG):
             import tomllib
-            with open(CONFIG, 'rb') as f:
-                _config = tomllib.load(f)
+            try:
+                with open(CONFIG, 'rb') as f:
+                    table = tomllib.load(f)
+            except (OSError, ValueError) as e:       # a TOML fault or bytes that are not UTF-8
+                raise SystemExit('port: %s: %s' % (short(CONFIG), e))
+            wrong = [key for key, value in table.items() if key in SETTINGS and not isinstance(value, str)]
+            if wrong:
+                raise SystemExit('port: %s: the value of `%s` must be a text in quotes.' % (short(CONFIG), wrong[0]))
+            _config = table
     return _config
+
+
+def unknown_keys():
+    """The keys of data/config.toml that are not a setting (a wrong spelling, for example)."""
+    return sorted(key for key in config() if key not in SETTINGS)
 
 
 def lookup(name, env=None, default=None):
@@ -133,7 +145,12 @@ def report():
     for name, (env, kind, _, meaning) in SETTINGS.items():
         value, source = lookup(name)
         ok = bool(value) and (os.path.isdir(value) if kind == 'folder' else os.path.isfile(value))
-        rows.append({'name': name, 'value': value, 'source': source, 'env': env, 'kind': kind, 'meaning': meaning, 'ok': ok})
+        problem = None
+        if value and not ok:
+            problem = ('That file or folder is not there.' if not os.path.exists(value) else
+                       'That is a file, and the setting is a folder.' if kind == 'folder' else 'That is a folder, and the setting is a file.')
+        rows.append({'name': name, 'value': value, 'source': source, 'env': env, 'kind': kind, 'meaning': meaning, 'ok': ok,
+                     'problem': problem})
     return rows
 
 
@@ -144,6 +161,9 @@ def main(argv):
             return 1
         print(value)
         return 0
+    if set(argv) - {'--json'}:
+        print('port: unknown argument: %s. The forms: `paths`, `paths --json`, `paths get NAME`.' % ' '.join(argv), file=sys.stderr)
+        return 2
     rows = report()
     if '--json' in argv:
         print(json.dumps({'root': ROOT, 'data': DATA, 'config': CONFIG, 'settings': rows}, indent=1))

@@ -3,6 +3,7 @@
 #   sh destiny/port/check/video.sh DIR CLIP OUT.mp4 VIEW [VIEW2] [RATE]
 # With two views, the second view is below the first one. RATE is the frame rate (default 30; 10 is slow motion).
 set -e
+if [ $# -lt 4 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then sed -n '2,4p' "$0" | sed 's/^# \{0,1\}//'; [ $# -ge 1 ] && [ "${1#-}" != "$1" ] && exit 0; exit 2; fi
 DIR=$1; CLIP=$2; OUT=$3; V1=$4; V2=$5; RATE=${6:-30}
 if [ -z "$V2" ] || [ "$V2" = "-" ]; then
   ffmpeg -v error -y -framerate $RATE -i "$DIR/${CLIP}_f%03d_${V1}_src.png" -framerate $RATE -i "$DIR/${CLIP}_f%03d_${V1}_fo4.png" \

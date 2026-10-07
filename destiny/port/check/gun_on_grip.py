@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """For each full-pose clip of a first-person file: how far is the gun bone from the grip bone?
 
-    python3 .claude/skills/write-set-file/scripts/gun_on_grip.py MANIFEST.json [--rig N] [--clip CLIP ...] [--limit M]
+    ./port destiny check gun-on-grip MANIFEST.json [--rig N] [--clip CLIP ...] [--limit M]
+    python3 destiny/port/check/gun_on_grip.py ...          (the same program with no ./port)
 
 MANIFEST.json is the manifest of an extraction of d2x or m2x (it is beside the .glb files):
 

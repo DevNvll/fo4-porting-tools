@@ -7,6 +7,14 @@
 The header has the size of each block, so a block type that is not here is skipped.
 A transform is a translation (x, y, z), a rotation matrix (3 rows, column vectors) and a scale.
 """
+import os
+import sys
+
+_r = os.path.dirname(os.path.abspath(__file__))
+while not os.path.isfile(os.path.join(_r, 'portkit', '__init__.py')) and _r != os.path.dirname(_r):
+    _r = os.path.dirname(_r)
+sys.path.insert(0, _r)
+import portkit  # noqa: E402,F401  (a file error is one line)
 import struct
 import sys
 import numpy as np

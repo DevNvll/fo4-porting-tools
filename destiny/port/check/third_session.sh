@@ -1,6 +1,6 @@
 #!/bin/sh
 # Build a mod, start a new game test session with its release, and print the session ID.
-#   ./port destiny game session NAME LABEL [--cell ID | --world] [--no-build]
+#   ./port destiny game session NAME LABEL [--cell ID | --world] [--no-build] [--take-over]
 #   sh destiny/port/check/third_session.sh NAME LABEL ...
 # NAME is the name of a mod: its sources are mods/NAME and its project is data/mods/NAME.
 # LABEL is your name for the session (the probe shows it in `esx probe status`).
@@ -10,6 +10,9 @@
 #                esx version with no test world stays in the main menu then.
 #   --no-build   do not build: start the session with the release that is there. Use it to
 #                test the release that you tested before, with its bytes.
+#   --take-over  stop the session of the session file also when it has another label. With
+#                no --take-over the program stops then (exit code 1): a second user can
+#                have started that session.
 #
 # The steps:
 # 1. The program stops the session that it started before (the ID in the session file), and
@@ -23,13 +26,13 @@
 #
 # The session file is data/destiny/port/work/probe_session.txt, and the label of the session
 # is in probe_session.txt.label. It is one file for all users of this repository. If the
-# session of the file has another label than LABEL, the program prints a warning: a second
-# user (a second thread) can have started that session.
+# session of the file has another label than LABEL, the program does not stop it and has the
+# exit code 1 (see --take-over).
 # Stop a session with `esx probe stop --session ID`, with the ID that this program printed.
 #
 # The settings (./port gives them; else they come from portkit): the esx program (ESX_BIN),
 # the Data folder of Fallout 4 (FO4_DATA), the Proton folder (PROTON_DIR).
-usage() { sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,34p' "$0" | sed 's/^# \{0,1\}//'; }
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then usage; exit 0; fi
 if [ $# -lt 2 ]; then usage >&2; exit 2; fi
 NAME=$1
@@ -37,11 +40,13 @@ LABEL=$2
 shift 2
 CELL=QASmoke
 BUILD=yes
+TAKE=no
 while [ $# -gt 0 ]; do
   case "$1" in
     --cell) [ $# -ge 2 ] || { usage >&2; exit 2; }; CELL=$2; shift 2 ;;
     --world) CELL=; shift ;;
     --no-build) BUILD=no; shift ;;
+    --take-over) TAKE=yes; shift ;;
     *) usage >&2; exit 2 ;;
   esac
 done
@@ -67,7 +72,10 @@ STATE=$STORE/destiny/port/work/probe_session.txt
 mkdir -p "$(dirname "$STATE")"
 if [ -f "$STATE" ]; then
   OLD=$(cat "$STATE.label" 2>/dev/null)
-  [ -n "$OLD" ] && [ "$OLD" != "$LABEL" ] && echo "warning: this stops the session $(cat "$STATE") with the label $OLD (the new label is $LABEL)" >&2
+  if [ -n "$OLD" ] && [ "$OLD" != "$LABEL" ] && [ "$TAKE" != yes ]; then
+    echo "third_session.sh: the session file has the session $(cat "$STATE") with the label $OLD, and your label is $LABEL. A second user can have started it, so this program does not stop it. Examine \`esx probe status\`. Give --take-over to stop it." >&2
+    exit 1
+  fi
   "$ESX" probe stop --session "$(cat "$STATE")" --format json >/dev/null 2>&1
   rm -f "$STATE" "$STATE.label"
 fi

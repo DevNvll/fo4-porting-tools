@@ -5,6 +5,8 @@ folders and the local settings in the environment. `./port help` shows the usage
 portkit/README.md describes port.toml.
 """
 import difflib
+import glob
+import hashlib
 import json
 import os
 import platform
@@ -23,8 +25,8 @@ USAGE = """\
   ./port list [--json]               Each command of each area, with one line of help.
   ./port AREA [WORD]                 The commands of one area, or of one group (`destiny check`).
   ./port AREA COMMAND [ARGUMENTS]    Run a command. `--help` shows the help of the command.
-  ./port doctor [--json]             Each setting, each tool and each necessary file: there or
-                                     missing, and how to make it.
+  ./port doctor [AREA] [--json]      Each setting, each tool and each necessary file: there or
+                                     missing, and how to make it. AREA: fnv, destiny, marathon.
   ./port paths [--json]              The folders and the local settings.
   ./port mod list                    The mod projects.
   ./port mod status NAME             The source files that differ from their copies in data/.
@@ -32,6 +34,9 @@ USAGE = """\
   ./port mod build NAME [--update-lock] [ARGUMENTS OF esx build]
                                      Sync, run esx build, show the release files.
   ./port selftest                    The checks that need no game file.
+  ./port baseline check              Compare the stored results in data/ (the baselines of the
+                                     regress commands, the releases) with baselines.sha256.
+  ./port baseline update             Write baselines.sha256 again, after a change that you want.
   ./port help
 
 Exit codes: a command gives the exit code of its program. 2: the command line or a port.toml
@@ -42,7 +47,7 @@ Documents: README.md (start here), docs/ARCHITECTURE.md (the structure and port.
 AGENTS.md (the instructions for an AI agent), portkit/README.md (how to add a command).
 """
 
-BUILTINS = ('list', 'doctor', 'paths', 'mod', 'selftest', 'help')
+BUILTINS = ('list', 'doctor', 'paths', 'mod', 'selftest', 'baseline', 'help')
 RUNNERS = ('python', 'python:d2x', 'sh', 'bash')
 D2X_PYTHON = 'data/destiny/extract/venv/bin/python'
 D2X_SETUP = './port destiny setup'
@@ -50,6 +55,11 @@ TOOLS = ('git', 'cargo', 'uv', 'ffmpeg')
 SKIP = ('.git', '__pycache__', '.venv', 'target')   # folders that have no source
 COMMAND_KEYS = ('name', 'help', 'run', 'env', 'needs')
 CHECK_KEYS = ('path', 'setting', 'what', 'make')
+BASELINE_KEYS = ('files', 'what')
+BASELINES = 'baselines.sha256'     # in the root: sha256 and path of each stored result
+# what git must not have: a file of a game or a result made from one
+GAME_FILES = ('.hkx', '.hkt', '.nif', '.kf', '.ba2', '.esp', '.esm', '.esl', '.dds', '.bgsm', '.bgem', '.glb', '.gltf',
+              '.dll', '.so', '.exe', '.pkg', '.png', '.jpg', '.jpeg', '.tga', '.mp4', '.mkv', '.wav', '.xwm', '.fuz', '.npz', '.bin')
 WORD = re.compile(r'[a-z0-9][a-z0-9_-]*')
 
 
@@ -140,6 +150,34 @@ def check_faults(c):
     return faults
 
 
+def baseline_faults(entries):
+    if not (isinstance(entries, list) and all(isinstance(e, dict) for e in entries)):
+        return ['write each baseline as a [[baseline]] table']
+    faults = []
+    for entry in entries:
+        faults += ['unknown key `%s`' % k for k in entry if k not in BASELINE_KEYS]
+        if not (text(entry.get('files')) and entry['files'].startswith('data/')):
+            faults.append('`files` must be a pattern that starts with data/')
+        if not text(entry.get('what')):
+            faults.append('`what` is missing')
+    return faults
+
+
+def baseline_patterns(root=None):
+    """(pattern, what, source) of each [[baseline]] table with no fault."""
+    root = root or paths.ROOT
+    found = []
+    for file in find(lambda name: name == 'port.toml', root):
+        try:
+            with open(file, 'rb') as f:
+                entries = tomllib.load(f).get('baseline', [])
+        except (OSError, ValueError):
+            continue
+        if not baseline_faults(entries):
+            found += [(e['files'], e['what'], os.path.relpath(file, root)) for e in entries]
+    return found
+
+
 def load(root=None):
     """(commands, checks, problems) of the port.toml files of the source tree. `commands` is
     name -> table. A table with a fault is not in the result: `problems` has a line for it."""
@@ -150,10 +188,11 @@ def load(root=None):
         try:
             with open(file, 'rb') as f:
                 table = tomllib.load(f)
-        except (OSError, tomllib.TOMLDecodeError) as e:
+        except (OSError, ValueError) as e:           # a TOML fault or bytes that are not UTF-8
             problems.append('%s: %s' % (source, e))
             continue
-        problems += ['%s: unknown key `%s`' % (source, k) for k in table if k not in ('command', 'check')]
+        problems += ['%s: unknown key `%s`' % (source, k) for k in table if k not in ('command', 'check', 'baseline')]
+        problems += ['%s: baseline: %s' % (source, fault) for fault in baseline_faults(table.get('baseline', []))]
         for kind, faults_of in (('command', command_faults), ('check', check_faults)):
             entries = table.get(kind, [])
             if not (isinstance(entries, list) and all(isinstance(e, dict) for e in entries)):
@@ -314,14 +353,15 @@ def run(argv):
         say('`%s`: the program %s is not there (%s).' % (name, paths.short(program(command)), command['source']))
         return 2
     sys.stdout.flush()
+    sys.stderr.flush()
+    line = command_line(command, arguments)
     try:
-        code = subprocess.call(command_line(command, arguments), env=environment(command))
+        # The program takes the place of ./port: its exit code is the exit code of ./port, and
+        # a signal to the process ID of ./port goes to the program.
+        os.execvpe(line[0], line, environment(command))
     except OSError as e:
         say('`%s` did not start: %s' % (name, e))
         return 2
-    except KeyboardInterrupt:
-        return 130
-    return code if code >= 0 else 128 - code
 
 
 # --- the commands of ./port itself
@@ -347,8 +387,12 @@ def doctor(arguments):
     as_json = '--json' in options([a for a in arguments if a != area], '--json')
     commands, checks, problems = load()
     if area:
-        commands = {name: c for name, c in commands.items() if c['source'].split(os.sep)[0] == area}
-        checks = [c for c in checks if c['source'].split(os.sep)[0] == area]
+        area = os.path.normpath(area)
+
+        def below(source):
+            return (os.sep + source).startswith(os.sep + area + os.sep)
+        commands = {name: c for name, c in commands.items() if below(c['source'])}
+        checks = [c for c in checks if below(c['source'])]
         if not commands and not checks:
             say('no port.toml is below the folder `%s`.' % area)
             return 2
@@ -357,11 +401,15 @@ def doctor(arguments):
     ok = {row['name']: row['ok'] for row in settings}
     checks = [dict(c, ok=ok[c['setting']] if 'setting' in c else os.path.exists(resolve(c['path']))) for c in checks]
     numpy = subprocess.run([sys.executable, '-c', 'import numpy; print(numpy.__version__)'], capture_output=True, text=True)
+    pillow = subprocess.run([sys.executable, '-c', 'import PIL; print(PIL.__version__)'], capture_output=True, text=True)
     facts = {
-        'ok': all(row['ok'] for row in checks) and all(row['ok'] for row in settings if row['used']),
+        # fnv/ and destiny/port/ cannot run with no numpy
+        'ok': all(row['ok'] for row in checks) and all(row['ok'] for row in settings if row['used']) and numpy.returncode == 0,
         'area': area,
         'python': {'version': platform.python_version(), 'executable': sys.executable, 'ok': True},
         'numpy': {'version': numpy.stdout.strip() or None, 'ok': numpy.returncode == 0},
+        'pillow': {'version': pillow.stdout.strip() or None, 'ok': pillow.returncode == 0},
+        'unknown_settings': paths.unknown_keys(),
         'root': paths.ROOT, 'data': paths.DATA, 'config': paths.CONFIG,
         'settings': settings,
         'checks': checks,
@@ -374,15 +422,20 @@ def doctor(arguments):
 
     print('python   ok       %s  %s' % (facts['python']['version'], sys.executable))
     print('numpy    %-8s %s' % ('ok' if facts['numpy']['ok'] else 'no',
-                                facts['numpy']['version'] or 'This Python cannot import numpy. fnv/ and destiny/port/ need it.'))
+                                facts['numpy']['version'] or 'This Python cannot import numpy. fnv/ and destiny/port/ need it: pip install numpy'))
+    print('pillow   %-8s %s' % ('ok' if facts['pillow']['ok'] else 'no',
+                                facts['pillow']['version'] or 'This Python cannot import PIL. `destiny model` and the picture sheets need it: pip install pillow'))
     print('root     %s\ndata     %s' % (paths.ROOT, paths.DATA))
-    print('config   %s%s' % (paths.CONFIG, '' if os.path.isfile(paths.CONFIG) else '  (not there)'))
+    print('config   %s%s' % (paths.CONFIG, '' if os.path.isfile(paths.CONFIG) else
+                               '  (not there: copy config.example.toml to this place and give your paths)'))
+    for key in facts['unknown_settings']:
+        print('         The key `%s` of the config file is not a setting. The settings: %s.' % (key, ', '.join(paths.SETTINGS)))
     print('\nSettings' + (' (a setting that no command of `%s` uses is `unused`)' % area if area else ''))
     for row in settings:
         state = 'ok' if row['ok'] else ('MISSING' if row['value'] else ('not set' if row['used'] else 'unused'))
         print('  %-8s %-14s %s' % (state, row['name'], '%s  [%s]' % (row['value'], row['source']) if row['value'] else row['meaning']))
         if not row['ok'] and (row['used'] or row['value']):
-            print('  %8s %s' % ('', 'That file or folder is not there.' if row['value'] else paths.advice(row['name'])))
+            print('  %8s %s' % ('', row['problem'] if row['value'] else paths.advice(row['name'])))
     print('\nChecks of the port.toml files' + ('' if checks else '\n  (none)'))
     for check in checks:
         subject = check.get('path') or 'setting ' + check['setting']
@@ -394,9 +447,84 @@ def doctor(arguments):
         print('  %-8s %-14s %s' % ('ok' if tool['ok'] else 'no', tool['name'], tool['path'] or ''))
     for line in problems:
         say('fault: ' + line)
-    count = sum(not row['ok'] for row in checks) + sum(not row['ok'] for row in settings if row['used'])
+    count = sum(not row['ok'] for row in checks) + sum(not row['ok'] for row in settings if row['used']) + (not facts['numpy']['ok'])
     print('\nResult: %s' % ('each setting and each check is ok.' if facts['ok'] else '%d of the settings and checks are not ok.' % count))
     return 0 if facts['ok'] else 1
+
+
+def git_content():
+    """A part of selftest: no file that git has is a file of a game (by its ending, or with a
+    NUL byte). With no git or no repository the part passes with a note."""
+    try:
+        done = subprocess.run(['git', '-C', paths.ROOT, 'ls-files', '-z', '--cached', '--others', '--exclude-standard'],
+                              capture_output=True)
+    except OSError:
+        return ('git', True, 'git is not there: not examined', [])
+    if done.returncode != 0:
+        return ('git', True, 'not a git repository: not examined', [])
+    names = [n for n in done.stdout.decode('utf-8', 'surrogateescape').split('\0') if n]
+    faults = []
+    for name in names:
+        file = os.path.join(paths.ROOT, name)
+        if not os.path.isfile(file):
+            continue
+        if name.lower().endswith(GAME_FILES):
+            faults.append('%s: a file with this ending is not source (data/ is the place for it)' % name)
+            continue
+        with open(file, 'rb') as f:
+            if b'\0' in f.read(65536):
+                faults.append('%s: not a text file' % name)
+    return ('git', not faults, '%d files that git has or can add, %d that are not source' % (len(names), len(faults)), faults)
+
+
+def baseline_files():
+    """path below data/ -> the file, for each file of the [[baseline]] patterns."""
+    found = {}
+    for pattern, _, _ in baseline_patterns():
+        for file in glob.glob(resolve(pattern), recursive=True):
+            if os.path.isfile(file):
+                found[os.path.relpath(file, paths.DATA)] = file
+    return found
+
+
+def sha256(file):
+    with open(file, 'rb') as f:
+        return hashlib.file_digest(f, 'sha256').hexdigest()
+
+
+def baseline(arguments):
+    """`check`: compare the stored results in data/ with baselines.sha256. `update`: write the
+    file again. A regress command compares new results with the stored results; this command
+    proves that nobody replaced the stored results."""
+    listed = paths.repo(BASELINES)
+    if arguments == ['update']:
+        files = baseline_files()
+        with open(listed, 'w') as f:
+            f.write(''.join('%s  %s\n' % (sha256(files[name]), name) for name in sorted(files)))
+        print('%s: %d files of %d patterns. Put the file into git with the change that made the difference.' % (
+            BASELINES, len(files), len(baseline_patterns())))
+        return 0
+    if arguments != ['check']:
+        say('give `baseline check` or `baseline update`.')
+        return 2
+    if not os.path.isfile(listed):
+        say('%s is not there. `./port baseline update` makes it.' % BASELINES)
+        return 1
+    want = dict(reversed(line.rstrip('\n').split('  ', 1)) for line in open(listed) if line.strip())
+    files = baseline_files()
+    different = sorted(name for name in want if name in files and sha256(files[name]) != want[name])
+    missing_ = sorted(name for name in want if not os.path.isfile(paths.data(name)))
+    new = sorted(name for name in files if name not in want)
+    for label, names in (('DIFFERENT', different), ('not there', missing_), ('not in the list', new)):
+        for name in names[:12]:
+            print('%-16s data/%s' % (label, name))
+        if len(names) > 12:
+            print('%-16s ... and %d more' % (label, len(names) - 12))
+    print('baseline: %d files in %s; %d the same, %d different, %d not there, %d in data/ that the list does not have.' % (
+        len(want), BASELINES, len(want) - len(different) - len(missing_), len(different), len(missing_), len(new)))
+    if different:
+        print('A different file means that a stored result was replaced. If you wanted that change: ./port baseline update')
+    return 1 if different else 0
 
 
 def selftest():
@@ -430,6 +558,8 @@ def selftest():
     else:
         results.append(('tests', True, 'no tests/ folder', []))
 
+    results.append(git_content())
+
     for part, ok, summary, lines in results:
         print('%-5s %-10s %s' % ('ok' if ok else 'FAIL', part, summary))
         print(''.join('      %s\n' % line for line in lines), end='')
@@ -453,4 +583,6 @@ def main(argv):
     if word == 'selftest':
         options(rest)
         return selftest()
+    if word == 'baseline':
+        return baseline(rest)
     return run(argv)

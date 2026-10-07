@@ -113,10 +113,11 @@ def sync(name, force=False, build=False):
                 'The build uses it.' if build else
                 'Run `./port mod build %s --update-lock` to keep it, or `./port mod sync %s --force` to replace it.' % (name, name))))
             continue
+        note = '  (the copy in data/ was newer: it is replaced)' if what == 'different' and newer_in_data(name, file) else ''
         os.makedirs(os.path.dirname(project(name, file)), exist_ok=True)
         shutil.copy2(source(name, file), project(name, file))
         copied += 1
-        print('%-8s %s' % ('new' if what == 'missing' else 'changed', file))
+        print('%-8s %s%s' % ('new' if what == 'missing' else 'changed', file, note))
     print('sync %s: %d of %d files copied to %s.' % (name, copied, len(all_files), paths.short(project(name))))
     return not kept
 
@@ -128,6 +129,9 @@ def build(name, arguments):
         esx, game = paths.require('esx'), paths.require('fo4_data')
     except SystemExit as stop:
         print('port: %s' % stop, file=sys.stderr)
+        return 3
+    if not os.path.isfile(esx):
+        print('port: the esx program %s is not there. `./port doctor` shows each setting.' % esx, file=sys.stderr)
         return 3
     sync(name, build=True)
     sys.stdout.flush()

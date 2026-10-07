@@ -85,7 +85,7 @@ def main():
     ap.add_argument('--wait', type=float, default=140.0, help='the age of the session in seconds at which the first test starts (default 140)')
     ap.add_argument('--pictures', type=int, default=11, help='the pictures of a slow third-person reload (default 11)')
     ap.add_argument('--mod', help='the name of the mod: print the hashes of data/mods/NAME/build/release after the tests')
-    ap.add_argument('--tested', help='a file with the hashes of the tested release (lines of sha256sum), to compare with --mod')
+    ap.add_argument('--tested', help='a file with the hashes of the tested release (lines of sha256sum, with or with no folder before each name), to compare with --mod')
     ap.add_argument('--dry-run', action='store_true', help='print each command and run nothing')
     a = ap.parse_args()
     session = a.session
@@ -136,7 +136,8 @@ def main():
             print('%s  %s' % (value, name))
         if a.tested:
             tested = dict(reversed(line.split(None, 1)) for line in open(a.tested).read().splitlines() if line.strip())
-            tested = {name.strip().lstrip('*'): value for name, value in tested.items()}
+            # a list can have a folder before each name (a list of baselines.sha256, for example)
+            tested = {os.path.basename(name.strip().lstrip('*')): value for name, value in tested.items()}
             same = tested == now
             failed += 0 if same else 1
             print('the release is the tested one' if same else 'THE RELEASE IS NOT THE TESTED ONE (%s)' % a.tested)

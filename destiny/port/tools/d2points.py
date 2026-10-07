@@ -17,6 +17,14 @@ All values are in Fallout 4 weapon space (+Y to the muzzle, +Z up, +X to the rig
   Destiny gun), seen along the barrel: `#` is a place with a triangle. The window of the
   sight is the hole in the map. Its center, with the Y of the sight, is `point` of [sight].
 """
+import os
+import sys
+
+_r = os.path.dirname(os.path.abspath(__file__))
+while not os.path.isfile(os.path.join(_r, 'portkit', '__init__.py')) and _r != os.path.dirname(_r):
+    _r = os.path.dirname(_r)
+sys.path.insert(0, _r)
+import portkit  # noqa: E402,F401  (a file error is one line)
 import argparse
 import json
 import numpy as np

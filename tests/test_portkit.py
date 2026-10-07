@@ -483,10 +483,11 @@ class Selftest(Layout):
         done = self.port('selftest')
         self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
         lines = done.stdout.splitlines()
-        self.assertEqual(len(lines), 3, done.stdout)
+        self.assertEqual(len(lines), 4, done.stdout)
         self.assertRegex(lines[0], r'^ok +python +\d+ files, 0 do not compile$')
         self.assertEqual(lines[1].split(), 'ok port.toml 1 files, 6 commands, 1 checks, 0 faults'.split())
         self.assertEqual(lines[2].split(), 'ok tests 1 test, unittest exit code 0'.split())
+        self.assertRegex(lines[3], r'^ok +git ')       # the temporary folder is no git repository, or git is not in the PATH
 
         self.write('repo/demo/bad.py', 'def broken(:\n')
         self.write('repo/demo/port.toml', DEMO + '[[command]]\nname = "demo gone"\nhelp = "Help."\nrun = ["sh", "demo/gone.sh"]\ncolor = "red"\n'
@@ -548,7 +549,8 @@ class Mods(Layout):
         self.assertIn('different  ids.lock  (the newer file is in %s)' % os.path.join(self.data, 'mods', 'Demo'), self.port('mod', 'status', 'Demo').stdout)
 
         done = self.port('mod', 'sync', 'Demo', '--force')
-        self.assertEqual((done.returncode, done.stdout.splitlines()[0]), (0, 'changed  ids.lock'))
+        self.assertEqual((done.returncode, done.stdout.splitlines()[0]),
+                         (0, 'changed  ids.lock  (the copy in data/ was newer: it is replaced)'))
         self.assertEqual(self.read('moved_data/mods/Demo/ids.lock'), 'Gun = 0x800\n')
 
     def test_ids_lock_that_is_older_in_data_is_replaced(self):
@@ -608,6 +610,72 @@ class Mods(Layout):
         self.assertEqual((done.returncode, done.stdout), (3, ''))
         self.assertIn('The setting `fo4_data` has no value.', done.stderr)
         self.assertFalse(os.path.exists(os.path.join(self.data, 'mods', 'Demo')))
+
+
+class Faults(Layout):
+    def test_a_fault_in_the_config_file_is_one_line(self):
+        self.demo()
+        self.write('moved_data/config.toml', 'blender = "/x\n')
+        for arguments in (('doctor',), ('paths',), ('demo', 'show')):
+            done = self.port(*arguments)
+            self.assertNotEqual(done.returncode, 0)
+            self.assertNotIn('Traceback', done.stderr)
+            self.assertIn('port: %s: ' % os.path.join(self.data, 'config.toml'), done.stderr)
+        self.write('moved_data/config.toml', 'esx = ["a", "b"]\n')
+        self.assertIn('the value of `esx` must be a text in quotes', self.port('paths').stderr)
+        self.write('moved_data/config.toml', 'blendr = "/x"\n')
+        self.assertIn('The key `blendr` of the config file is not a setting.', self.port('doctor').stdout)
+
+    def test_a_port_toml_that_is_not_utf8_is_a_problem_and_no_stop(self):
+        self.demo()
+        os.makedirs(os.path.join(self.root, 'other'))
+        with open(os.path.join(self.root, 'other', 'port.toml'), 'wb') as f:
+            f.write(b'[[command]]\nname = "other one"\nhelp = "caf\xe9"\nrun = ["sh", "demo/fail.sh"]\n')
+        done = self.port('list')
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn('demo show', done.stdout)
+        self.assertIn('port: fault: other/port.toml', done.stderr)
+
+    def test_doctor_area_takes_a_path(self):
+        self.demo()
+        program = self.write('tools/program', executable=True)
+        os.makedirs(os.path.join(self.data, 'demo', 'rig'))
+        for area in ('demo', 'demo/', './demo'):
+            done = self.port('doctor', area, BLENDER=program)
+            self.assertIn(done.returncode, (0, 1), area + done.stdout + done.stderr)       # 1: this Python has no numpy
+            self.assertIn('ok       data/demo/rig', done.stdout)
+        self.assertEqual(self.port('doctor', 'dem').returncode, 2)
+
+
+class Baseline(Layout):
+    def test_baseline(self):
+        self.write('repo/demo/port.toml', '[[baseline]]\nfiles = "data/demo/out/*.txt"\nwhat = "The results of the demo."\n')
+        self.write('moved_data/demo/out/a.txt', 'one\n')
+        self.write('moved_data/demo/out/b.txt', 'two\n')
+        self.assertEqual(self.port('baseline', 'check').returncode, 1)          # no list yet
+        done = self.port('baseline', 'update')
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual([line.split('  ')[1] for line in self.read('repo/baselines.sha256').splitlines()], ['demo/out/a.txt', 'demo/out/b.txt'])
+        done = self.port('baseline', 'check')
+        self.assertEqual(done.returncode, 0, done.stdout)
+        self.assertIn('2 the same, 0 different, 0 not there, 0 in data/ that the list does not have', done.stdout)
+
+        self.write('moved_data/demo/out/a.txt', 'changed\n')
+        os.remove(os.path.join(self.data, 'demo', 'out', 'b.txt'))
+        self.write('moved_data/demo/out/c.txt', 'new\n')
+        done = self.port('baseline', 'check')
+        self.assertEqual(done.returncode, 1)
+        self.assertIn('DIFFERENT        data/demo/out/a.txt', done.stdout)
+        self.assertIn('not there        data/demo/out/b.txt', done.stdout)
+        self.assertIn('not in the list  data/demo/out/c.txt', done.stdout)
+        self.assertEqual(self.port('baseline').returncode, 2)
+
+    def test_a_wrong_baseline_table_is_a_fault_of_selftest(self):
+        self.write('repo/demo/port.toml', '[[baseline]]\nfiles = "out/*.txt"\n')
+        done = self.port('selftest')
+        self.assertEqual(done.returncode, 1)
+        self.assertIn('`files` must be a pattern that starts with data/', done.stdout)
+        self.assertIn('`what` is missing', done.stdout)
 
 
 if __name__ == '__main__':

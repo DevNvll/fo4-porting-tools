@@ -153,3 +153,9 @@ make = "./port marathon setup"
 path = "data/marathon/extract/notes/tag64.tsv"
 what = "The table of the 64-bit tag hashes of this build of the game. m2x finds entities, clips and textures with it."
 make = "./port marathon setup"
+
+# --- the stored results that `./port baseline check` compares with baselines.sha256
+
+[[baseline]]
+files = "data/marathon/extract/out/m77_omnipositor/**"
+what = "The extraction of the M77 Omnipositor: the baseline of `marathon regress`."

@@ -150,7 +150,12 @@ needs = ["destiny_game"]
 name = "destiny check validate"
 help = "The numbers and the videos of each clip of a set: FILE.glb --set SET.toml --out FOLDER [--clips FOLDER] [--no-video]."
 run = ["python", "destiny/port/check/validate.py"]
-needs = ["blender", "data/fnv/rig/1st_skeleton.hkx", "data/destiny/port/rig/third/skeleton.hkx"]
+needs = ["blender", "data/fnv/rig/1st_skeleton.hkx", "data/fnv/rig/1stpersonmalehands.glb", "data/destiny/port/rig/third/skeleton.hkx"]
+
+[[command]]
+name = "destiny check gun-on-grip"
+help = "For each full-pose clip of an extraction: the distance of the gun bone to the grip bone: MANIFEST.json [--clip CLIP ...]. Do this before you write a set file."
+run = ["python", "destiny/port/check/gun_on_grip.py"]
 
 [[command]]
 name = "destiny check gun"
@@ -301,9 +306,14 @@ what = "The esx command. It writes the textures and the materials of a model, bu
 make = "Build esx and give its program as `esx` in data/config.toml (or in ESX_BIN)."
 
 [[check]]
-path = "data/fnv/rig"
-what = "The rig folder of fnv (files of the game). destiny/port reads the first-person skeleton and the arm meshes of Fallout 4 from it."
-make = "./port fnv make-rig --nvcs /path/to/NVCS/Skeleton.nif (the skeleton), then ./port fnv make-rig --arm-meshes (the arm meshes)"
+path = "data/fnv/rig/1st_skeleton.hkx"
+what = "The rig folder of fnv (files of the game). destiny/port reads the first-person skeleton of Fallout 4 from it."
+make = "./port fnv make-rig --nvcs /path/to/NVCS/Meshes/Characters/_1stPerson/Skeleton.nif"
+
+[[check]]
+path = "data/fnv/rig/1stpersonmalehands.glb"
+what = "The first-person arm meshes of Fallout 4 as glTF files, in the rig folder of fnv. The checks with pictures and the hand measurements of destiny/port read them."
+make = "./port fnv make-rig --arm-meshes   (needs the setting `esx`)"
 
 [[check]]
 path = "data/destiny/port/rig/third/skeleton.hkx"
@@ -314,3 +324,23 @@ make = "./port destiny make-rig"
 path = "data/destiny/extract/venv/bin/python"
 what = "The Python environment of d2x. The commands destiny states, dyes, reticle, third and pose import d2x."
 make = "./port destiny setup"
+
+# --- the stored results that `./port baseline check` compares with baselines.sha256
+# (out/the_chaperone and out/the_huckleberry are older results and no baseline: the clips of
+# these two weapons are in data/mods/TexMechanica)
+
+[[baseline]]
+files = "data/destiny/port/out/the_last_word/*.hkx"
+what = "The first-person clips of The Last Word: a baseline of `destiny regress`."
+
+[[baseline]]
+files = "data/destiny/port/out/khvostov_7g_02/*.hkx"
+what = "The first-person clips of the Khvostov: a baseline of `destiny regress`."
+
+[[baseline]]
+files = "data/destiny/port/out/hammerhead/*.hkx"
+what = "The first-person clips of Hammerhead: a baseline of `destiny regress`."
+
+[[baseline]]
+files = "data/destiny/port/out/m77_omnipositor/*.hkx"
+what = "The first-person clips of the M77: a baseline of `destiny regress`."

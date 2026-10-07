@@ -7,6 +7,14 @@ A general archive (type GNRL) has a header, one record for each file and a table
 A file is stored as it is or with zlib compression. A texture archive (type DX10) is a
 different kind, and this reader refuses it.
 """
+import os
+import sys
+
+_r = os.path.dirname(os.path.abspath(__file__))
+while not os.path.isfile(os.path.join(_r, 'portkit', '__init__.py')) and _r != os.path.dirname(_r):
+    _r = os.path.dirname(_r)
+sys.path.insert(0, _r)
+import portkit  # noqa: E402,F401  (a file error is one line)
 import struct
 import sys
 import zlib

@@ -26,7 +26,8 @@ data/destiny/extract/ (or below destiny/extract/ of FO4PORTS_DATA):
   out/       the default output folder of d2x
 
 Run it again at any time; it skips each step that is complete.
-It needs git, cargo and python3 (3.11 or later). It uses uv if uv is there.
+It needs git and cargo, and uv or python3 3.12 or later (the fixed versions of requirements.txt
+need 3.12). With uv, uv gets its own Python.
 The game folder is the setting destiny_game (data/config.toml, or D2X_GAME). Only the last
 step (the Oodle link) needs it; with no game folder the exit code is 1 and the other steps are complete.
   -h, --help   show this text and do nothing
@@ -101,6 +102,10 @@ if [[ ! -x "${area}/venv/bin/python" ]]; then
     if command -v uv >/dev/null 2>&1; then
         uv venv --quiet "${area}/venv" --python 3.13
     else
+        python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 12) else 1)' || {
+            echo "setup: the Python environment needs Python 3.12 or later, and this python3 is older. Install uv (it gets its own Python), or use a newer python3." >&2
+            exit 1
+        }
         python3 -m venv "${area}/venv"
     fi
 fi

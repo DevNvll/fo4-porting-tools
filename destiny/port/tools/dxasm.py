@@ -8,6 +8,14 @@ for the analysis of a material of Destiny 2 (tools/d2reticle.py saves the shader
 parts of a sight). It knows the instructions of a simple vertex or pixel shader; for an
 instruction that it does not know it prints the number of the operation and its tokens.
 """
+import os
+import sys
+
+_r = os.path.dirname(os.path.abspath(__file__))
+while not os.path.isfile(os.path.join(_r, 'portkit', '__init__.py')) and _r != os.path.dirname(_r):
+    _r = os.path.dirname(_r)
+sys.path.insert(0, _r)
+import portkit  # noqa: E402,F401  (a file error is one line)
 import struct
 import sys
 

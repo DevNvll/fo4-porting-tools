@@ -14,6 +14,7 @@ The folder has the first-person clips of a vanilla weapon (tools/make_rig.py mak
 """
 import sys
 
+sys.dont_write_bytecode = True
 if '-h' in sys.argv[1:] or '--help' in sys.argv[1:]:
     print(__doc__.strip())
     sys.exit(0)

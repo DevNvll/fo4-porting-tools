@@ -59,7 +59,8 @@ path = "data/fnv/rig/pistol10mm/wpnfiresingleready.hkx"
 what = "The rig folder of fnv: the vanilla clips of the template `pistol10mm`."
 make = "./port fnv make-rig --nvcs /path/to/NVCS/Meshes/Characters/_1stPerson/Skeleton.nif"
 
-[[check]]
-path = "data/fnv/rig/1stpersonmalehands.glb"
-what = "The rig folder of fnv: the first-person arm meshes of Fallout 4 as glTF files. The conversion of fnv does not read them. The checks of destiny/port do."
-make = "./port fnv make-rig --arm-meshes   (needs the setting `esx`)"
+# --- the stored results that `./port baseline check` compares with baselines.sha256
+
+[[baseline]]
+files = "data/fnv/out/*/*.hkx"
+what = "The clips of each fixture: the baseline of `fnv regress`."

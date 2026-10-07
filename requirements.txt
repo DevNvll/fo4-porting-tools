@@ -1,0 +1,5 @@
+# The Python packages of fnv/ and destiny/port/ (the Python that runs ./port).
+# destiny/extract/ and marathon/extract/ have their own environment (destiny/extract/requirements.txt).
+# These are the versions of the regression results; a later version can work.
+numpy>=2.3
+pillow>=12.2
