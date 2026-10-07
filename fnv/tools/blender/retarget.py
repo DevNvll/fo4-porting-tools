@@ -1,7 +1,9 @@
 """Retarget baked FNV poses to the Fallout 4 first-person skeleton.
 
-blender --background --factory-startup --python retarget.py -- \
+sh fnv/tools/bl.sh fnv/tools/blender/retarget.py -- \
     --bake out/anim/A.json [--bake ...] [--out out/fo4] [--fo4-skeleton FILE] [--nvcs FILE]
+
+PORT_CONFIG names the configuration file of the conversion (see tools/port_config.py).
 
 For each bake file: out/fo4/poses/NAME.npz (the world matrix of each FO4 bone for each
 frame, 4x4, column vectors) and out/fo4/report/NAME.json (the checks).
@@ -14,6 +16,13 @@ import os
 import sys
 import numpy as np
 from mathutils import Matrix, Quaternion, Vector
+
+sys.dont_write_bytecode = True                # Blender does not read PYTHONDONTWRITEBYTECODE: no cache file in the source tree
+_r = os.path.dirname(os.path.abspath(__file__))
+while not os.path.isfile(os.path.join(_r, 'portkit', '__init__.py')) and _r != os.path.dirname(_r):
+    _r = os.path.dirname(_r)
+sys.path.insert(0, _r)
+from portkit import paths  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -40,7 +49,7 @@ class Setup:
     def __init__(self, a, source, target):
         self.a, self.source, self.target = a, source, target
         if not os.path.exists(a.tips):
-            raise SystemExit('the file %s is not there (measurements of the two hand meshes, rig/finger_tips.json of the repository)' % a.tips)
+            raise SystemExit('the file %s is not there (measurements of the two hand meshes, fnv/rig/finger_tips.json of the repository)' % a.tips)
         self.tips = json.load(open(a.tips))
         self.collider_parts = None
         if not a.no_collision and a.fingers != 'rotation':
@@ -68,7 +77,8 @@ class Setup:
 
 
 def add_solver_arguments(ap):
-    ap.add_argument('--tips', default=os.path.join(cfg.RIG, 'finger_tips.json'))
+    ap.add_argument('--tips', default=paths.repo('fnv', 'rig', 'finger_tips.json'),
+                    help='the measurements of the two hand meshes (a file of the source tree, not of the rig folder)')
     ap.add_argument('--parts', default=os.path.join(cfg.OUT, 'fo4mesh', 'parts.json'), help='the gun meshes, for the finger collision step')
     ap.add_argument('--no-collision', action='store_true')
     ap.add_argument('--hand-shift', type=float, default=0.0,

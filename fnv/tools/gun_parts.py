@@ -1,8 +1,8 @@
 """Put the gun meshes of a New Vegas model (.nif) into Fallout 4 weapon space.
 
-    python3 tools/gun_parts.py [-o out/fo4mesh/parts.json]
+    PORT_CONFIG=CONFIG python3 fnv/tools/gun_parts.py [-o out/fo4mesh/parts.json]
 
-The model is `model` of the configuration file. Each shape has its vertices in the local
+The model is `model` of the configuration file that PORT_CONFIG names. Each shape has its vertices in the local
 space of the Fallout 4 weapon bone that carries it: a shape below a node of [parts] is on the
 bone of that node, and each other shape is on the bone Weapon.
 
@@ -16,9 +16,10 @@ import os
 import sys
 import numpy as np
 
+sys.dont_write_bytecode = True                # no cache file in the source tree
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import port_config as cfg
-from port_defaults import shape_name
+import port_config as cfg  # noqa: E402
+from port_defaults import shape_name  # noqa: E402
 
 
 def convert():

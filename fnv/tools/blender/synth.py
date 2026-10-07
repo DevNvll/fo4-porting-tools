@@ -26,7 +26,10 @@ retarget solver. The camera bone and the annotations are those of the vanilla cl
                      NAME = { base = "sighted", bake = "SCENE", events = [[0, "weaponFire"]] }
                      each frame of a source clip with the move of that pose, and its annotations
 
-blender --background --factory-startup --python synth.py -- [--vanilla rig/smg] [--out out/fo4]
+sh fnv/tools/bl.sh fnv/tools/blender/synth.py -- [--vanilla RIG/smg] [--out out/fo4]
+
+PORT_CONFIG names the configuration file of the conversion (see tools/port_config.py). RIG is
+the rig folder (data/fnv/rig, or the folder that PORT_RIG names).
 """
 import argparse
 import json
@@ -36,6 +39,7 @@ import sys
 import numpy as np
 from mathutils import Matrix, Quaternion, Vector
 
+sys.dont_write_bytecode = True                # Blender does not read PYTHONDONTWRITEBYTECODE: no cache file in the source tree
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.dirname(HERE))

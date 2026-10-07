@@ -609,7 +609,7 @@ class Retargeter:
         the center of its skin 0.4 units to the pad side of the bone, and the New Vegas thumb
         has it 0.13 units to the nail side. With the bones at one place the Fallout 4 thumb is
         0.5 units to the pad side of the source thumb (the difference of the other fingers is
-        0.1 units). The values are in rig/finger_tips.json (tools/blender/finger_tips.py).
+        0.1 units). The values are in fnv/rig/finger_tips.json (`center` and `tip_center`).
         The first joint is the knuckle: the hand bone gives its place."""
         key = fo4[0]
         if key not in self.skin_shift_cache:

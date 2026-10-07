@@ -1,0 +1,65 @@
+# The commands of the area fnv: New Vegas weapon animations (.kf, .nif) to Fallout 4 clips (HKX).
+# docs/ARCHITECTURE.md describes this file. Each path is a path from the root of the repository.
+# Each program also runs alone: python3 fnv/tools/NAME.py
+
+[[command]]
+name = "fnv convert"
+help = "Convert the first-person animations of an extracted New Vegas weapon mod (.kf, .nif) to Fallout 4 clips (HKX)."
+run = ["python", "fnv/tools/port.py"]
+needs = ["blender", "data/fnv/rig/1st_skeleton.hkx", "data/fnv/rig/nvcs_1st.json"]
+
+[[command]]
+name = "fnv make-rig"
+help = "Make the rig folder data/fnv/rig from the animation archive of Fallout 4 and the skeleton file of the NVCS mod."
+run = ["python", "fnv/tools/make_rig.py"]
+
+[[command]]
+name = "fnv regress"
+help = "Convert each fixture of data/fnv/fixtures again and compare the clips with data/fnv/out (exit code 1: a clip is different)."
+run = ["python", "fnv/tools/regress.py"]
+needs = ["blender", "data/fnv/rig/1st_skeleton.hkx", "data/fnv/rig/nvcs_1st.json"]
+
+[[command]]
+name = "fnv inspect"
+help = "Print the nodes and the shapes of a New Vegas model (.nif), or the tracks and the text keys of an animation (.kf)."
+run = ["python", "fnv/tools/fnvnif.py"]
+
+[[command]]
+name = "fnv list-archive"
+help = "List the files of a general Fallout 4 archive (.ba2) whose name has a text."
+run = ["python", "fnv/tools/ba2.py"]
+
+[[check]]
+setting = "blender"
+what = "Blender 4.5. The steps `retarget` and `synth` of `fnv convert` run in it, with no window."
+make = "Install Blender 4.5. Give its program as `blender` in data/config.toml or in the variable BLENDER."
+
+[[check]]
+setting = "fo4_data"
+what = "The Data folder of Fallout 4. `fnv make-rig` reads `Fallout4 - Animations.ba2` from it."
+make = "Give the folder as `fo4_data` in data/config.toml or in the variable FO4_DATA."
+
+[[check]]
+path = "data/fnv/rig/1st_skeleton.hkx"
+what = "The rig folder of fnv: the first-person skeleton of Fallout 4."
+make = "./port fnv make-rig --nvcs /path/to/NVCS/Meshes/Characters/_1stPerson/Skeleton.nif"
+
+[[check]]
+path = "data/fnv/rig/nvcs_1st.json"
+what = "The rig folder of fnv: the first-person skeleton of New Vegas (the NVCS mod)."
+make = "./port fnv make-rig --nvcs /path/to/NVCS/Meshes/Characters/_1stPerson/Skeleton.nif"
+
+[[check]]
+path = "data/fnv/rig/smg/wpnfiresingleready.hkx"
+what = "The rig folder of fnv: the vanilla clips of the template `smg`."
+make = "./port fnv make-rig --nvcs /path/to/NVCS/Meshes/Characters/_1stPerson/Skeleton.nif"
+
+[[check]]
+path = "data/fnv/rig/pistol10mm/wpnfiresingleready.hkx"
+what = "The rig folder of fnv: the vanilla clips of the template `pistol10mm`."
+make = "./port fnv make-rig --nvcs /path/to/NVCS/Meshes/Characters/_1stPerson/Skeleton.nif"
+
+[[check]]
+path = "data/fnv/rig/1stpersonmalehands.glb"
+what = "The rig folder of fnv: the first-person arm meshes of Fallout 4 as glTF files. The conversion of fnv does not read them. The checks of destiny/port do."
+make = "./port fnv make-rig --arm-meshes   (needs the setting `esx`)"

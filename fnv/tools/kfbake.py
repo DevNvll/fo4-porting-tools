@@ -1,6 +1,8 @@
 """Evaluate a New Vegas animation file (.kf) and write the matrix of each node for each frame.
 
-    python3 tools/kfbake.py FILE.kf --model GUN.nif -o out/anim/NAME.json [--skeleton rig/nvcs_1st.json] [--fps 30]
+    python3 fnv/tools/kfbake.py FILE.kf --model GUN.nif -o out/anim/NAME.json [--skeleton FILE] [--fps 30]
+
+The skeleton is nvcs_1st.json of the rig folder (data/fnv/rig, or the folder that PORT_RIG names).
 
 The output is a bake file: for each node, its parent and its world matrix for each sample
 time. A matrix is 12 numbers: the three axis rows and the translation row.
@@ -15,8 +17,15 @@ import sys
 from bisect import bisect_right
 import numpy as np
 
+sys.dont_write_bytecode = True                # no cache file in the source tree
+_r = os.path.dirname(os.path.abspath(__file__))
+while not os.path.isfile(os.path.join(_r, 'portkit', '__init__.py')) and _r != os.path.dirname(_r):
+    _r = os.path.dirname(_r)
+sys.path.insert(0, _r)
+from portkit import paths  # noqa: E402
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import fnvnif
+import fnvnif  # noqa: E402
 
 TICKS_PER_SEC = 4800
 
@@ -194,12 +203,12 @@ def bake(kf, skeleton, model=None, fps=30):
 
 
 if __name__ == '__main__':
-    here = os.path.dirname(os.path.abspath(__file__))
-    ap = argparse.ArgumentParser()
-    ap.add_argument('kf')
-    ap.add_argument('-o', '--output', required=True)
+    ap = argparse.ArgumentParser(description='Evaluate a New Vegas animation file (.kf) and write the matrix of each node for each frame.')
+    ap.add_argument('kf', help='the animation file (.kf)')
+    ap.add_argument('-o', '--output', required=True, help='the bake file (.json)')
     ap.add_argument('--model', help='the gun model (.nif); its nodes hang on the bone Weapon')
-    ap.add_argument('--skeleton', default=os.path.join(os.environ.get('PORT_RIG') or os.path.join(os.path.dirname(here), 'rig'), 'nvcs_1st.json'))
+    ap.add_argument('--skeleton', default=os.path.join(os.environ.get('PORT_RIG') or paths.data('fnv', 'rig'), 'nvcs_1st.json'),
+                    help='the New Vegas first-person skeleton (default: nvcs_1st.json of the rig folder)')
     ap.add_argument('--fps', type=int, default=30)
     a = ap.parse_args()
     data = bake(a.kf, a.skeleton, a.model, a.fps)

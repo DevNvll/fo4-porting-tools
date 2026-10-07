@@ -1,7 +1,8 @@
 """Read a Gamebryo file of Fallout 3 and Fallout: New Vegas (NIF or KF, version 20.2.0.7).
 
-    python3 tools/fnvnif.py FILE.nif            the nodes and the shapes
-    python3 tools/fnvnif.py FILE.kf             the sequence, its tracks and its text keys
+    python3 fnv/tools/fnvnif.py FILE.nif        the nodes and the shapes
+    python3 fnv/tools/fnvnif.py FILE.kf         the sequence, its tracks and its text keys
+    ./port fnv inspect FILE                     the same command
 
 The header has the size of each block, so a block type that is not here is skipped.
 A transform is a translation (x, y, z), a rotation matrix (3 rows, column vectors) and a scale.
@@ -344,6 +345,9 @@ def main(path):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):
+        print(__doc__)
+        sys.exit(0 if len(sys.argv) > 1 else 1)
     for f in sys.argv[1:]:
         print(f)
         main(f)

@@ -1,5 +1,6 @@
-# The rig folder has files of the game and of the NVCS mod. tools/make_rig.py makes it from
-# your own files. Only the measurements of the hand meshes are in the repository.
+# The rig folder with the files of the game and of the NVCS mod is data/fnv/rig
+# (tools/make_rig.py makes it). In this folder only the measurements of the hand meshes are
+# source. This rule keeps a game file out of git when a person puts one here.
 rig/*
 !rig/finger_tips.json
 

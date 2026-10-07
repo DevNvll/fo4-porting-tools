@@ -1,9 +1,9 @@
 """The data of one conversion, read from its configuration file.
 
 The environment variable PORT_CONFIG names the file. PORT_WORK replaces the work folder of
-the file, and PORT_RIG replaces the rig folder. The file gives only what the tools cannot
-find; tools/port_defaults.py has the defaults. tools/port.py writes the file for a source
-folder.
+the file (default: data/fnv/work/NAME), and PORT_RIG replaces the rig folder (default:
+data/fnv/rig). The file gives only what the tools cannot find; tools/port_defaults.py has
+the defaults. tools/port.py writes the file for a source folder.
 
 FNV weapon bone space: +X to the muzzle, +Y up, +Z to the right.
 FO4 weapon space: +Y to the muzzle, +Z up, +X to the right.
@@ -17,11 +17,18 @@ Each moving part is on a FO4 weapon bone. Its rest transform relative to its par
 the pivot of the template weapon. A vanilla clip then shows the part at its rest place.
 """
 import os
+import sys
 import tomllib
 import numpy as np
 
+_r = os.path.dirname(os.path.abspath(__file__))
+while not os.path.isfile(os.path.join(_r, 'portkit', '__init__.py')) and _r != os.path.dirname(_r):
+    _r = os.path.dirname(_r)
+sys.path.insert(0, _r)
+from portkit import paths  # noqa: E402
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
+ROOT = paths.repo('fnv')
 
 CONFIG = os.environ.get('PORT_CONFIG')
 if not CONFIG:
@@ -33,8 +40,10 @@ with open(CONFIG, 'rb') as _f:
 
 
 NAME = D['name']
-WORK = os.environ.get('PORT_WORK') or os.path.expanduser(D.get('work') or '/tmp/%s-port' % NAME.lower())
-RIG = os.environ.get('PORT_RIG') or os.path.join(ROOT, 'rig')
+WORK = os.environ.get('PORT_WORK') or os.path.expanduser(D.get('work') or paths.data('fnv', 'work', NAME.lower()))
+RIG = os.environ.get('PORT_RIG') or paths.data('fnv', 'rig')
+# the measurements of the two hand meshes are in the source tree, not in the rig folder
+TIPS = paths.repo('fnv', 'rig', 'finger_tips.json')
 OUT = os.path.join(WORK, 'out')
 
 

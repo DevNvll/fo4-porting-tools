@@ -76,7 +76,7 @@ def load_target(path):
 
 
 def load_source_rest(path):
-    """The New Vegas skeleton of rig/nvcs_1st.json."""
+    """The New Vegas skeleton of nvcs_1st.json of the rig folder."""
     data = json.loads(open(path).read())
     return Skeleton(data['nodes'])
 

@@ -4,7 +4,8 @@
 
 # The sound name in the events of a clip (SoundPlay.<sound>Reload<NAME>).
 sound = "WPNPistol10mm"
-# The first-person clips of the template, in rig/ (the folder Pistol of the game).
+# The first-person clips of the template: a folder of the rig folder (data/fnv/rig). They
+# are the clips of the folder Pistol of the game.
 clips = "pistol10mm"
 # The folder of these clips in the game (Meshes/Actors/Character/_1stPerson/Animations).
 game_clips = "Pistol"

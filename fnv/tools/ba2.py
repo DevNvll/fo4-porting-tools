@@ -1,6 +1,7 @@
 """Read files from a Fallout 4 archive (.ba2) of the general kind.
 
-    python3 tools/ba2.py ARCHIVE [PATTERN]        list the files whose name has PATTERN
+    python3 fnv/tools/ba2.py ARCHIVE [PATTERN]    list the files whose name has PATTERN
+    ./port fnv list-archive ARCHIVE [PATTERN]     the same command
 
 A general archive (type GNRL) has a header, one record for each file and a table of names.
 A file is stored as it is or with zlib compression. A texture archive (type DX10) is a
@@ -52,6 +53,9 @@ class Ba2:
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         raise SystemExit(__doc__)
+    if sys.argv[1] in ('-h', '--help'):
+        print(__doc__)
+        sys.exit(0)
     archive = Ba2(sys.argv[1])
     word = sys.argv[2].lower() if len(sys.argv) > 2 else ''
     for n in archive.names:

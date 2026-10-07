@@ -12,9 +12,9 @@ complete data. A value of the file always replaces a default.
 
 What the defaults are:
 
-    work          /tmp/NAME-port (the name in lower case)
+    work          data/fnv/work/NAME (the name in lower case)
     source        the folder `source` beside the file: the extracted mod
-    output        the folder NAME-fo4 beside the file: the HKX clips
+    output        data/fnv/out/NAME (the name in lower case): the HKX clips
     model         the model (.nif) of the source with the fewest shapes; then the shortest name
     animations    the folder `_1stperson` of the source that has the most .kf files
     [weapon] trigger   the center of the shape whose name has "trigger"
@@ -39,6 +39,12 @@ import os
 import re
 import sys
 import numpy as np
+
+_r = os.path.dirname(os.path.abspath(__file__))
+while not os.path.isfile(os.path.join(_r, 'portkit', '__init__.py')) and _r != os.path.dirname(_r):
+    _r = os.path.dirname(_r)
+sys.path.insert(0, _r)
+from portkit import paths  # noqa: E402
 
 # the first-person clips of a gun
 STANDARD = ['WPNIdleReady', 'WPNIdleReadyA', 'WPNIdleReadyB', 'WPNIdleReadyC', 'WPNIdleReadyD',
@@ -396,7 +402,7 @@ def resolve(D, project, template, out, rig):
         anims = {k: full(v, folder) for k, v in (anims or {}).items()}
     table['animations'] = anims
     D['source'] = table
-    D.setdefault('output', name + '-fo4')
+    D.setdefault('output', paths.data('fnv', 'out', name.lower()))
 
     nif = fnvnif.Nif(table['model'])
     nodes, shapes = set(), []

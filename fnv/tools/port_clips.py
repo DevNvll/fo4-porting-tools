@@ -1,6 +1,6 @@
 """The clip table of a weapon port: which source gives each Fallout 4 clip.
 
-The table is in the configuration file of the weapon ([clips.NAME] in port.toml):
+The table is in the configuration file of the conversion ([clips.NAME]):
 
     source = "SCENE"                  the whole pose file SCENE.npz
     parts = [["SCENE", 0, 20], ...]   or: a list of (pose file, first frame, last frame); -1 is the end

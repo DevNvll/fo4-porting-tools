@@ -4,7 +4,8 @@
 
 # The sound name in the events of a clip (SoundPlay.<sound>Reload<NAME>).
 sound = "WPNRifleSubmachineGun"
-# The first-person clips of the template, in rig/. Each name is in lower case.
+# The first-person clips of the template: a folder of the rig folder (data/fnv/rig). Each
+# name is in lower case.
 clips = "smg"
 # The folder of these clips in the game (Meshes/Actors/Character/_1stPerson/Animations).
 game_clips = "SubmachineGun"

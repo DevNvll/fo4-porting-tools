@@ -1,6 +1,6 @@
 """Write Fallout 4 HKX clips from the retargeted poses (out/fo4/poses/*.npz).
 
-    python3 tools/port_hkx.py --poses out/fo4/poses --out out/fo4/hkx [--only NAME]
+    PORT_CONFIG=CONFIG python3 fnv/tools/port_hkx.py --poses out/fo4/poses --out out/fo4/hkx [--only NAME]
 
 A pose file has the world matrix of each FO4 bone for each frame. A clip is a list of
 (source scene, first frame, last frame) parts with annotations. The clip table is in the
@@ -13,8 +13,10 @@ import os
 import sys
 import numpy as np
 
+if __name__ == '__main__':
+    sys.dont_write_bytecode = True            # as a program: no cache file in the source tree
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import anim_fo4
+import anim_fo4  # noqa: E402
 
 
 def mat_to_quat(r):
