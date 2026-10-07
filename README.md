@@ -1,4 +1,4 @@
-# fo4-ports
+# fo4-porting-tools
 
 Tools that port weapons and their animations to Fallout 4 from three sources: Fallout: New
 Vegas, Destiny 2 and Marathon. A person and an AI agent use the same commands, the same
@@ -37,6 +37,8 @@ each area.
 ## The first 5 minutes
 
 ```sh
+git clone https://github.com/DevNvll/fo4-porting-tools.git
+cd fo4-porting-tools
 cp -n config.example.toml data/config.toml  # only when the file is not there; then give your own paths in it
 ./port doctor                               # each setting, each tool and each necessary file: ok or MISSING
 ./port list                                 # each command with one line of help
