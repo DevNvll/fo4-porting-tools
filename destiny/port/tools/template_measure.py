@@ -12,6 +12,11 @@ The folder has the first-person clips of a vanilla weapon (tools/make_rig.py mak
 * the grip point (`grip` of the template), the place of the left hand and the bone
   Camera Control in the first frame of the ready clip and of the clip in the sights.
 """
+import sys
+
+if '-h' in sys.argv[1:] or '--help' in sys.argv[1:]:
+    print(__doc__.strip())
+    sys.exit(0)
 import sys, os, math
 import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))

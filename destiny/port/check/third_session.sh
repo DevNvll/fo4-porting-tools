@@ -1,15 +1,21 @@
 #!/bin/sh
 # Build a mod, start a new game test session with its release, and print the session ID.
-#   ./port destiny game session NAME LABEL
-#   sh destiny/port/check/third_session.sh NAME LABEL
+#   ./port destiny game session NAME LABEL [--cell ID | --world] [--no-build]
+#   sh destiny/port/check/third_session.sh NAME LABEL ...
 # NAME is the name of a mod: its sources are mods/NAME and its project is data/mods/NAME.
 # LABEL is your name for the session (the probe shows it in `esx probe status`).
+#   --cell ID    the cell where the game starts (default: QASmoke, a test cell of the game)
+#   --world      give no cell: the game starts in the cell of the test world of the test
+#                folder (`esx probe install --world FILE`; `esx probe status` shows it). An
+#                esx version with no test world stays in the main menu then.
+#   --no-build   do not build: start the session with the release that is there. Use it to
+#                test the release that you tested before, with its bytes.
 #
 # The steps:
 # 1. The program stops the session that it started before (the ID in the session file), and
 #    no other session.
 # 2. It builds the mod: `./port mod build NAME --update-lock`. When ./port is not there, it
-#    runs the same esx command on data/mods/NAME (with no sync of mods/NAME).
+#    runs the same esx command on data/mods/NAME (with no sync of mods/NAME). Not with --no-build.
 # 3. It looks at `esx probe status`. The probe has one session at a time for the whole
 #    computer. When a session is there that this program did not start, the program does not
 #    start a session and has the exit code 1.
@@ -23,11 +29,22 @@
 #
 # The settings (./port gives them; else they come from portkit): the esx program (ESX_BIN),
 # the Data folder of Fallout 4 (FO4_DATA), the Proton folder (PROTON_DIR).
-usage() { sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'; }
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then usage; exit 0; fi
-if [ $# -ne 2 ]; then usage >&2; exit 2; fi
+if [ $# -lt 2 ]; then usage >&2; exit 2; fi
 NAME=$1
 LABEL=$2
+shift 2
+CELL=QASmoke
+BUILD=yes
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --cell) [ $# -ge 2 ] || { usage >&2; exit 2; }; CELL=$2; shift 2 ;;
+    --world) CELL=; shift ;;
+    --no-build) BUILD=no; shift ;;
+    *) usage >&2; exit 2 ;;
+  esac
+done
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 export PYTHONDONTWRITEBYTECODE=1
 setting() { python3 "$ROOT/portkit/paths.py" get "$1"; }
@@ -54,7 +71,9 @@ if [ -f "$STATE" ]; then
   "$ESX" probe stop --session "$(cat "$STATE")" --format json >/dev/null 2>&1
   rm -f "$STATE" "$STATE.label"
 fi
-if [ -x "$ROOT/port" ]; then
+if [ "$BUILD" = no ]; then
+  [ -d "$PROJECT/build/release" ] || { echo "third_session.sh: --no-build, and $PROJECT/build/release is not there." >&2; exit 1; }
+elif [ -x "$ROOT/port" ]; then
   "$ROOT/port" mod build "$NAME" --update-lock >&2 || { echo "build: failed" >&2; exit 1; }
 else
   "$ESX" --data "$DATA" build "$PROJECT" --update-lock --format json | python3 -c "
@@ -77,7 +96,8 @@ if [ "$p" != "free" ]; then
   echo "third_session.sh: the probe is not free: $p. This program did not start that session, so it does not stop it. Examine \`esx probe status\`." >&2
   exit 1
 fi
-"$ESX" probe start --mod "$PROJECT/build/release" --cell QASmoke --label "$LABEL" --timeout 300 --proton "$PROTON" --format json | STATE=$STATE LABEL=$LABEL python3 -c "
+if [ -n "$CELL" ]; then set -- --cell "$CELL"; else set --; fi
+"$ESX" probe start --mod "$PROJECT/build/release" "$@" --label "$LABEL" --timeout 300 --proton "$PROTON" --format json | STATE=$STATE LABEL=$LABEL python3 -c "
 import json,os,sys
 d=json.load(sys.stdin); x=d.get('data') or d.get('error')
 if d.get('ok'):

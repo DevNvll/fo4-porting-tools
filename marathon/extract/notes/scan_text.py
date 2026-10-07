@@ -8,6 +8,11 @@ It prints the tag, its class, its type, its size and its package for each entry 
 It reads each entry of each package but the audio packages (w64_sr_audio): this needs minutes.
 A short text (M77) gives random matches in binary data: use a long one (Omnipositor, ar_m77).
 """
+import sys
+
+if '-h' in sys.argv[1:] or '--help' in sys.argv[1:]:
+    print(__doc__.strip())
+    sys.exit(0)
 import re
 import time
 import os

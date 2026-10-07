@@ -8,6 +8,11 @@ It reads each entry of type 8 in the packages whose name starts with a PREFIX (w
 and prints: tag, class, size, package, offset, text. A text is 8 or more printable characters
 with a `\\`, a `/` or a `.tft`.
 """
+import sys
+
+if '-h' in sys.argv[1:] or '--help' in sys.argv[1:]:
+    print(__doc__.strip())
+    sys.exit(0)
 import re
 import os
 import sys

@@ -8,6 +8,11 @@ It reads each entry of type 8 (with --all: each entry below 64 MB) and prints th
 its size, its package and each offset of the value. The value can be at an offset that is not
 a multiple of 4.
 """
+import sys
+
+if '-h' in sys.argv[1:] or '--help' in sys.argv[1:]:
+    print(__doc__.strip())
+    sys.exit(0)
 import struct
 import os
 import sys

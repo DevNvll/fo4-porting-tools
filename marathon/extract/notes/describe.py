@@ -6,6 +6,11 @@
 
 The table data/marathon/extract/notes/tag64.tsv must be there (setup.sh makes it).
 """
+import sys
+
+if '-h' in sys.argv[1:] or '--help' in sys.argv[1:]:
+    print(__doc__.strip())
+    sys.exit(0)
 import collections
 import re
 import struct

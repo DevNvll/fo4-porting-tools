@@ -7,6 +7,11 @@
 A value of an entry is a tag when it has the form of a tag hash and the packages have it. The
 program reads SAMPLES entries of each class (default 12).
 """
+import sys
+
+if '-h' in sys.argv[1:] or '--help' in sys.argv[1:]:
+    print(__doc__.strip())
+    sys.exit(0)
 import collections
 import re
 import os

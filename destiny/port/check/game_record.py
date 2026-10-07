@@ -17,7 +17,7 @@ with a shot and a reload. With --auto (an automatic weapon) each group of shots 
 the trigger stays down for a time.
 
 Output in DIR: record.mp4 (the video), steps.json (each op with its answer and its time in
-the video) and clips.json (each clip that started, from the trace of the probe).
+the video) and trace.json (each clip and event that started, from the trace of the probe).
 The setting `esx` names the esx program (ESX_BIN, then data/config.toml, then esx in the PATH).
 
 The probe has one session at a time for the whole computer. Look at `esx probe status` before

@@ -16,9 +16,10 @@ this order, with their results below DIR/EDITORID:
 
 The session is that of --session, or the session that destiny/port/check/third_session.sh
 started (the ID in data/destiny/port/work/probe_session.txt). The program does not start
-and does not stop a session. It waits --wait seconds first (default 100): about two minutes
-after the start of a session the game turns the camera about the player, and a recording
-must not have that turn.
+and does not stop a session. About two minutes after the start of a session the game turns
+the camera about the player one time, and a recording must not have that turn. So the
+program waits until the session is --wait seconds old (default 140; the probe gives the
+start time), and then sets the first-person view, which ends the turn.
 
 With --mod NAME the program prints the sha256 of each file of data/mods/NAME/build/release
 after the tests. With --tested FILE (lines of `sha256sum`) it compares them with the file:
@@ -27,7 +28,9 @@ With --dry-run the program prints each command and runs nothing.
 destiny/port/check/game_results.py copies the results into the validation folder.
 """
 import argparse
+import calendar
 import hashlib
+import json
 import os
 import subprocess
 import sys
@@ -61,12 +64,25 @@ def release_hashes(mod):
     return out
 
 
+def session_age(esx, session):
+    """The seconds since the start of the session (0 when the probe does not tell)."""
+    try:
+        r = subprocess.run([esx, 'probe', 'status', '--format', 'json'], capture_output=True, text=True)
+        now = json.loads(r.stdout)['data'].get('session') or {}
+        started = (now.get('owner') or {}).get('started_at')
+        if now.get('id') != session or not started:
+            return 0.0
+        return max(0.0, time.time() - calendar.timegm(time.strptime(started, '%Y-%m-%dT%H:%M:%SZ')))
+    except (OSError, ValueError, KeyError):
+        return 0.0
+
+
 def main():
     ap = argparse.ArgumentParser(description='Run each game test of the weapons of a mod in one session.')
     ap.add_argument('--weapon', action='append', type=weapon, required=True, metavar='EDITORID:CAPACITY[:auto][:reloads]')
     ap.add_argument('--out', required=True, help='the folder for the results: one folder for each weapon')
     ap.add_argument('--session', help='the session ID (default: the ID in data/destiny/port/work/probe_session.txt)')
-    ap.add_argument('--wait', type=float, default=100.0, help='seconds to wait before the first test (default 100)')
+    ap.add_argument('--wait', type=float, default=140.0, help='the age of the session in seconds at which the first test starts (default 140)')
     ap.add_argument('--pictures', type=int, default=11, help='the pictures of a slow third-person reload (default 11)')
     ap.add_argument('--mod', help='the name of the mod: print the hashes of data/mods/NAME/build/release after the tests')
     ap.add_argument('--tested', help='a file with the hashes of the tested release (lines of sha256sum), to compare with --mod')
@@ -99,7 +115,12 @@ def main():
             print('python3 ' + ' '.join([os.path.join('destiny', 'port', 'check', args[0])] + args[1:]))
         return 0
     print('session %s' % session, flush=True)
-    time.sleep(a.wait)
+    esx = paths.require('esx')
+    time.sleep(max(0.0, a.wait - session_age(esx, session)))
+    # the camera turned about the player by now: a new view ends that turn
+    subprocess.run([esx, 'probe', 'call', 'camera.set', '--session', session, '--args', '{"view": "first"}', '--timeout', '20',
+                    '--format', 'json'], capture_output=True, text=True)
+    time.sleep(2.0)
     failed = 0
     for args in commands:
         print('== ' + ' '.join(args), flush=True)

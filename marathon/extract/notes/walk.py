@@ -8,6 +8,11 @@ The walk follows each 32-bit tag of the classes entity (8080BAAD) and component 
 each 64-bit tag hash. It prints the tree of entities, and for each one the models, the
 animation graphs, the clips and the components with a skeleton or a rig.
 """
+import sys
+
+if '-h' in sys.argv[1:] or '--help' in sys.argv[1:]:
+    print(__doc__.strip())
+    sys.exit(0)
 import collections
 import struct
 import os

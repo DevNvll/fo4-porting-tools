@@ -165,6 +165,9 @@ def signature(data):
 
 
 def main():
+    if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):
+        print(__doc__.strip())
+        sys.exit(0 if len(sys.argv) > 1 else 2)
     data = open(sys.argv[1], 'rb').read()
     for name, body in chunks(data):
         if name in ('ISGN', 'OSGN'):
