@@ -1,0 +1,155 @@
+# The commands of marathon/extract (m2x: a weapon of Marathon as glTF files).
+# docs/ARCHITECTURE.md has the schema. Each program also runs with no ./port: README.md has
+# the command lines. A program that imports d2x runs with the Python of the environment of d2x.
+
+[[command]]
+name = "marathon setup"
+help = "Prepare m2x below data/marathon/extract: the Oodle 9 shim, the link to the Oodle library of the game, tag64, the table of the 64-bit tag hashes. Safe to run again: [--table] [--force]."
+run = ["bash", "marathon/extract/setup.sh"]
+
+[[command]]
+name = "marathon tag64"
+help = "Make the table of the 64-bit tag hashes again (data/marathon/extract/notes/tag64.tsv). Do this after an update of the game."
+run = ["bash", "marathon/extract/setup.sh", "--table"]
+
+[[command]]
+name = "marathon find"
+help = "List the items of Marathon whose name has a text (item hash, name, entity): TEXT."
+run = ["python:d2x", "marathon/extract/m2x_extract.py", "--find"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = [
+    "data/destiny/extract/target/release/libtigerpkg_ffi.so",
+    "data/marathon/extract/runtime/liboodle-data-shared.so",
+    "data/marathon/extract/runtime/oo2core_9_win64.dll",
+    "data/marathon/extract/notes/tag64.tsv",
+]
+
+[[command]]
+name = "marathon extract"
+help = "Extract a weapon (name or item hash) as glTF files with textures, manifest.json and states.json: ITEM [--art ITEM] [--hands FILE.glb] [--arms N] [--out OUT]."
+run = ["python:d2x", "marathon/extract/m2x_extract.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = [
+    "data/destiny/extract/target/release/libtigerpkg_ffi.so",
+    "data/destiny/extract/vendor/tiger-animation-parser/tag_readers/read_rig.py",
+    "data/marathon/extract/runtime/liboodle-data-shared.so",
+    "data/marathon/extract/runtime/oo2core_9_win64.dll",
+    "data/marathon/extract/notes/tag64.tsv",
+]
+
+[[command]]
+name = "marathon render"
+help = "Make pictures of a .glb file (in Blender): FILE.glb OUT.png [--views side,top,front,quarter] [--action NAME] [--frame N] [--frames FIRST:LAST]."
+run = ["python", "marathon/extract/tools/render_glb.py"]
+needs = ["blender"]
+
+[[command]]
+name = "marathon regress"
+help = "Extract each weapon of data/marathon/extract/out again in a scratch folder and compare the bytes (exit code 1: a file is different): [NAME ...] [--keep]."
+run = ["python:d2x", "marathon/extract/regress.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = [
+    "data/destiny/extract/target/release/libtigerpkg_ffi.so",
+    "data/destiny/extract/vendor/tiger-animation-parser/tag_readers/read_rig.py",
+    "data/marathon/extract/runtime/liboodle-data-shared.so",
+    "data/marathon/extract/runtime/oo2core_9_win64.dll",
+    "data/marathon/extract/notes/tag64.tsv",
+]
+
+# The analysis programs. Each one prints text; keep a result below data/marathon/extract/notes/.
+
+[[command]]
+name = "marathon notes describe"
+help = "Describe tags (the texts, the tags that each one names, the inner class numbers): TAG [TAG ...] [--limit N]."
+run = ["python:d2x", "marathon/extract/notes/describe.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["data/marathon/extract/runtime/liboodle-data-shared.so", "data/marathon/extract/runtime/oo2core_9_win64.dll", "data/marathon/extract/notes/tag64.tsv"]
+
+[[command]]
+name = "marathon notes walk"
+help = "Print the tree of entities below an entity, with the models, the graphs, the clips and the skeletons: ENTITY [--depth N]."
+run = ["python:d2x", "marathon/extract/notes/walk.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["data/marathon/extract/runtime/liboodle-data-shared.so", "data/marathon/extract/runtime/oo2core_9_win64.dll", "data/marathon/extract/notes/tag64.tsv"]
+
+[[command]]
+name = "marathon notes dxil"
+help = "Print the pixel shader of a material as LLVM text (it needs llvm-dis): MATERIAL [--vs] [-o FILE.ll]."
+run = ["python:d2x", "marathon/extract/notes/dxil.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["data/marathon/extract/runtime/liboodle-data-shared.so", "data/marathon/extract/runtime/oo2core_9_win64.dll"]
+
+[[command]]
+name = "marathon notes find-value"
+help = "Find the tags that have a 32-bit value (a tag, a name hash): VALUE [VALUE ...] [--all] [--pkg PREFIX]."
+run = ["python:d2x", "marathon/extract/notes/find_value.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["data/marathon/extract/runtime/liboodle-data-shared.so", "data/marathon/extract/runtime/oo2core_9_win64.dll"]
+
+[[command]]
+name = "marathon notes scan-text"
+help = "Search each package entry for a text, ASCII and UTF-16 (it needs minutes): TEXT [TEXT ...]."
+run = ["python:d2x", "marathon/extract/notes/scan_text.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["data/marathon/extract/runtime/liboodle-data-shared.so", "data/marathon/extract/runtime/oo2core_9_win64.dll"]
+
+[[command]]
+name = "marathon notes paths"
+help = "List the development paths in the tags of the packages whose name starts with a prefix: PREFIX [PREFIX ...]."
+run = ["python:d2x", "marathon/extract/notes/paths.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["data/marathon/extract/runtime/liboodle-data-shared.so", "data/marathon/extract/runtime/oo2core_9_win64.dll"]
+
+[[command]]
+name = "marathon notes class-graph"
+help = "For each tag class, print the count, the sizes, the package groups and the classes that its entries name: [SAMPLES]."
+run = ["python:d2x", "marathon/extract/notes/class_graph.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["data/marathon/extract/runtime/liboodle-data-shared.so", "data/marathon/extract/runtime/oo2core_9_win64.dll"]
+
+# What the commands need, and how to make each thing. `./port doctor` shows each one.
+
+[[check]]
+setting = "marathon_game"
+what = "The game folder of Marathon. It has packages/ and bin/x64/oo2core_9_win64.dll. The tools only read it."
+make = "Write marathon_game = \"/path/to/Marathon\" in data/config.toml, or set MARATHON_GAME."
+
+[[check]]
+path = "data/destiny/extract/venv/bin/python"
+what = "The Python environment of d2x. Each program of m2x that reads the packages runs with it."
+make = "./port destiny setup"
+
+[[check]]
+path = "data/destiny/extract/target/release/libtigerpkg_ffi.so"
+what = "The package reader of d2x (tiger-pkg with a C interface). m2x opens the packages of Marathon with it."
+make = "./port destiny setup"
+
+[[check]]
+path = "data/destiny/extract/vendor/tiger-animation-parser"
+what = "The clone of the animation decoder of d2x. m2x decodes the skeletons, the rigs and the clips with it."
+make = "./port destiny setup"
+
+[[check]]
+path = "data/destiny/extract/vendor/tiger-pkg"
+what = "The clone of tiger-pkg of d2x. The build of tag64 reads it."
+make = "./port destiny setup"
+
+[[check]]
+path = "data/marathon/extract/runtime/liboodle-data-shared.so"
+what = "The Oodle 9 shim (marathon/extract/oodle9/oodle9.c): it loads the Windows library of the game on Linux."
+make = "./port marathon setup"
+
+[[check]]
+path = "data/marathon/extract/runtime/oo2core_9_win64.dll"
+what = "A link to the Oodle library of the game (bin/x64/ of the setting marathon_game)."
+make = "./port marathon setup"
+
+[[check]]
+path = "data/marathon/extract/runtime/tag64"
+what = "The program that prints the 64-bit tag hashes of the packages (marathon/extract/tag64, built with cargo)."
+make = "./port marathon setup"
+
+[[check]]
+path = "data/marathon/extract/notes/tag64.tsv"
+what = "The table of the 64-bit tag hashes of this build of the game. m2x finds entities, clips and textures with it."
+make = "./port marathon setup"

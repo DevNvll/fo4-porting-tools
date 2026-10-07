@@ -1,0 +1,158 @@
+# The first-person clips of the M77 (Marathon, an assault rifle) for Fallout 4.
+#
+#   ./port destiny convert data/marathon/extract/out/m77_omnipositor/m77_omnipositor_first_person.glb \
+#       --set marathon/port/sets/m77_omnipositor.toml -o OUT
+#
+# The converter is destiny/port (d2fo4.py). The names in the comments of this file: tools/ is
+# destiny/port/tools/, and work/ is data/destiny/port/work/.
+#
+# The file is from marathon/extract/m2x_extract.py (the item "M77 Omnipositor", with the entity of
+# the item "M77 Assault Rifle"). It has the form of a first-person file of Destiny 2: the rig
+# of Marathon has the same bone names, and the gun bone is on the grip bone of the right hand
+# in each clip. The clip of each game state is from the animation graph of the arm entity of
+# the weapon (data/marathon/extract/out/m77_omnipositor/states.json). The weapon tag is rifle.
+template = "combatrifle"
+# The hold pose (CLIP:FRAME). It gives the place of the gun in Fallout 4 weapon space, and it
+# is the pose "ready" of the clips of [synth].
+hold = "fp_049_80A5E5CA:0"
+# The pose in the sights, for the clips of [synth]: this clip with the move of [sight].
+sighted = "fp_012_80A5E5B1:0"
+# The place of each hand. The hand bone of the rig of Marathon is at another place in the
+# hand than that of Destiny: with the two wrists at one place, the knuckles of the Fallout 4
+# hand are 1.42 units from the source knuckles (0.50 for the rig of Destiny), and the thumb
+# root is 0.64 units away. With "align" the Fallout 4 wrist moves 1.02 units, to the middle
+# of the two: the knuckles and the thumb root are then 0.41 units from those of the source
+# (tools/blender/d2solver.py, knuckle_shift).
+knuckles = "align"
+# A closed finger (a hook on the bolt handle, the hand on the magazine) keeps the bends of its
+# last two bones, with its tip at the source fingertip (tools/blender/d2solver.py,
+# finger_path). With the rule of the line only, the left index finger pointed to the wrist in
+# 10 frames of the reload (the user saw it at frame 78).
+closed_fingers = true
+
+# The aim point of the sight in Fallout 4 weapon space. The sight unit of the M77 has a point
+# with the name hash 0B7BA45D, 1.95 cm above its place on the gun, and a second point
+# (8D0DD3CD) 27.2 cm behind it at the same height: I read them as the aim point and the eye
+# point. The first one is at y 0.49, z 7.62 of weapon space: the top of the front post (z 7.52
+# to 7.65), between the two posts of the rear sight (z 7.18 to 8.18, x -0.8 and 0.8). The
+# second one is at y -18.54; in the clip in the sights the eye is at y -18.23. The clip is
+# the clip of each rifle, and the game aligns the sight of each weapon when it runs, as
+# Destiny does: in the clip the eye is at z 11.18, above the sights of this gun. Each clip of
+# `clips` gets the move that puts the aim point on the view axis in its first frame (3.56
+# units up): the arms, the hands and the gun move as one body.
+[sight]
+point = [0.0, 0.49, 7.62]
+clips = ["fp_012_80A5E5B1", "fp_020_80A5E66F"]
+
+# More poses for the clips of [synth].
+[poses]
+# The sprint loop (sprint_loop, 2 frames) is one pose.
+sprint = "fp_005_80A5E863:0"
+
+# The gun parts. A clip of the arms of Marathon does not move the gun parts in a reload: the
+# weapon entity has a clip of its own for them, and the game plays the two at the same time.
+# The file has the clips of the weapon on the same skeleton (weapon_NNN_TAG). The pair is
+# from the lengths: the reload of an empty gun has 104 frames and the clip `reload_1` of the
+# weapon has 105; the reload of a gun with rounds has 72 frames, as the clip weapon_005.
+[gun.parts]
+fp_088_80A5E82E = "weapon_000_80A5E484"   # reload (empty): the magazine, the magazine release, the bolt
+fp_110_80A5E613 = "weapon_005_80A5E4D1"   # reload (with rounds): the magazine, the magazine release
+
+# Fallout 4 clip = clip of the file.
+[clips]
+WPNIdleReady = "fp_049_80A5E5CA"          # idle (stand), 97 frames, a loop
+# The game plays these four now and then in place of the idle. Marathon has one idle clip
+# for a rifle.
+WPNIdleReadyA = "fp_049_80A5E5CA"
+WPNIdleReadyB = "fp_049_80A5E5CA"
+WPNIdleReadyC = "fp_049_80A5E5CA"
+WPNIdleReadyD = "fp_049_80A5E5CA"
+WPNIdleSighted = "fp_012_80A5E5B1"        # iron_sight_idle, 97 frames: one pose (no bone moves)
+# The graph blends this clip into the sighted idle with the weight AimWobble. The reader
+# cannot read the vanilla clip, so the clip is the sighted idle: the gun does not wobble.
+WPNIdleSightedWobble = "fp_012_80A5E5B1"
+# The state fire has three clips for a rifle (the thresholds 0.333, 0.667 and 1.0): each one
+# is a shot of 15 frames with another kick. The vanilla graph has three shot clips too.
+WPNFireSingleReady = "fp_113_80A5E849"
+WPNFireSingleReadyA = "fp_114_80A5E6A5"
+WPNFireSingleReadyB = "fp_019_80A5E641"
+WPNFireSingleSighted = "fp_020_80A5E66F"  # iron_sight_fire, 14 frames
+WPNEquip = "fp_004_80A5E847"              # ready, 22 frames
+WPNEquipFast = "fp_004_80A5E847"
+WPNUnEquip = "fp_003_80A5E6E8"            # put_away, 12 frames
+WPNReload = "fp_088_80A5E82E"             # reload_empty and reload_full for an empty gun, 104 frames
+# The reload of a gun with rounds (fp_110_80A5E613, 72 frames, no pull of the bolt handle) has
+# no clip: Fallout 4 has one reload clip for this weapon.
+# sprint_enter (fp_007_80A5E5DD) and sprint_exit (fp_006_80A5E5BA) have no clip: the Fallout 4
+# graph blends from the idle to the sprint loop and back.
+
+# Automatic fire. Fallout 4 clip = the clip of one shot of the file. The clip has the length
+# and the events of the vanilla clip with the same name (67 frames, 20 shots), and at each of
+# its events weaponFire the shot starts again from its first frame.
+[auto]
+WPNFireAutoReadyForward = "fp_113_80A5E849"
+WPNFireAutoReadyBack = "fp_113_80A5E849"
+WPNFireAutoSighted = "fp_020_80A5E66F"
+
+# Events of a clip, more than those that the tools find (a reload gets its events).
+# {sound} is the sound name of the template.
+# The reload. The tools find the events of the magazine (out at frame 15, in at frame 58) and
+# reloadComplete (frame 60). The clip is the reload of an empty gun: the bolt is 3.15 units to
+# the rear from the first frame, the left hand pulls the bolt handle at frame 76 (3.26 units)
+# and the bolt goes to the front at frame 81. The tools put the sound BoltOpen at the first
+# frame with the bolt away from its place (frame 0): it goes to the pull of the hand.
+[events]
+WPNEquip = [[0, "SoundPlay.{sound}EquipUp"]]
+WPNEquipFast = [[0, "SoundPlay.{sound}EquipUpFast"]]
+WPNReload = [[76, "SoundPlay.WPNShotgunCombatReloadBoltOpen"]]
+
+# The last pose of a clip on this count of more frames at its end. The first-person graph of
+# the game (GunBehavior, state WPNUnEquip) removes the gun 0.233 s before the end of the
+# put-away clip. The clip of Marathon has 12 frames, and the gun is out of the view from
+# frame 6. With 3 more frames the game removes the gun at frame 7.
+[hold_end]
+WPNUnEquip = 3
+
+# Clips that the source does not have. Each one takes the rigid motion of the weapon bone
+# from the vanilla clip of the template with the same name, against the vanilla ready (or
+# sighted) pose, and applies it to the pose "ready" or "sighted" above: the arms, the hands
+# and the gun move as one body. The camera bone and the events are those of the vanilla clip.
+[synth]
+WPNWalkForwardReady = "ready"
+WPNWalkForwardSighted = "sighted"
+WPNRunForwardReady = "ready"
+WPNRunLeftReady = "ready"
+WPNRunRightReady = "ready"
+WPNRunGunDown = "ready"
+WPNJumpImpactLand = "ready"
+# The sprint: the motion of the vanilla sprint against its own first frame, on the sprint
+# pose of Marathon.
+WPNSprint = { pose = "sprint", reference = "wpnsprint" }
+# WPNMelee and WPNMeleeBayonet are not here (a large turn of the gun; see destiny/port/README.md).
+# The game uses the vanilla clips, with the hands in the pose of the combat rifle.
+
+# One weapon place of a vanilla clip on each frame (the reader cannot read the vanilla
+# wpnidlegundown.hkx).
+[static]
+WPNIdleGunDown = { pose = "ready", vanilla = "wpnrungundown", frame = 0, frames = 30 }
+
+# The Fallout 4 model of the gun for an esx project (tools/d2model.py).
+[model]
+# Meshes/Weapons/NAME/NAME.nif, Materials/Weapons/NAME and Textures/Weapons/NAME
+name = "M77"
+# The place of the node ProjectileNode, in Fallout 4 weapon space: the front of the muzzle
+# device (312 vertices at y 33.55, with their center at x 0 and z 3.38). The barrel piece of
+# Marathon has a point (60FECDD4) on this axis, at y 33.31.
+muzzle = [0.0, 33.55, 3.38]
+
+# A material of the file = the name of the Fallout 4 material. marathon/extract/m2x_extract.py
+# writes each material of Marathon as a texture set of Destiny 2 (marathon/extract/m2x.py has
+# the rules).
+[model.materials]
+80A60033 = "Body"          # the body: an atlas of flat colors, smoothness 0.3
+80A9A15C = "Muzzle"        # the muzzle device (the piece of the slot barrel)
+80A61F99 = "Magazine"      # the magazine
+80A6036C = "Rounds"        # the two rounds at the top of the magazine: the atlas, smoothness 0.44
+80A9A272 = "Sight"         # the sight unit: the rear sight with its box, and the front sight
+80A9A29F = "SightColors"   # parts of the sight unit with the colors of the atlas
+80A9A2D1 = "SightLight"    # the red part of the rear sight (a light in Marathon; here a red surface)

@@ -1,0 +1,18 @@
+[package]
+name = "tag64"
+version = "0.1.0"
+edition = "2021"
+description = "Prints the 64-bit tag hash table of a Tiger engine game (tiger-pkg), for the Marathon tools of marathon/extract"
+
+# ../setup.sh builds this program. It gives cargo the clone of tiger-pkg that the setup of d2x
+# made (data/destiny/extract/vendor/tiger-pkg) with a patch on the command line, so no path of
+# the data folder is here and cargo does not read the network for tiger-pkg:
+#   cargo build --release --locked --manifest-path Cargo.toml --target-dir DATA/marathon/extract/target \
+#       --config "patch.'https://github.com/v4nguard/tiger-pkg.git'.tiger-pkg.path=\"DATA/destiny/extract/vendor/tiger-pkg\""
+[dependencies]
+tiger-pkg = { git = "https://github.com/v4nguard/tiger-pkg.git", rev = "657f41c0851001b2d371592b2f7a5cb9c686ddb4" }
+anyhow = "1"
+clap = { version = "4.6", features = ["derive"] }
+
+[profile.release]
+opt-level = 2

@@ -1,0 +1,22 @@
+# The commands of marathon/port: ./port marathon COMMAND
+# The converter of a Marathon weapon is destiny/port (d2fo4). These commands start its
+# programs: a first-person file of m2x has the form of a first-person file of d2x.
+# marathon/extract/port.toml has the commands of the extraction (m2x).
+
+[[command]]
+name = "marathon convert"
+help = "Convert the clips of a set file of a Marathon weapon to Fallout 4 clips (the same program as `destiny convert`): FILE.glb --set SET.toml [-o OUT]."
+run = ["python", "destiny/port/d2fo4.py"]
+needs = ["blender", "data/fnv/rig/1st_skeleton.hkx", "data/destiny/port/rig/third/skeleton.hkx"]
+
+[[command]]
+name = "marathon model"
+help = "Make the model, the materials and the textures of a Marathon weapon in data/mods/NAME (the same program as `destiny model`): FILE.glb --set SET.toml."
+run = ["python", "destiny/port/tools/d2model.py"]
+needs = ["esx", "fo4_data", "data/fnv/rig/1st_skeleton.hkx"]
+
+[[command]]
+name = "marathon regress-clips"
+help = "Make the clips of the M77 again and compare the bytes with the baseline clips (`destiny regress --only m77_omnipositor`)."
+run = ["python", "destiny/port/check/regress.py", "--only", "m77_omnipositor"]
+needs = ["blender", "data/fnv/rig/1st_skeleton.hkx", "data/destiny/port/rig/third/skeleton.hkx"]
