@@ -1,0 +1,217 @@
+# The commands of `./port`
+
+`./port list` and `./port AREA COMMAND --help` are the source of truth. This document is a
+map: each command of `./port list` (73 commands on 2026-10-06), in groups by area and by
+stage, with one line and its most used options. When this document and `--help` do not
+agree, `--help` is correct.
+
+Run each command in the root of the repository. Each program also runs with no `./port`
+(`python3 PATH/program.py`). `./port` adds the names, the environment and the check of what a
+command needs ([portkit/README.md](../../portkit/README.md)).
+
+## Commands with no `--help`
+
+These commands do not have a help text. With `--help` they take the word as an argument:
+
+| Command | What `--help` does | Where its arguments are |
+| --- | --- | --- |
+| `destiny measure-template`, `destiny shader-text` | A Python error | The line of `./port list` |
+| `destiny check sheet`, `destiny check video`, `destiny check strip` | The shell script takes the word as its first argument (a folder or a video) | The line of `./port list`, and the first lines of each script in `destiny/port/check/` |
+| `marathon notes describe`, `walk`, `find-value`, `paths`, `class-graph`, `scan-text` | The program takes the word as an argument (`class-graph`: a Python error). **Do not give `--help` to `scan-text`**: it then reads each package entry, which needs minutes. | The line of `./port list`, and the first lines of each file in `marathon/extract/notes/` |
+
+`destiny check render`, `destiny check touch` and `destiny check contact` start Blender to
+print their help.
+
+## The commands of `./port` itself
+
+| Command | What it does |
+| --- | --- |
+| `./port list [--json]` | Each command of each `port.toml`, with one line of help |
+| `./port AREA`, `./port AREA WORD` | The commands of one area (`fnv`, `destiny`, `marathon`), or those that start with two words (`./port destiny check`) |
+| `./port AREA COMMAND --help` | The arguments of one command |
+| `./port doctor [AREA] [--json]` | Each setting, each tool and each necessary file: `ok` or `MISSING`, and how to make it. Exit code 1 when a line is not ok. |
+| `./port paths [--json]`, `./port paths get NAME` | The folders and the settings |
+| `./port selftest` | Each Python file compiles, each `port.toml` is correct, the tests of `portkit` pass. It needs no game file. |
+| `./port mod list` | Each mod of `mods/`, its plugin, and if it has a release |
+| `./port mod status NAME` | The source files that differ from their copies in `data/mods/NAME` |
+| `./port mod sync NAME [--force]` | Copy the files of `mods/NAME/` into `data/mods/NAME/`. It deletes nothing. `--force` replaces a lock file of `data/` that is different and newer. |
+| `./port mod build NAME [--update-lock]` | Sync, `esx build` on `data/mods/NAME/`, the lock files back to `mods/NAME/`. It prints the sha256 of each release file. `--format text` after NAME gives text. |
+
+The exit codes of `./port` itself: 2 for words that are not a command, 3 for a thing that a
+command needs and that is missing (the program did not start), 1 for a fault that `doctor`,
+`selftest` or `mod sync` found.
+
+## New Vegas: `./port fnv`
+
+| Stage | Command | What it does | Most used options |
+| --- | --- | --- | --- |
+| Setup | `fnv make-rig` | Makes the rig folder `data/fnv/rig` from the animation archive of Fallout 4 and the skeleton file of the NVCS mod | `--nvcs FILE`, `--arm-meshes` (the arm meshes for the checks of `destiny/port/`; needs esx), `--data DATA`, `--out DIR` |
+| Input | `fnv inspect FILE` | Prints the nodes and the shapes of a model (`.nif`), or the tracks and the text keys of an animation (`.kf`) | |
+| Input | `fnv list-archive ARCHIVE [PATTERN]` | Lists the files of a general Fallout 4 archive (`.ba2`) whose name has a text | |
+| Convert | `fnv convert SOURCE` | Converts the first-person animations of an extracted mod to Fallout 4 clips | `-o OUT`, `--template pistol10mm\|smg`, `--name NAME`, `--work DIR` |
+| Convert | `fnv convert CONFIG [STEP ...]` | The same with a conversion file. Steps: `bake parts retarget synth hkx install`. | `show` (each value that the tools assume), `plan` (the source of each clip, the events of each reload) |
+| Check | `fnv regress [NAME ...]` | Converts each fixture of `data/fnv/fixtures` again and compares the clips with `data/fnv/out` | `--list` |
+
+## The extraction of Destiny 2: `./port destiny` (`destiny/extract/`)
+
+| Stage | Command | What it does | Most used options |
+| --- | --- | --- | --- |
+| Setup | `destiny setup` | Prepares d2x below `data/destiny/extract`: the clones, the patch, the cargo build, the Python environment, the Oodle link | None. Safe to run again. |
+| Extract | `destiny find TEXT` | Lists the items whose name has the text: item hash, pattern entity, name | |
+| Extract | `destiny extract ITEM ...` | Exports a weapon as glTF files with a manifest: the model, the textures, the rigs, the clips | `--arms ARMOR`, `--out DIR` (for a port: `data/destiny/port/extract`), `--transparent`, `--feminine`, `--all` |
+| Extract | `destiny tag HASH ...` | Writes the raw data of package entries to files | `--out DIR` |
+| Check | `destiny check-glb FILE.glb ...` | Imports a file in Blender, does the checks, renders previews | `--view side\|right\|front\|back\|fp`, `--clip NAME`, `--clips N`, `--sheet`, `--out DIR` |
+| Check | `destiny video FILE.glb --clip NAME[=LABEL][@N] --out FILE` | Renders clips from the first-person camera: `.mp4` for a video, `.png` for a frame sheet | `--columns N`, `--width N`, `--view fp\|side\|front` |
+
+## The converter of Destiny 2 and Marathon: `./port destiny` (`destiny/port/`)
+
+### Setup
+
+| Command | What it does | Most used options |
+| --- | --- | --- |
+| `destiny make-rig` | Puts the vanilla clips of each template weapon into `data/destiny/port/rig` | `--data DATA` |
+| `destiny measure-hands FILE.glb` | Measures the Destiny hand mesh against the Fallout 4 hand mesh (`d2_hands.json`). 70 seconds. | `-o FILE.json` |
+| `destiny measure-template FOLDER CLIP ...` | Measures the weapon bones of the vanilla clips of a template folder, for a new template file | |
+
+### More data of the game (these programs read the packages of Destiny 2)
+
+| Command | What it does | Most used options |
+| --- | --- | --- |
+| `destiny states MANIFEST.json` | The clip of each game state of a weapon, from the animation graph | `-o states.json` |
+| `destiny dyes ITEM` | The dyes of a weapon or of a shader item | `-o dyes.json`, `--shader NAME`, `--list TEXT` |
+| `destiny reticle ITEM -o sight.json` | The glass of the sight of a weapon and its reticle, with the shader files | `--manifest FILE` |
+| `destiny third MANIFEST.json` | The third-person clips of a weapon (the body with the gun) | `--state STATE[=NAME]`, `--additive STATE`, `--base STATE[:FRAME]`, `-o FOLDER` |
+| `destiny pose MANIFEST.json` | Clips with the hand pose of a pose clip of the gun, for `[hand_pose]` | `--list`, `--measure`, `--pose TAG`, `--hold CLIP[:FRAME]`, `--clip CLIP`, `--gun-on-grip` |
+
+### Convert
+
+| Command | What it does | Most used options |
+| --- | --- | --- |
+| `destiny convert FILE.glb --set SET.toml [STEP ...]` | Converts the clips of a set file to Fallout 4 clips. Steps: `bake parts retarget hkx install`, and `third` when you name it. | `-o OUT`, `--third-output DIR`, `--clip CLIP=NAME` (single clips), `--template NAME`, `--hold CLIP[:FRAME]`, `--work DIR` |
+| `destiny points WORK/parts.json` | Prints the muzzle, the eye point and a map of the sight of a gun, for a set file | `--poses FILE.npz` |
+| `destiny model FILE.glb --set SET.toml` | Makes the model, the materials, the textures and the sight of a weapon in `data/mods/NAME` | `--mod NAME`, `--project DIR` (a scratch project), `--parts FILE` |
+| `destiny shader-text FILE.dxbc` | Prints the instructions of a Direct3D 11 shader file of a sight material | |
+
+### Checks
+
+| Command | What it does | Most used options |
+| --- | --- | --- |
+| `destiny regress` | Makes the clips of each ported weapon again and compares the bytes with the baseline clips (`destiny/port/regress.toml`) | `--only NAME`, `--jobs N`, `--list`, `--no-run`, `--against DIR` |
+| `destiny check validate FILE.glb --set SET.toml --out FOLDER` | The numbers and the videos of each clip of a set | `--clips FOLDER`, `--no-video`, `--left-hand`, `--only NAME`, `--resume` |
+| `destiny check gun FILE.glb CLIP WORK/parts.json CLIP.hkx` | Compares the gun of a clip with the gun of the source, vertex by vertex | |
+| `destiny check fingers CLIP.hkx` | The finger joints of a clip against the vanilla clips of the template | `--bake FILE.npz`, `--vanilla FOLDER` |
+| `destiny check contact --glb FILE.glb --bake FILE.npz --poses CLIP.hkx --parts FILE.json` | The hand vertices inside the gun, source and result (in Blender) | `--frames all`, `--quiet`, `--out FILE.json` |
+| `destiny check contact-table FILE.json` | A short table of a file of `check contact` | |
+| `destiny check touch --glb FILE.glb --bake FILE.npz --poses CLIP.hkx --parts FILE.json` | How near each hand is to the gun, source and result (in Blender) | `--frames 0` |
+| `destiny check touch-table FILE.glb --set SET.toml --clips FOLDER` | The distance of each hand to the gun for each clip of a set | `--out FILE.txt`, `--only NAME` |
+| `destiny check render --glb FILE.glb --clip CLIP --poses CLIP.hkx --parts FILE.json --out DIR` | Pictures of the source and of the result of a clip (in Blender) | `--frames 0,10,20\|all`, `--views fp,l_thumb,...`, `--kinds src,fo4`, `--template NAME` |
+| `destiny check sheet DIR CLIP VIEW "0 10 20" OUT.jpg` | Pictures of `check render` in one picture, the source above the result | |
+| `destiny check look-sheet DIR CLIP FRAME OUT.jpg VIEW[,VIEW...]` | One frame from more views, the source above the result | |
+| `destiny check frame-sheet DIR TAG OUT.jpg` | Each frame of one view in one picture | `--columns N`, `--view fp` |
+| `destiny check hand-sheet --before DIR --after DIR --clip CLIP --out OUT.jpg` | One hand before and after a change, as game pictures and as check pictures | `--before-game PNG`, `--after-game PNG`, `--views` |
+| `destiny check video DIR CLIP OUT.mp4 VIEW [VIEW2] [RATE]` | A video from the pictures of `check render`, the source beside the result | |
+| `destiny check strip VIDEO OUT.jpg [COUNT] [WIDTH]` | Frames of a video at equal steps, in one row | |
+| `destiny check video-sheet VIDEO OUT.jpg` | Frames of a video at equal steps with the time of each one, in rows | `--count N`, `--columns N` |
+| `destiny check third-sheet SOURCE.npz RESULT.npz OUT.png` | A third-person clip as lines, the source above the result | `--frames N` |
+
+[checks.md](../porting/checks.md) says how to read each result.
+
+### The game test
+
+The probe has one session at a time for the whole computer. Read
+[game-test.md](../porting/game-test.md) before the first start.
+
+| Command | What it does | Most used options |
+| --- | --- | --- |
+| `destiny game session NAME LABEL` | Builds a mod, starts a game test session with its release, prints the session ID | `--cell ID` (default `QASmoke`), `--world` (the cell of the test world), `--no-build` (the release that is there) |
+| `destiny game record --session ID --weapon EDITORID --out DIR` | Records the first-person game test of a weapon as a video | `--capacity N`, `--auto` |
+| `destiny game third --session ID --weapon EDITORID --out DIR` | The game test of the third-person clips, with pictures from three sides | `--capacity N`, `--record` |
+| `destiny game reloads --session ID --weapon EDITORID --capacity N --out DIR` | One reload for each count of rounds, in the two views | |
+| `destiny game sight --session ID --weapon EDITORID --capacity N --out DIR` | Game pictures of a weapon at the hip and in the sights | |
+| `destiny game trace --session ID --weapon EDITORID --loaded N` | Prints the clips and the events of one reload in the game | `--view first\|third` |
+| `destiny game shots --session ID --loaded N --from T0 --to T1 --count N --out DIR` | Game pictures of the gun in a slow third-person reload | `--weapon EDITORID`, `--speed`, `--yaw` |
+| `destiny game all --weapon EDITORID:CAPACITY[:auto][:reloads] ... --out DIR` | Each game test of the weapons of a mod in one session. It does not start and does not stop a session. | `--session ID`, `--wait SECONDS` (the age of the session at which the first test starts; default 140), `--mod NAME`, `--tested FILE`, `--dry-run` |
+| `destiny game results --out FOLDER` | Copies the results of the game tests of a weapon into its validation folder and prints the numbers | `--record DIR`, `--third DIR`, `--sight DIR`, `--reloads DIR` |
+
+### The analysis programs of the game data
+
+These programs print the data that the tools were made from. They read the packages of
+Destiny 2.
+
+| Command | What it does |
+| --- | --- |
+| `destiny notes weapon-tags MANIFEST.json` | Prints the weapon tags that the pattern entity of a weapon lists |
+| `destiny notes graph-tags MANIFEST.json` | Prints the weapon tag tree and the leaves of the main states of each first-person rig |
+| `destiny notes third-graph-dump OUT.json` | Writes each state and leaf of the third-person graph of the player body |
+| `destiny notes third-clip-index OUT.npy` | Writes a table of each animation clip tag of the game (name hash, frames, bones) |
+| `destiny notes dyes-explore ITEM_HASH ...` | Finds the dye tables of the game build |
+| `destiny notes dye-values ITEM_HASH ...` | Prints the values of the dyes of an item |
+| `destiny notes dye-slots ITEM_HASH ...` | Prints the dye slot data of each mesh part of an item |
+| `destiny notes dye-dump WRAPPER_TAG ...` | Prints the data of the tag of a dye |
+
+## Marathon: `./port marathon`
+
+| Stage | Command | What it does | Most used options |
+| --- | --- | --- | --- |
+| Setup | `marathon setup` | Prepares m2x below `data/marathon/extract`: the Oodle 9 shim, the link to the Oodle library of the game, `tag64`, the table of the 64-bit tag hashes | `--table`, `--force`. Safe to run again. |
+| Setup | `marathon tag64` | Makes the table of the 64-bit tag hashes again. Do this after an update of the game. | |
+| Extract | `marathon find TEXT` | Lists the items whose name has a text: item hash, name, entity | |
+| Extract | `marathon extract ITEM` | Extracts a weapon as glTF files with textures, `manifest.json` and `states.json` | `--art ITEM` (the base item of a variant), `--hands FILE.glb`, `--arms N`, `--out OUT` |
+| Check | `marathon render FILE.glb OUT.png` | Makes pictures of a `.glb` file (in Blender) | `--views side,top,front,quarter`, `--action NAME`, `--frame N`, `--frames FIRST:LAST` |
+| Check | `marathon regress [NAME ...]` | Extracts each weapon of `data/marathon/extract/out` again and compares the bytes | `--keep` |
+| Convert | `marathon convert FILE.glb --set SET.toml` | The program of `destiny convert`, for a set file of `marathon/port/sets/` | `-o OUT` |
+| Convert | `marathon model FILE.glb --set SET.toml` | The program of `destiny model` | `--mod NAME` |
+| Check | `marathon regress-clips` | `destiny regress --only m77_omnipositor`: the clips of the M77 against the baseline clips | |
+
+The analysis programs of the packages of Marathon:
+
+| Command | What it does |
+| --- | --- |
+| `marathon notes class-graph [SAMPLES]` | For each tag class: the count, the sizes, the package groups and the classes that its entries name |
+| `marathon notes scan-text TEXT [TEXT ...]` | Searches each package entry for a text. It needs minutes: the complete scan of the first work needed 1,093 seconds. |
+| `marathon notes paths PREFIX [PREFIX ...]` | Lists the development paths in the tags of the packages whose name starts with a prefix |
+| `marathon notes find-value VALUE [VALUE ...]` | Finds the tags that have a 32-bit value (a tag, a name hash). Options: `--all`, `--pkg PREFIX`. |
+| `marathon notes describe TAG [TAG ...]` | Describes tags: the texts, the tags that each one names, the inner class numbers. Option: `--limit N`. |
+| `marathon notes walk ENTITY` | Prints the tree of entities below an entity, with the models, the graphs, the clips and the skeletons. Option: `--depth N`. |
+| `marathon notes dxil MATERIAL` | Prints the pixel shader of a material as LLVM text (it needs `llvm-dis`). Options: `--vs`, `-o FILE.ll`. |
+
+## The commands of esx that the documents use
+
+esx is a separate program (the setting `esx`). These commands are not commands of `./port`,
+and this repository does not check them.
+
+| Command | What it does |
+| --- | --- |
+| `esx --data DATA build PROJECT [--update-lock]` | Builds a mod. `./port mod build NAME` runs it. |
+| `esx --data DATA plugin check-weapons PLUGIN.esp` | The weapon checks of a built plugin |
+| `esx --data DATA scene weapon PLUGIN.esp WEAPON` | Each mesh, material and texture of a weapon resolves |
+| `esx --data DATA render weapon PLUGIN.esp WEAPON --sheet -o FILE.png` | A picture of the weapon. It does not draw an effect material. |
+| `esx item new weapon RECORD --standalone --all-parts -o FILE` | The values and the parts of a vanilla weapon |
+| `esx record show Fallout4.esm RECORD` | Each field of a record |
+| `esx behavior explain reload --like KEYWORD`, `esx hkx events FILE --event NAME`, `esx hkx show FILE --selector 'object(N)'` | The rules of a behavior graph |
+| `esx probe status`, `start`, `call OP`, `stop --session ID`, `run PLAN`, `install --world FILE` | The game test ([game-test.md](../porting/game-test.md)) |
+
+## The settings
+
+| Setting | Variable | Used by |
+| --- | --- | --- |
+| `blender` | `BLENDER` | Each retarget step and each check with pictures |
+| `esx` | `ESX_BIN` | `fnv make-rig --arm-meshes`, `destiny model`, `mod build`, the game test |
+| `fo4_data` | `FO4_DATA` | `fnv make-rig`, `destiny make-rig`, `destiny model`, `mod build`, `destiny game session` |
+| `proton` | `PROTON_DIR` | `destiny game session` |
+| `destiny_game` | `D2X_GAME` | The extraction of Destiny 2, and `destiny states`, `dyes`, `reticle`, `third`, `pose`, `notes` |
+| `marathon_game` | `MARATHON_GAME` | The extraction of Marathon |
+| `nvcs_skeleton` | `NVCS_SKELETON` | `fnv make-rig` |
+
+`FO4PORTS_DATA` moves the data folder. `PORT_RIG` names a different rig folder of `fnv/` for
+a program that you start with `python3`.
+
+## What is not proved
+
+* The lines of this document are from `./port list` and from the `--help` of each command
+  that has one (2026-10-06). The author ran no converter, no build and no game test for
+  this document.
+* The help of `destiny check render`, `destiny check touch` and `destiny check contact` was
+  not run (it starts Blender). Their options are from the source files.
+* The esx commands are from the chats and from the documents of the areas. This repository
+  does not check them.

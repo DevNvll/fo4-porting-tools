@@ -35,7 +35,9 @@ gun): see "The third-person clips".
 ./port destiny convert /path/hammerhead_first_person.glb --set destiny/port/sets/hammerhead.toml third --third-output /path/out
 ```
 
-`PORTING.md` has the procedure for a new weapon and the lessons of the five ports.
+`docs/porting/destiny.md` (in the root of the repository) has the procedure for a new weapon.
+`docs/porting/troubleshooting.md` has the sign and the rule of each known problem, and
+`docs/porting/lessons.md` has the lessons of the ports.
 
 `mod/TheLastWord/`, `mod/Khvostov/` and `mod/Hammerhead/` are esx projects, one for each weapon:
 the model, the textures, the records and the clips. `mod/TexMechanica/` is one esx project with
@@ -67,7 +69,7 @@ git. In this document a short name is one of these paths:
 
 | Name in this document | Path |
 | --- | --- |
-| `d2fo4.py`, `tools/`, `check/`, `sets/`, `templates/`, `notes/`, `PORTING.md` | In `destiny/port/`. |
+| `d2fo4.py`, `tools/`, `check/`, `sets/`, `templates/`, `notes/` | In `destiny/port/`. |
 | `rig/d2_hands.json` | `destiny/port/rig/d2_hands.json`: a measurement file, in git. |
 | `extract/NAME/`, `work/NAME/`, `out/NAME/`, `validation/NAME/`, each other file of `rig/` | In `data/destiny/port/`. |
 | `mod/NAME/` | The esx project `data/mods/NAME/`. Its hand-written files are in `mods/NAME/` (`mods/README.md`). |
@@ -1318,6 +1320,11 @@ It builds the mod with `./port mod build NAME --update-lock` and starts the sess
 `data/destiny/port/work/probe_session.txt`, with its label in `probe_session.txt.label`. When
 it runs again, it stops the session of that file and no other session. When the probe has a
 session that this program did not start, it does not start one, and its exit code is 1.
+`--cell ID` gives the cell where the game starts (default `QASmoke`). `--world` gives no
+cell: the game then starts in the cell of the test world of the test folder
+(`esx probe install --world FILE`, an esx version of 2026-10-06 or later). `--no-build` starts
+the session with the release that is there, to test a release with the bytes that were
+tested before. `docs/porting/game-test.md` has the rules of a game test.
 
 The test of a weapon with one reload clip for each count of rounds (The Chaperone): one
 reload for each count, in the two views, with the clip, the time, the rounds and the sounds
@@ -1848,7 +1855,7 @@ What the tests show, and is not a fault of the clips:
 ## The folders
 
 "This area in the monorepo" says where each short name of this table is: `d2fo4.py`,
-`PORTING.md`, `sets/`, `tools/`, `templates/`, `check/`, `notes/` and `rig/d2_hands.json` are
+`sets/`, `tools/`, `templates/`, `check/`, `notes/` and `rig/d2_hands.json` are
 in `destiny/port/` (in git); `extract/`, `out/`, `work/`, `validation/` and each other file of
 `rig/` are in `data/destiny/port/` (not in git); `mod/NAME/` is `data/mods/NAME/`.
 
@@ -1856,7 +1863,7 @@ in `destiny/port/` (in git); `extract/`, `out/`, `work/`, `validation/` and each
 | --- | --- |
 | `d2fo4.py` | The command (`./port destiny convert`). |
 | `port.toml`, `regress.toml` | The commands of `./port destiny`, and the table of the regression (`./port destiny regress`). |
-| `PORTING.md` | The procedure for a new weapon, the sign and the rule of each known problem, and the lessons of the five ports. |
+| `docs/porting/` (in the root of the repository) | The procedure for a new weapon (`destiny.md`), the sign and the rule of each known problem (`troubleshooting.md`), and the lessons of the ports (`lessons.md`). |
 | `sets/` | One file for each weapon: its clip set and the data of its model. |
 | `tools/` | The programs. `tools/blender/` has the programs that run in Blender. |
 | `templates/` | One file for each template weapon. |

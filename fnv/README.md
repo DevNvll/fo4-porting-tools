@@ -258,9 +258,9 @@ Walther PPK (9 `.kf` clips) and of the FAMAS F1 (one `.kf` reload).
 
 * No command of this repository proves that the clips are correct in the game. The clips of
   the two weapons were tested in the game on 2026-10-05, each in a mod with the gun of the
-  source mod. Those mod projects, their models and their records are not from these tools
-  and are not in this repository. The results in `data/fnv/out/` on the computer of the
-  author are the same bytes as the clips of those mods.
+  source mod. Those mod projects are `mods/PPK` and `mods/FAMAS` (`docs/porting/fnv.md`).
+  Their models and their records are not from these tools. The results in `data/fnv/out/`
+  on the computer of the author are the same bytes as the clips of those mods.
 * The regression compares bytes. It does not look at the hands. A change that moves a finger
   needs a person or an agent who looks at pictures of the hands on the gun.
 * Each run used Blender 4.5.13 and `numpy` 2.3 on Linux. No test shows that a different

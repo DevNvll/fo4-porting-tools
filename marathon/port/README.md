@@ -13,7 +13,8 @@ folder.
 
 The documents: `destiny/port/README.md` has each key of a set file, each step, each check
 and the section "The M77 of Marathon" (the clip table, the two rules for the hand of
-Marathon, what is proved). `destiny/port/PORTING.md` has the procedure for a new weapon.
+Marathon, what is proved). `docs/porting/marathon.md` and `docs/porting/destiny.md` have the
+procedure for a new weapon.
 `marathon/README.md` has the extraction. `mods/M77/README.md` has the mod.
 
 ## What you need

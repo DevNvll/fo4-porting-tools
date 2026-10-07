@@ -62,7 +62,7 @@ make = "./port fnv make-rig --nvcs /path/to/NVCS/Skeleton.nif"
 | `help` | yes | One line of text. |
 | `run` | yes | A list of words: the start of the command line. The arguments of the user go after it. |
 | `env` | no | A table of text values: variables for the program. |
-| `needs` | no | A list. Each entry is a setting of `paths.py` (`blender`, `esx`, `fo4_data`, `proton`, `destiny_game`, `marathon_game`) or a path from the root. A path has a `/` in it. |
+| `needs` | no | A list. Each entry is a setting of `paths.py` (`blender`, `esx`, `fo4_data`, `proton`, `destiny_game`, `marathon_game`, `nvcs_skeleton`) or a path from the root. A path has a `/` in it. |
 
 No other key is permitted.
 
@@ -156,9 +156,9 @@ paths.advice('blender')             # the sentence that tells where to give the 
 | `./port mod list` | Each mod of `mods/`, its plugin (`plugin` of `esx.toml`, or `NAME.esp`), and if `data/mods/NAME/build/release` has files. | 0 |
 | `./port mod status NAME` | Each source file that is different in `data/mods/NAME/` or is not there, and the release. | 0 |
 | `./port mod sync NAME [--force]` | Copy each new or changed file of `mods/NAME/` to the same place in `data/mods/NAME/`. It deletes nothing. It prints each file that it copies. | 1 when it kept `ids.lock` |
-| `./port mod build NAME [--update-lock] [ARGUMENTS]` | Sync. Then `esx --data FO4_DATA build data/mods/NAME ARGUMENTS`. Then copy `ids.lock` back. Then print each release file with its sha256. | That of esx; 3 when `esx` or `fo4_data` has no value |
+| `./port mod build NAME [--update-lock] [ARGUMENTS]` | Sync. Then `esx --data FO4_DATA build data/mods/NAME ARGUMENTS`. Then copy each lock file back. Then print each release file with its sha256. | That of esx; 3 when `esx` or `fo4_data` has no value |
 
-The rule for `ids.lock`:
+The rule for the lock files (`ids.lock` and `behavior/WEAPON/WEAPON.lock`; the text below says `ids.lock` for each of them):
 
 * `sync` does not replace an `ids.lock` of `data/mods/NAME/` that is different and newer than
   the file of `mods/NAME/`. It tells you so. `./port mod build NAME --update-lock` keeps the

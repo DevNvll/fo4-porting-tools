@@ -45,7 +45,7 @@ The example is the M77. Each command runs from the root of the repository.
 ./port marathon render data/marathon/extract/out/m77_omnipositor/m77_omnipositor_weapon.glb \
     data/marathon/extract/work/m77.png --views side,quarter
 
-# 4. The set file: marathon/port/sets/NAME.toml (destiny/port/PORTING.md has the procedure;
+# 4. The set file: marathon/port/sets/NAME.toml (docs/porting/marathon.md has the procedure;
 #    states.json beside the .glb file has the clip of each game state)
 
 # 5. The clips, the model, the mod

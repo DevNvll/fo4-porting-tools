@@ -43,6 +43,7 @@ source tree (the only exception is `__pycache__`, which the tools prevent where 
 | `data/fnv/rig/` | The rig folder of `fnv/`: files of Fallout 4 and of the NVCS skeleton, made by `fnv/tools/make_rig.py`. |
 | `data/fnv/work/NAME/`, `data/fnv/out/NAME/` | The work files and the clips of a New Vegas port. |
 | `data/fnv/fixtures/NAME/` | The extracted New Vegas mods that `fnv regress` converts again. |
+| `data/fnv/nvcs/` | A copy of the skeleton of the NVCS mod, for `fnv make-rig` (the setting `nvcs_skeleton`). |
 | `data/destiny/extract/out/` | The results of `d2x`, and its cache (`out/cache/`). `handoff/` beside it has an earlier result set. |
 | `data/destiny/extract/vendor/`, `runtime/`, `venv/`, `target/` | The third-party clones, the Oodle library link, the Python environment and the cargo build of `d2x`. |
 | `data/destiny/port/extract/NAME/` | The extraction of each weapon for a port (`manifest.json`, the glTF files, `states.json`, `dyes.json`, `sight.json`, `third_person/`, `posed/`). |

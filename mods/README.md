@@ -10,6 +10,8 @@ plugin and the two archives of a mod from a project folder.
 | `Hammerhead` | Hammerhead (a machine gun) | Destiny 2 | `destiny/port/sets/hammerhead.toml` |
 | `TexMechanica` | The Last Word, The Chaperone (a shotgun), The Huckleberry (a submachine gun), in one plugin | Destiny 2 | `the_last_word.toml`, `the_chaperone.toml`, `the_huckleberry.toml` in `destiny/port/sets/` |
 | `M77` | M77 (an assault rifle) | Marathon | `marathon/port/sets/m77_omnipositor.toml` |
+| `PPK` | Walther PPK (a pistol) | Fallout: New Vegas | None. Its conversion file is `mods/PPK/conversion.toml` (`docs/porting/fnv.md`). |
+| `FAMAS` | FAMAS F1 (a bullpup rifle) | Fallout: New Vegas | None. Its conversion file is `mods/FAMAS/conversion.toml`. |
 
 `TheLastWord` and `TexMechanica` have a weapon with the same editor ID (`TheLastWord`). Use
 one of the two in a game.
@@ -27,6 +29,9 @@ publish a built mod.
 | `items/*.toml` | The records of each weapon: the vanilla weapon that it copies, its values, its parts, its recipe. |
 | `behavior/WEAPON/WEAPON.bhv` | The behavior source of each weapon: its animation keyword, its graph copies, the reload clip of each count of rounds. |
 | `ids.lock` | The object ID of each record. esx writes it; it is in git so that a build gives the same IDs. |
+| `behavior/WEAPON/WEAPON.lock` | The hash of each vanilla graph that the behavior source was built against. esx writes it. |
+| `conversion.toml` | Only in a New Vegas port (`PPK`, `FAMAS`): the conversion data for `./port fnv convert`. |
+| `tests/*.toml` | Only in a New Vegas port: plans for `esx probe`. They were not run in this repository. |
 | `README.md` | What the mod has, how it was made, what is proved, what is not proved, the limits. |
 
 `data/mods/NAME/` (not in git) is the complete project that esx builds:
@@ -41,7 +46,7 @@ publish a built mod.
 | `docs/` | Pictures of each weapon. | `esx render weapon` |
 
 A tool does not write a generated file into `mods/`. The only file that comes back is
-`ids.lock`, when a build changed it.
+`ids.lock` and `behavior/WEAPON/WEAPON.lock`, when a build changed them.
 
 ## The commands
 
@@ -49,7 +54,7 @@ A tool does not write a generated file into `mods/`. The only file that comes ba
 ./port mod list                          # each mod, its plugin, and if it has a release
 ./port mod status NAME                   # the source files that differ from their copies in data/mods/NAME
 ./port mod sync NAME                     # copy the files of mods/NAME into data/mods/NAME (it deletes nothing)
-./port mod build NAME [--update-lock]    # sync, esx build on data/mods/NAME, ids.lock back to mods/NAME
+./port mod build NAME [--update-lock]    # sync, esx build on data/mods/NAME, the lock files back to mods/NAME
 ```
 
 The release of a mod is `data/mods/NAME/build/release/`: the plugin (`NAME.esp`),
@@ -83,7 +88,7 @@ esx --data "$FO4" render weapon data/mods/NAME/build/release/NAME.esp WEAPON --s
 
 1. Make the folder `mods/NAME/` with `esx.toml`, one file in `items/` for each weapon and one
    behavior source for each weapon. Copy the files of `mods/TexMechanica` and change them
-   (`destiny/port/PORTING.md`, "The mod project").
+   (`docs/porting/destiny.md`, step 8).
 2. Make the clips and the model with the convert commands. They write into `data/mods/NAME/`.
 3. `./port mod build NAME --update-lock` makes `ids.lock` and the release.
 4. Add the weapon to `destiny/port/regress.toml`, with the clip folders of `data/mods/NAME/`
@@ -92,8 +97,9 @@ esx --data "$FO4" render weapon data/mods/NAME/build/release/NAME.esp WEAPON --s
 
 ## What is not proved
 
-* The files of `mods/NAME/` are copies of the hand-written files of the five projects. The
-  port of the tools to this repository did not run `./port mod build` for them.
+* `./port mod build` ran for `TexMechanica`, `PPK` and `FAMAS` in this repository, and each
+  release has the bytes that it had before the move. It did not run for `TheLastWord`,
+  `Khvostov`, `Hammerhead` and `M77`.
 * The model program (`./port destiny model`) gives the same bytes as the files of
   `data/mods/` for 196 of the 200 files of `meshes/` and `assets/` of the five projects (run of
   2026-10-06, with scratch projects). The 4 other files are the model files of The Chaperone
