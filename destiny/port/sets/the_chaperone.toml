@@ -1,0 +1,361 @@
+# The first-person clips of The Chaperone (Destiny 2, a shotgun with a lever) for Fallout 4.
+#
+#   ./port destiny convert data/destiny/port/extract/the_chaperone/the_chaperone_first_person.glb \
+#       --set destiny/port/sets/the_chaperone.toml -o OUT
+#
+# The names in the comments of this file: extract/ is data/destiny/port/extract/, work/ is
+# data/destiny/port/work/, rig/ is data/destiny/port/rig/, and tools/ is destiny/port/tools/.
+# A file or a folder that this file names (`folder`, `dyes`, `file`, the files of
+# [model.shaders]) is beside the .glb file.
+#
+# The clip of each game state is from the animation graph of Destiny 2
+# (tools/d2states.py, extract/the_chaperone/states.json). The weapon tags are those of the
+# shotgun, and the clips of the shot, of the draw and of the lever are those of The Chaperone.
+template = "combatrifle"
+# The hold pose (CLIP:FRAME). It gives the place of the gun in Fallout 4 weapon space, and it
+# is the pose "ready" of the clips of [synth].
+hold = "fp_002_80BBD611:0"
+# The pose in the sights, for the clips of [synth]: this clip with the move of [sight].
+sighted = "fp_012_80BBD61B:0"
+
+# The aim point of the sight in Fallout 4 weapon space: the center of the reticle on the
+# glass of the sight (tools/d2model.py prints it; [model.sight] below). The glass is between
+# the two horns of the rear sight. Each clip of `clips` gets the move that puts the aim point
+# on the view axis in its first frame: the arms, the hands and the gun move as one body.
+[sight]
+point = [0.0, 7.44, 8.85]
+clips = ["fp_012_80BBD61B", "fp_074_80EF3E38"]
+
+# The pose of the left hand on this gun (tools/d2pose.py). The idle and most other clips are
+# clips of the shotgun class: in them the left hand is open below the barrel, and no vertex
+# of the hand of Destiny is nearer than 0.89 cm to this gun. The file has two short pose
+# clips of The Chaperone (2 frames, offsets only). 80BBD62D closes the fingers and moves the
+# wrist 2.7 cm to the rear and 0.9 cm up: with it the hand is on the cover of the barrel (33
+# vertices nearer than 0.5 cm). The other one, 80BBD626, has the same offsets with the
+# opposite sign. The extraction does not say which state uses each one: this pose is a
+# choice. Each clip gets the offsets of the left hand and its fingers only while the left
+# wrist is at its place of the hold pose (the weight goes from 1 at 3 cm to 0 at 8 cm).
+#   ./port destiny pose data/destiny/port/extract/the_chaperone/manifest.json \
+#       --pose 80BBD62D --hold fp_002_80BBD611:0 --clip fp_002_80BBD611 --clip ... (each clip of this file)
+[hand_pose]
+folder = "posed"
+
+# More poses for the clips of [synth].
+[poses]
+# The sprint loop of the shotguns (sprint_loop, 20 frames): no bone moves more than 2.6 cm in it.
+sprint = "fp_045_80BBD628:0"
+
+# The Fallout 4 bone of each weapon bone of the file.
+#   b_pump          the lever with the trigger guard (the kind `bolt` of [roles]): WeaponBolt
+#   b_shell         the shell that the hand puts in (the kind `magazine`): WeaponMagazine
+#   bone_8E40D42D   the gate of the loading port, below the receiver: it opens 20 degrees for a shell
+#   bone_F73BFBB3   a point at the muzzle, with no vertex
+[roles]
+b_pump = "bolt"
+b_shell = "magazine"
+
+[bones]
+bone_8E40D42D = "WeaponExtra1"
+
+# The reload. Destiny has no one clip for the reload of a shotgun: the graph plays three
+# states, and each one is a clip of the file.
+#   reload_enter    fp_011_80BBD61A, 16 frames: the gun turns up, and the left hand goes down
+#   6C41757C        fp_009_80BBD618, 28 frames: the left hand puts one shell in. The game plays
+#                   this state one time for each shell.
+#   chamber_1       fp_073_80EF3E37, 49 frames, a clip of The Chaperone: the right hand turns the
+#                   gun one time around the lever, which opens and closes, and the gun comes
+#                   back to the hold pose
+# Each clip here is these clips, one after the other, with a count of shells from 1 to 6. The
+# last pose of the shell clip is not its first pose (the left hand is 34 cm away, below the
+# view), so the difference goes to zero in the first 3 frames of the next clip. The shell is
+# at a place behind the camera when the game does not show it: it has no such blend.
+[compose.reload_6]
+clips = ["fp_011_80BBD61A", "fp_009_80BBD618*6", "fp_073_80EF3E37"]
+blend = 3
+cut = ["b_shell"]
+
+[compose.reload_5]
+clips = ["fp_011_80BBD61A", "fp_009_80BBD618*5", "fp_073_80EF3E37"]
+blend = 3
+cut = ["b_shell"]
+
+[compose.reload_4]
+clips = ["fp_011_80BBD61A", "fp_009_80BBD618*4", "fp_073_80EF3E37"]
+blend = 3
+cut = ["b_shell"]
+
+[compose.reload_3]
+clips = ["fp_011_80BBD61A", "fp_009_80BBD618*3", "fp_073_80EF3E37"]
+blend = 3
+cut = ["b_shell"]
+
+[compose.reload_2]
+clips = ["fp_011_80BBD61A", "fp_009_80BBD618*2", "fp_073_80EF3E37"]
+blend = 3
+cut = ["b_shell"]
+
+[compose.reload_1]
+clips = ["fp_011_80BBD61A", "fp_009_80BBD618", "fp_073_80EF3E37"]
+blend = 3
+cut = ["b_shell"]
+
+# The events of each clip of the reload: [frame in the clip, text].
+#   the shell clip   the shell is in its place at frame 10. The sound is that of the shells
+#                    of the vanilla double-barrel shotgun.
+#   chamber_1        The lever is open from frame 15 to frame 22: the sounds of the bolt of
+#                    the combat shotgun. `reloadComplete` (the game fills the gun) is 15 frames
+#                    before the clip, which is frame 12 of the last shell clip. The left hand
+#                    is back on the gun at frame 30, and the gun is 5 cm and 5 degrees from the
+#                    hold pose at frame 40: the reload ends there.
+[piece_events]
+fp_009_80BBD618 = [[10, "SoundPlay.WPNShotgunDoubleBarrelReloadMagIn"]]
+fp_073_80EF3E37 = [[-15, "reloadComplete"], [15, "SoundPlay.WPNShotgunCombatReloadBoltOpen"],
+                   [22, "SoundPlay.WPNShotgunCombatReloadBoltClose"], [39, "initiateStart"], [40, "reloadEnd"]]
+
+# Fallout 4 clip = clip of the file.
+[clips]
+WPNIdleReady = "fp_002_80BBD611"          # idle, the first choice, 99 frames, a loop
+# The game plays these four now and then in place of the idle. Destiny has two more clips in
+# the state idle of a shotgun (the thresholds of the three clips are 0.962, 0.981 and 1.0):
+# the gun moves 0.9 and 1.7 cm, and each clip starts and ends in the idle pose.
+WPNIdleReadyA = "fp_053_80BBD630"         # idle, the second choice, 71 frames
+WPNIdleReadyB = "fp_033_80BBD625"         # idle, the third choice, 35 frames
+WPNIdleReadyC = "fp_053_80BBD630"
+WPNIdleReadyD = "fp_033_80BBD625"
+WPNIdleSighted = "fp_012_80BBD61B"        # iron_sight_idle, 97 frames, a loop
+# The graph blends this clip into the sighted idle with the weight AimWobble. The reader
+# cannot read the vanilla clip, so the clip is the sighted idle: the gun does not wobble.
+WPNIdleSightedWobble = "fp_012_80BBD61B"
+WPNFireSingleReady = "fp_071_80EF3E35"    # fire, 36 frames: the clip of The Chaperone. The lever does not move.
+WPNFireSingleReadyA = "fp_071_80EF3E35"   # the two fire variants of the vanilla graph: the same shot
+WPNFireSingleReadyB = "fp_071_80EF3E35"
+WPNFireSingleSighted = "fp_074_80EF3E38"  # iron_sight_fire, 37 frames: the left hand moves the lever (frames 14 to 22)
+WPNEquip = "fp_072_80EF3E36"              # ready, 24 frames: the clip of The Chaperone
+WPNEquipFast = "fp_072_80EF3E36"
+WPNUnEquip = "fp_007_80BBD616"            # put_away, 4 frames, and 8 frames of [hold_end]
+# The reload. The behavior source of the mod plays one clip for each count of rounds in the
+# gun: WPNReload1 has one shell (5 rounds in the gun), and WPNReload6 has six (an empty
+# gun). WPNReload is the clip of the vanilla name, for a reload that no rule of the behavior
+# source selects: it is the reload with 6 shells.
+WPNReload = "reload_6"
+WPNReload1 = "reload_1"
+WPNReload2 = "reload_2"
+WPNReload3 = "reload_3"
+WPNReload4 = "reload_4"
+WPNReload5 = "reload_5"
+WPNReload6 = "reload_6"
+# sprint_enter (fp_047_80BBD62A) and sprint_exit (fp_046_80BBD629) have no clip: the Fallout 4
+# graph blends from the idle to the sprint loop and back.
+
+# Events of a clip, more than those that the tools find (a shot gets its event).
+# {sound} is the sound name of the template.
+[events]
+WPNEquip = [[0, "SoundPlay.{sound}EquipUp"]]
+WPNEquipFast = [[0, "SoundPlay.{sound}EquipUpFast"]]
+WPNFireSingleSighted = [[14, "SoundPlay.WPNShotgunCombatReloadBoltOpen"], [20, "SoundPlay.WPNShotgunCombatReloadBoltClose"]]
+
+# The last pose of a clip on this count of more frames at its end. The first-person graph of
+# the game (GunBehavior, state WPNUnEquip) removes the gun 0.233 s before the end of the
+# put-away clip. The Destiny clip is 0.1 s long (the gun is out of the view at its last
+# frame). With 8 frames the clip is 0.367 s long, and the game removes the gun at 0.133 s:
+# after the motion.
+[hold_end]
+WPNUnEquip = 8
+
+# Clips that the source does not have. Each one takes the rigid motion of the weapon bone
+# from the vanilla clip of the template with the same name, against the vanilla ready (or
+# sighted) pose, and applies it to the pose "ready" or "sighted" above: the arms, the hands
+# and the gun move as one body. The camera bone and the events are those of the vanilla clip.
+[synth]
+WPNWalkForwardReady = "ready"
+WPNWalkForwardSighted = "sighted"
+WPNRunForwardReady = "ready"
+WPNRunLeftReady = "ready"
+WPNRunRightReady = "ready"
+WPNRunGunDown = "ready"
+WPNJumpImpactLand = "ready"
+# The sprint: the motion of the vanilla sprint against its own first frame, on the sprint
+# pose of Destiny.
+WPNSprint = { pose = "sprint", reference = "wpnsprint" }
+# WPNMelee and WPNMeleeBayonet are not here (a large turn of the gun; see destiny/port/README.md).
+# The game uses the vanilla clips, with the hands in the pose of the combat rifle.
+
+# One weapon place of a vanilla clip on each frame (the reader cannot read the vanilla
+# wpnidlegundown.hkx).
+[static]
+WPNIdleGunDown = { pose = "ready", vanilla = "wpnrungundown", frame = 0, frames = 30 }
+
+# The Fallout 4 model of the gun for an esx project (tools/d2model.py).
+[model]
+# Meshes/Weapons/NAME/NAME.nif, Materials/Weapons/NAME and Textures/Weapons/NAME
+name = "TheChaperone"
+# The place of the node ProjectileNode, in Fallout 4 weapon space: the bore at the front of the
+# barrel (the ring of vertices with the radius 1.08 at the front, from z 4.7 to z 6.8).
+muzzle = [0.0, 43.96, 5.75]
+# The dyes of the gun (its default shader): the file of tools/d2dyes.py beside the file of the gun.
+dyes = "dyes.json"
+
+# A texture set of the file (the material name) = the name of the Fallout 4 material.
+[model.materials]
+80EF39D0 = "Barrel"       # the barrel with its cover
+80EF3ADE = "Receiver"     # the receiver, the lever, the gate of the loading port and the shell
+80EF3BE5 = "Sight"        # the rear sight with its two horns
+80EF3D1A = "Grip"         # the grip
+
+# The glass of the sight and the reticle: a second part of the weapon (TheChaperone + Sight).
+# `file` is the file of tools/d2reticle.py beside the file of the gun, and `source` is its
+# entity with the part of the render stage `reticle`. The extraction of the gun has only the
+# opaque parts, so these parts are not in the file of the gun.
+# The receiver has one more part of the stage `transparent` (144 vertices, the material
+# 8152A621, below the barrel). It is not in the model.
+[model.sight]
+file = "sight.json"
+source = "region21_80EF3B97"
+# The vanilla mesh that gives the two effect shaders (esx makes no new effect shader), and
+# its two shapes with alpha blending: the first one becomes the glass, the second one the reticle.
+template = "Meshes/Weapons/CombatShotgun/CombatShotgunReflexSightDot.nif"
+template_shapes = ["TubeGlass:0", "TubeGlass001:0"]
+# The scale of the color of the glass in its material. In Destiny the value changes with the
+# time (the constants 12 to 19 of the material 80EF3B90). 2.0 is the value of the other guns
+# of this folder, from a game test.
+glass_scale = 2.0
+
+# The glass (6 vertices, between the two horns of the rear sight). The pixel shader of its
+# material (extract/the_chaperone/sight/80EF3B90_ps.dxbc; tools/dxasm.py prints it) gives the rule:
+#   color = red x RED                                  (red: the albedo plate, two rings)
+#   picture = color x a + scene x (1 - 0.75 x a)       (a: the green value of the gstack plate)
+# RED is cb0[3] of the material. The albedo plate has no green and no blue value. The value
+# 0.75 is the constant 26 of the material, with the gun in the sights (the input 1 = 1).
+[[model.sight.glass]]
+material = "80EF3B90"
+red = [0.664, 0.0362, 0.0362]
+alpha = 0.75
+
+# The reticle: the quad of the stage `reticle`, with the texture of its material (a dot with
+# a ring). Its pixel shader is that of the reticle of Hammerhead:
+#   color = red x RED + green x GREEN       (cb0[1] and cb0[2] of the material)
+#   picture = blue x color + scene x (1 - alpha x blue)       (alpha: cb0[0].x)
+# In Destiny the reticle shows only in the sights (the input 1 of the material is 0.99 or
+# more). In Fallout 4 it shows at each time, as the dot of a vanilla reflex sight.
+[model.sight.reticle]
+material = "8152A983"
+texture = "80BC5C5C"
+red = [1.0, 1.0, 1.0]                 # the dot
+green = [2.5, 0.0, 0.0]               # the ring around the dot
+alpha = 0.5
+# The size. The quad of the file is 1.74 x 1.77 cm, and its vertex shader
+# (extract/the_chaperone/sight/8152A983_vs.dxbc) puts it 3.35 m before the camera (cb0[11].x):
+# the player sees it at an angle of 0.30 degrees. `eye` is the eye point of the clip in the
+# sights in weapon space (tools/d2points.py prints it). The quad on the glass has the same
+# angle from that point. `scale` changes the size.
+distance = 3.35
+eye = [0.0, -17.04, 8.85]
+scale = 1.0
+# The place of its center on the glass: a texture coordinate of the glass material (the
+# center of the two rings). The aim point of [sight] must be this place.
+center = [0.5055, 0.4995]
+
+# The third-person clips. Fallout 4 has few third-person clips of its own for a weapon: the
+# reload is the one that shows. The source of a clip is a file of tools/d2third.py
+# (extract/the_chaperone/third_person/STATE.npz): a clip of the player body from the graph of
+# the body, with the clip of the gun parts from the graph of the gun.
+#   ./port destiny third data/destiny/port/extract/the_chaperone/manifest.json \
+#       --state reload_enter --state 6C41757C=reload_loop --state chamber_1 \
+#       --additive reload_enter --additive 6C41757C --additive chamber_1
+#   ./port destiny convert FILE.glb --set destiny/port/sets/the_chaperone.toml third --third-output DIR
+# The three states of the reload are the same as in first person, with other clips:
+#   reload_enter    17 frames (the leaf `shotgun`): the gun turns up 52 degrees
+#   reload_loop     24 frames (the state 6C41757C, the leaf `shotgun`): one shell
+#   chamber_1       38 frames (the leaf of The Chaperone): the gun turns one time around, and
+#                   the lever opens and closes (the gun clip of that state)
+# Each clip has offsets only: tools/d2third.py adds them to the hold pose of a rifle. The
+# last pose of one clip is the first pose of the next one, so `blend` changes little.
+[third]
+folder = "third_person"
+# The clips that get no event SoundPlay. The third-person graph of the game (WeaponBehavior)
+# has two clip nodes for a reload: one in the state of the body (RifleReloadState) and one in
+# the state machine of the gun parts (WeaponSlave_StateMachine, the state WPNReloadSlave). In
+# the vanilla graph they are one node. For a reload clip with a new name esx makes a new node
+# for the body only, so the game plays that clip and, at the same time, WPNReload on the node
+# of the gun parts, with its events: a game test of the reload with one shell showed the
+# sounds of the second and of the third shell of WPNReload. So WPNReload has no sound, and
+# each count of shells has its own clip with its sounds (WPNReload6 for an empty gun).
+silent = ["WPNReload"]
+
+[third.compose.reload_6]
+clips = ["reload_enter", "reload_loop*6", "chamber_1"]
+blend = 3
+
+[third.compose.reload_5]
+clips = ["reload_enter", "reload_loop*5", "chamber_1"]
+blend = 3
+
+[third.compose.reload_4]
+clips = ["reload_enter", "reload_loop*4", "chamber_1"]
+blend = 3
+
+[third.compose.reload_3]
+clips = ["reload_enter", "reload_loop*3", "chamber_1"]
+blend = 3
+
+[third.compose.reload_2]
+clips = ["reload_enter", "reload_loop*2", "chamber_1"]
+blend = 3
+
+[third.compose.reload_1]
+clips = ["reload_enter", "reload_loop", "chamber_1"]
+blend = 3
+
+# The events of each clip of the reload: [frame in the clip, text], as [piece_events] has them
+# for first person. The left hand is at the loading port at frame 10 of the shell clip. In
+# chamber_1 the lever is open from frame 9 to frame 26, and the left hand is back on the gun
+# at frame 34. `reloadComplete` is 13 frames before chamber_1: frame 10 of the last shell clip.
+[third.piece_events]
+reload_loop = [[10, "SoundPlay.WPNShotgunDoubleBarrelReloadMagIn"]]
+chamber_1 = [[-13, "reloadComplete"], [9, "SoundPlay.WPNShotgunCombatReloadBoltOpen"],
+             [26, "SoundPlay.WPNShotgunCombatReloadBoltClose"], [33, "initiateStart"], [34, "reloadEnd"]]
+
+# The last pose of a clip on this count of more frames at its end. The third-person graph of
+# the game (WeaponBehavior, the clip node of the reload) sends reloadEnd 0.5 s before the end
+# of the clip, with no relation to the events of the clip. chamber_1 moves until its last
+# frames: a game test with no more frames showed the end of the reload at frame 22 of its 38
+# frames, with the gun 60 cm from the hold pose. With 16 frames the event of the clip (frame
+# 34 of chamber_1, the left hand on the gun) comes first.
+[third.hold_end]
+WPNReload = 16
+WPNReload1 = 16
+WPNReload2 = 16
+WPNReload3 = 16
+WPNReload4 = 16
+WPNReload5 = 16
+WPNReload6 = 16
+
+# Fallout 4 clip = state of the file, or a clip of [third.compose].
+[third.clips]
+WPNReload = "reload_6"
+WPNReload1 = "reload_1"
+WPNReload2 = "reload_2"
+WPNReload3 = "reload_3"
+WPNReload4 = "reload_4"
+WPNReload5 = "reload_5"
+WPNReload6 = "reload_6"
+
+# Fallout 4 clip = one frame of a clip of [third.clips], as a pose. The game takes the place
+# of the left hand on the gun in third person from the clip WPNAssemblyPose of the weapon
+# (its bone WeaponIKTargetL). The vanilla pose has the place for the combat rifle.
+[third.poses]
+WPNAssemblyPose = "WPNReload:0"
+
+# The clips for a body in power armor, in third person. The tools make no clip for the
+# skeleton of the power armor. But the two third-person views have one behavior graph, and
+# esx builds a reload clip with a new name only when the two views have a file with that
+# name. So each one is a copy of the vanilla reload of the combat shotgun in power armor
+# (rig/third_power_armor/combatshotgun/wpnreload.hkx, from your game files): a body in power
+# armor reloads The Chaperone as it reloads the combat shotgun. Fallout 4 clip = vanilla clip.
+[third.power_armor]
+WPNReload1 = "wpnreload"
+WPNReload2 = "wpnreload"
+WPNReload3 = "wpnreload"
+WPNReload4 = "wpnreload"
+WPNReload5 = "wpnreload"
+WPNReload6 = "wpnreload"

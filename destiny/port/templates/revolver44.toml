@@ -1,0 +1,95 @@
+# The vanilla .44 revolver of Fallout 4 as the template of a conversion.
+# The template gives the weapon bones, the names of the sounds in the clip events and the
+# pose of the body bones that a first-person source does not have.
+
+# The sound name in the events of a clip (SoundPlay.<sound>Reload<NAME>).
+sound = "WPNPistolFortyFour"
+# The first-person clips of the template, in rig/ (data/destiny/port/rig). Each name is in lower case.
+clips = "revolver44"
+# The folder of these clips in the game (Meshes/Actors/Character/_1stPerson/Animations).
+game_clips = "44Pistol"
+# The reload sounds that the template weapon has. The vanilla reload has them in this order:
+# BoltOpen (the cylinder swings out), MagIn (the rounds go in), BoltClose (the cylinder
+# closes), Charge (the hammer).
+reload_sounds = ["BoltOpen", "MagIn", "BoltClose", "Charge"]
+# The vanilla clip whose first frame has the weapon at the ready. Its first frame gives the
+# pose of each body bone (a Destiny first-person clip has useful poses of the arms only), and
+# the local transform of each weapon bone that has no part.
+ready = "wpnfiresingleready"
+# The vanilla clip whose first frame has the weapon in the sights. It gives the bone
+# Camera Control of each clip in the sights (-5.49 on Z in the vanilla sighted clips, 9.51 in
+# the vanilla sprint, 0 in each other clip).
+sighted = "wpnfiresinglesighted"
+# The third-person clips of the template, in rig/ (tools/make_rig.py): the clips of the player
+# in this folder of the game (Meshes/Actors/Character/Animations/Weapon).
+third_clips = "third/44pistol"
+third_game_clips = "44Pistol/Player"
+# The vanilla third-person clip whose first frame is the stance of the body with the gun. A
+# third-person clip of Destiny has the motion of the upper body only, and that motion goes on
+# this stance (tools/blender/d3retarget.py).
+third_ready = "wpnreload"
+# The material file of the template weapon (in Fallout4 - Materials.ba2). The material of each
+# texture set of a ported gun is a copy of it with other textures (tools/d2model.py).
+material = "Materials/Weapons/44/44.bgsm"
+# The grip point of the template in Fallout 4 weapon space: the middle of the first joints of
+# the index finger and the middle finger of the right hand, in the first frame of that clip.
+# The grip point of the ported gun goes here, so the hands of the vanilla clips (third
+# person, and each clip that the conversion does not replace) hold its grip.
+grip = [2.6693, -1.1798, -3.2648]
+
+# The rest place of each weapon bone relative to its parent bone, from the vanilla clips
+# (the walk clip, where each part is at rest), and the part of 44.nif on the bone.
+#   WeaponMagazine        the crane (the part 44 MagnumGate): it swings 100 degrees in the reload
+#   WeaponMagazineChild1  the cylinder
+#   WeaponMagazineChild2  the ejector rod
+#   WeaponMagazineChild3  the moon clip
+#   WeaponMagazineChild4  the cases
+#   WeaponMagazineChild5  the rounds
+#   WeaponExtra1          the hammer
+#   WeaponTrigger         the trigger. The vanilla clips do not move it.
+#   WeaponBolt            no part. The vanilla reload turns it while the cylinder is open.
+[pivots]
+WeaponBolt = [-1.498310, 2.848111, -0.893524]
+WeaponExtra1 = [0.084217, -1.099436, 0.283737]
+WeaponMagazine = [-0.433542, 5.743048, -1.090088]
+WeaponMagazineChild1 = [0.454478, -2.783691, 2.082214]
+WeaponMagazineChild2 = [0.454478, -2.783691, 2.082214]
+WeaponMagazineChild3 = [0.454478, -2.783691, 2.082214]
+WeaponMagazineChild4 = [0.454478, -2.783691, 2.082214]
+WeaponMagazineChild5 = [0.454478, -2.783691, 2.082214]
+WeaponTrigger = [0.027002, 1.282551, -1.500038]
+# 44.nif has these two nodes with no part. The model of a ported gun has them too, so a
+# vanilla clip finds each node that it can move.
+WeaponOptics1 = [0.0, 0.0, 0.0]
+WeaponOptics2 = [0.0, 0.0, 0.0]
+
+# The rest rotation of a bone relative to its parent bone (x, y, z, w), from the same clip.
+# A bone with no entry has no rotation. The hammer is turned 45 degrees; the crane and the
+# trigger have a rotation of 0.6 degrees.
+[rotations]
+WeaponExtra1 = [0.38444, 0.00479, 0.00138, 0.92314]
+WeaponMagazine = [0.00190, 0.00388, 0.00315, 0.99999]
+WeaponTrigger = [0.00190, 0.00388, 0.00315, 0.99999]
+
+[parents]
+WeaponBolt = "Weapon"
+WeaponExtra1 = "Weapon"
+WeaponMagazine = "Weapon"
+WeaponMagazineChild1 = "WeaponMagazine"
+WeaponMagazineChild2 = "WeaponMagazine"
+WeaponMagazineChild3 = "WeaponMagazine"
+WeaponMagazineChild4 = "WeaponMagazine"
+WeaponMagazineChild5 = "WeaponMagazine"
+WeaponTrigger = "Weapon"
+WeaponOptics1 = "Weapon"
+WeaponOptics2 = "Weapon"
+
+# The bone of each kind of gun part.
+[roles]
+crane = "WeaponMagazine"
+cylinder = "WeaponMagazineChild1"
+yoke = "WeaponMagazineChild2"
+rounds = "WeaponMagazineChild5"
+hammer = "WeaponExtra1"
+trigger = "WeaponTrigger"
+latch = "WeaponBolt"

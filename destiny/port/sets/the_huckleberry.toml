@@ -1,0 +1,255 @@
+# The first-person clips of The Huckleberry (Destiny 2, a submachine gun) for Fallout 4.
+#
+#   ./port destiny convert data/destiny/port/extract/the_huckleberry/the_huckleberry_first_person.glb \
+#       --set destiny/port/sets/the_huckleberry.toml -o OUT
+#
+# The names in the comments of this file: extract/ is data/destiny/port/extract/, work/ is
+# data/destiny/port/work/, rig/ is data/destiny/port/rig/, and tools/ is destiny/port/tools/.
+# A file or a folder that this file names (`folder`, `dyes`, `file`, the files of
+# [model.shaders]) is beside the .glb file.
+#
+# The clip of each game state is from the animation graph of Destiny 2
+# (tools/d2states.py, extract/the_huckleberry/states.json). The weapon tags are those of the
+# submachine gun, and the reload is the clip of The Huckleberry.
+template = "combatrifle"
+# The hold pose (CLIP:FRAME). It gives the place of the gun in Fallout 4 weapon space, and it
+# is the pose "ready" of the clips of [synth].
+hold = "fp_052_80BC118C:0"
+# The pose in the sights, for the clips of [synth]: this clip with the move of [sight].
+sighted = "fp_059_80BC1193:0"
+
+# The gun bones of the clips (tools/d2bake.py). The rig of The Huckleberry has 76 bones: the
+# gun bone and three parts. The clips of the hands (the idle, the shot, the reload and each
+# other clip of the states) have 77 nodes: they are clips of a rig with four gun parts, and
+# the file has the gun bones of those clips at wrong places (the gun bone at the origin of
+# the world). So in each clip the gun is on the grip bone of the right hand, as it is in the
+# 2 full-pose clips of the file that have the gun in the hand (fp_093_80BC11A8 and
+# fp_094_80BC11A9, with 76 nodes), and each part is at its rest place.
+[gun]
+rest = true
+
+# The motion of the gun parts is in a second clip, an additive clip of the gun parts with 76
+# nodes: clip of the hands = clip of the parts. In the reload (91 frames in the two clips)
+# the housing of the barrel goes 7.1 cm to the front (frames 3 to 61), and the magazine
+# comes out, turns 180 degrees and goes in again (frames 8 to 31).
+[gun.parts]
+fp_105_80EF5694 = "fp_103_80EF5692_add"
+
+# The aim point of the sight in Fallout 4 weapon space: the center of the reticle on the
+# glass of the sight (tools/d2model.py prints it; [model.sight] below). The glass is in the
+# housing on the gun, which is open at the top. Each clip of `clips` gets the move that puts
+# the aim point on the view axis in its first frame: the arms, the hands and the gun move as
+# one body.
+[sight]
+point = [0.0, 9.32, 9.59]
+clips = ["fp_059_80BC1193", "fp_060_80BC1194"]
+
+# The pose of the left hand on this gun (tools/d2pose.py). The clips of the hands are clips
+# of another rig, and the left hand has the pose for the gun of that rig. The file has one
+# clip of the rig of The Huckleberry with the full pose and the gun in the hand
+# (fp_093_80BC11A8, 2 frames): its left hand is 1.1 cm more to the left, 1.8 cm lower and
+# 1.4 cm more to the front than in the idle, with other finger angles, and its right hand is
+# that of the idle. The additive clip 80BC11A5 has the difference of the two: the idle with
+# its offsets has the left hand of fp_093_80BC11A8. With it 319 vertices of the left hand of
+# Destiny are nearer than 0.5 cm to the gun (191 with no pose clip). Each clip gets the
+# offsets of the left hand and its fingers only while the left wrist is at its place of the
+# hold pose (the weight goes from 1 at 3 cm to 0 at 8 cm).
+#   ./port destiny pose data/destiny/port/extract/the_huckleberry/manifest.json \
+#       --pose 80BC11A5 --gun-on-grip --hold fp_052_80BC118C:0 --clip fp_052_80BC118C --clip ... (each clip of this file)
+[hand_pose]
+folder = "posed"
+
+# More poses for the clips of [synth].
+[poses]
+# The sprint loop of the submachine guns (sprint_loop, 20 frames) is one pose: no bone moves in it.
+sprint = "fp_055_80BC118F:0"
+
+# The kind of a weapon bone that has a hash in place of a name (tools/d2rig.py has the kinds
+# of the bones with a name; b_magazine is the magazine).
+#   bone_B36093C2   the housing of the barrel, which moves in the reload: WeaponBolt
+#   bone_D7A79DD5   no vertex (it moves 7 cm in the additive clip of the shot)
+[roles]
+bone_B36093C2 = "bolt"
+
+# Fallout 4 clip = clip of the file.
+[clips]
+WPNIdleReady = "fp_052_80BC118C"          # idle, the first choice, 96 frames, a loop
+# The game plays these four now and then in place of the idle. Destiny has one more clip in
+# the state idle of a submachine gun (the thresholds are 0.962 for the idle, then 0.981 and
+# 1.0 for this clip): the gun moves 1.7 cm, and the clip starts and ends in the idle pose.
+WPNIdleReadyA = "fp_058_80EF5690"         # idle, the second and the third choice, 35 frames
+WPNIdleReadyB = "fp_058_80EF5690"
+WPNIdleReadyC = "fp_058_80EF5690"
+WPNIdleReadyD = "fp_058_80EF5690"
+WPNIdleSighted = "fp_059_80BC1193"        # iron_sight_idle, 98 frames, a loop
+# The graph blends this clip into the sighted idle with the weight AimWobble. The reader
+# cannot read the vanilla clip, so the clip is the sighted idle: the gun does not wobble.
+WPNIdleSightedWobble = "fp_059_80BC1193"
+WPNFireSingleReady = "fp_049_80BC1189"    # fire, 26 frames
+WPNFireSingleReadyA = "fp_049_80BC1189"   # the two fire variants of the vanilla graph: the same shot
+WPNFireSingleReadyB = "fp_049_80BC1189"
+WPNFireSingleSighted = "fp_060_80BC1194"  # iron_sight_fire, 19 frames
+WPNEquip = "fp_057_80BC1191"              # ready, 30 frames
+WPNEquipFast = "fp_057_80BC1191"
+WPNUnEquip = "fp_056_80BC1190"            # put_away, 4 frames, and 8 frames of [hold_end]
+WPNReload = "fp_105_80EF5694"             # reload_empty and reload_full, 91 frames: the clip of The Huckleberry
+# sprint_enter (fp_053_80BC118D) and sprint_exit (fp_054_80BC118E) have no clip: the Fallout 4
+# graph blends from the idle to the sprint loop and back.
+
+# Automatic fire. Fallout 4 clip = the clip of one shot of the file. The clip has the length
+# and the events of the vanilla clip with the same name (67 frames, 20 shots), and at each of
+# its events weaponFire the shot starts again from its first frame.
+[auto]
+WPNFireAutoReadyForward = "fp_049_80BC1189"
+WPNFireAutoReadyBack = "fp_049_80BC1189"
+WPNFireAutoSighted = "fp_060_80BC1194"
+
+# Events of a clip, more than those that the tools find (a reload and a shot get theirs).
+# {sound} is the sound name of the template.
+[events]
+WPNEquip = [[0, "SoundPlay.{sound}EquipUp"]]
+WPNEquipFast = [[0, "SoundPlay.{sound}EquipUpFast"]]
+# The reload gets its events from the motion of the parts: the housing of the barrel opens at
+# frame 3 and closes at frame 61, and the magazine comes out at frame 8. The magazine is in
+# its place again at frame 31; after that the left hand turns it two times around (frames 39
+# to 62), and the tools find the end of that motion (frame 61) as the time of the sound. So
+# the sound of the magazine is at frame 31. `reloadComplete` stays at frame 63.
+WPNReload = [[31, "SoundPlay.WPNShotgunCombatReloadMagIn"]]
+
+# The last pose of a clip on this count of more frames at its end. The first-person graph of
+# the game (GunBehavior, state WPNUnEquip) removes the gun 0.233 s before the end of the
+# put-away clip. The Destiny clip is 0.1 s long (the gun is out of the view at its last
+# frame). With 8 frames the clip is 0.367 s long, and the game removes the gun at 0.133 s:
+# after the motion.
+[hold_end]
+WPNUnEquip = 8
+
+# Clips that the source does not have. Each one takes the rigid motion of the weapon bone
+# from the vanilla clip of the template with the same name, against the vanilla ready (or
+# sighted) pose, and applies it to the pose "ready" or "sighted" above: the arms, the hands
+# and the gun move as one body. The camera bone and the events are those of the vanilla clip.
+[synth]
+WPNWalkForwardReady = "ready"
+WPNWalkForwardSighted = "sighted"
+WPNRunForwardReady = "ready"
+WPNRunLeftReady = "ready"
+WPNRunRightReady = "ready"
+WPNRunGunDown = "ready"
+WPNJumpImpactLand = "ready"
+# The sprint: the motion of the vanilla sprint against its own first frame, on the sprint
+# pose of Destiny.
+WPNSprint = { pose = "sprint", reference = "wpnsprint" }
+# WPNMelee and WPNMeleeBayonet are not here (a large turn of the gun; see destiny/port/README.md).
+# The game uses the vanilla clips, with the hands in the pose of the combat rifle.
+
+# One weapon place of a vanilla clip on each frame (the reader cannot read the vanilla
+# wpnidlegundown.hkx).
+[static]
+WPNIdleGunDown = { pose = "ready", vanilla = "wpnrungundown", frame = 0, frames = 30 }
+
+# The Fallout 4 model of the gun for an esx project (tools/d2model.py).
+[model]
+# Meshes/Weapons/NAME/NAME.nif, Materials/Weapons/NAME and Textures/Weapons/NAME
+name = "TheHuckleberry"
+# The place of the node ProjectileNode, in Fallout 4 weapon space: the center of the front of
+# the barrel (36 vertices at y 22.8, x -0.61 to 0.61, z 4.49 to 5.86).
+muzzle = [0.0, 22.8, 5.18]
+# The dyes of the gun (its default shader): the file of tools/d2dyes.py beside the file of the gun.
+dyes = "dyes.json"
+
+# A texture set of the file (the material name) = the name of the Fallout 4 material.
+[model.materials]
+80EF5479 = "Barrel"       # the front of the gun and the housing of the barrel
+80EF54A1 = "Body"         # the receiver and the stock
+80EF54CC = "Magazine"     # the magazine
+80EF5507 = "Sight"        # the housing of the sight
+80EF552F = "Grip"         # the grip and the lower part of the gun
+
+# The glass of the sight and the reticle: a second part of the weapon (TheHuckleberry + Sight).
+# `file` is the file of tools/d2reticle.py beside the file of the gun, and `source` is its
+# entity with the part of the render stage `reticle`. The extraction of the gun has only the
+# opaque parts, so these parts are not in the file of the gun.
+[model.sight]
+file = "sight.json"
+source = "region21_80EF54F0"
+# The vanilla mesh that gives the two effect shaders (esx makes no new effect shader), and
+# its two shapes with alpha blending: the first one becomes the glass, the second one the reticle.
+template = "Meshes/Weapons/CombatShotgun/CombatShotgunReflexSightDot.nif"
+template_shapes = ["TubeGlass:0", "TubeGlass001:0"]
+# The scale of the color of the glass in its material. In Destiny the value changes with the
+# time (cb0[30] of the material 80EF54E8, from the constants 31 to 38). The values of the glass
+# in the sights are 2.0 and 3.0 at most, and Fallout 4 makes a glow around a color above 1: a
+# game test with a scale of 1.0 showed a green haze on all of the glass. With 0.5 the largest
+# value is 1.5, as on the other guns of this folder (1.3 and 1.6).
+glass_scale = 0.5
+
+# The glass (93 vertices). The pixel shader of its material
+# (extract/the_huckleberry/sight/80EF54E8_ps.dxbc; tools/dxasm.py prints it) gives the rule:
+#   color = red x RED + green x GREEN + blue x BLUE + the tint of the glass + the mirror picture
+#   picture = color x a + scene x (1 - 0.25 x a)       (a: the green value of the gstack plate)
+# The three values of the albedo plate are: red, four marks (above, below, left and right);
+# green, the border of the glass; blue, two curved lines. RED, GREEN and BLUE are values that
+# the game calculates from the input 1 of the material (0 at the hip, 1 in the sights):
+#   RED     from 0.0742, 0.2968, 0.0946 (the constant 11) to 0.5, 2.0, 0.632 (the constant 12)
+#   GREEN   from 0.9131, 0.491, 0.1119 (the constant 18) to 3.0, 1.6114, 0.36 (the constant 19)
+#   BLUE    0 (the constant 25): the two curved lines do not show
+# These are the values in the sights. The tint of the glass (a dark blue with lines across
+# it, on 12 percent of `a`) and the mirror picture are not done.
+[[model.sight.glass]]
+material = "80EF54E8"
+red = [0.5, 2.0, 0.632]
+green = [3.0, 1.6114, 0.36]
+alpha = 0.25
+
+# The reticle: the quad of the stage `reticle`, with the texture of its material (a dot with
+# a ring; the same texture as on The Chaperone). Its pixel shader is that of the reticle of
+# Hammerhead:
+#   color = red x RED + green x GREEN       (cb0[1] and cb0[2] of the material)
+#   picture = blue x color + scene x (1 - alpha x blue)       (alpha: cb0[0].x)
+# In Destiny the reticle shows only in the sights (the input 0 of the material is 0.99 or
+# more). In Fallout 4 it shows at each time, as the dot of a vanilla reflex sight.
+[model.sight.reticle]
+material = "8152C6FA"
+texture = "80BC5C5C"
+red = [1.0, 1.0, 1.0]                 # the dot
+green = [2.5, 0.0, 0.0]               # the ring around the dot
+alpha = 0.5
+# The size. The quad of the file is 1.74 x 1.77 cm, and its vertex shader
+# (extract/the_huckleberry/sight/8152C6FA_vs.dxbc) puts it 2.65 m before the camera
+# (cb0[11].x): the player sees it at an angle of 0.38 degrees. `eye` is the eye point of the
+# clip in the sights in weapon space (tools/d2points.py prints it). The quad on the glass has
+# the same angle from that point. `scale` changes the size.
+distance = 2.65
+eye = [0.0, -9.86, 9.59]
+scale = 1.0
+# The place of its center on the glass: a texture coordinate of the glass material (the
+# middle between the mark at the left and the mark at the right). The aim point of [sight]
+# must be this place.
+center = [0.501, 0.334]
+
+# The third-person clips. Fallout 4 has few third-person clips of its own for a weapon: the
+# reload is the one that shows. The source of a clip is a file of tools/d2third.py
+# (extract/the_huckleberry/third_person/STATE.npz): the clip of the player body that the game
+# graph has for this gun (the leaf rifle/smg/2214C237 of the state `reload`, 91 frames).
+#   ./port destiny third data/destiny/port/extract/the_huckleberry/manifest.json
+#   ./port destiny convert FILE.glb --set destiny/port/sets/the_huckleberry.toml third --third-output DIR
+# The reload has 91 frames in the two views, and each event of the first-person reload is at
+# the same frame here.
+[third]
+folder = "third_person"
+
+# The gun entity of The Huckleberry has no clip, so the file of tools/d2third.py has the gun
+# with its parts at rest. Here the housing of the barrel and the magazine move against the gun
+# as they do in the first-person reload: state of the file = first-person clip.
+[third.parts]
+reload = "fp_105_80EF5694"
+
+# Fallout 4 clip = state of the file.
+[third.clips]
+WPNReload = "reload"
+
+# Fallout 4 clip = one frame of a clip of [third.clips], as a pose. The game takes the place
+# of the left hand on the gun in third person from the clip WPNAssemblyPose of the weapon
+# (its bone WeaponIKTargetL). The vanilla pose has the place for the combat rifle.
+[third.poses]
+WPNAssemblyPose = "WPNReload:0"

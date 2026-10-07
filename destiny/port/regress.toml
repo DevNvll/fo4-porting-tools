@@ -1,0 +1,78 @@
+# The regression table of the converter (destiny/port/d2fo4.py):
+#
+#   ./port destiny regress [--only NAME]
+#
+# The program destiny/port/check/regress.py makes the clips of each weapon again in a scratch
+# folder (data/destiny/port/work/_regress/NAME) and compares the bytes of each HKX file with
+# the baseline clips.
+#
+#   name           the name of the weapon in this table
+#   file           the first-person file (.glb): a path below the data folder
+#   set            the set file: a path from the root of the repository
+#   first_person   the folders with the baseline clips of the first-person view: paths below
+#                  the data folder
+#   third_person   the same for the third-person view (the step `third` of the converter)
+#   power_armor    the same for the clips of the body in power armor ([third.power_armor])
+#
+# A baseline folder is the result of the converter before a change. When a change of the
+# converter must change a clip, say which clips are different and why (docs/ARCHITECTURE.md,
+# "Rules for a change"), make the new baseline, and name its folder here.
+
+[[weapon]]
+name = "the_last_word"
+file = "destiny/extract/handoff/the_last_word_v1/the_last_word_first_person.glb"
+set = "destiny/port/sets/the_last_word.toml"
+first_person = [
+    "destiny/port/out/the_last_word",
+    "mods/TheLastWord/behavior/thelastword/animations/first_person",
+    "mods/TexMechanica/behavior/thelastword/animations/first_person",
+]
+third_person = [
+    "mods/TheLastWord/behavior/thelastword/animations/third_person",
+    "mods/TexMechanica/behavior/thelastword/animations/third_person",
+]
+
+[[weapon]]
+name = "khvostov_7g_02"
+file = "destiny/port/extract/khvostov_7g_02/khvostov_7g_02_first_person.glb"
+set = "destiny/port/sets/khvostov_7g_02.toml"
+first_person = [
+    "destiny/port/out/khvostov_7g_02",
+    "mods/Khvostov/behavior/khvostov/animations/first_person",
+]
+third_person = ["mods/Khvostov/behavior/khvostov/animations/third_person"]
+
+[[weapon]]
+name = "hammerhead"
+file = "destiny/port/extract/hammerhead/hammerhead_first_person.glb"
+set = "destiny/port/sets/hammerhead.toml"
+first_person = [
+    "destiny/port/out/hammerhead",
+    "mods/Hammerhead/behavior/hammerhead/animations/first_person",
+]
+third_person = ["mods/Hammerhead/behavior/hammerhead/animations/third_person"]
+
+[[weapon]]
+name = "the_chaperone"
+file = "destiny/port/extract/the_chaperone/the_chaperone_first_person.glb"
+set = "destiny/port/sets/the_chaperone.toml"
+first_person = ["mods/TexMechanica/behavior/thechaperone/animations/first_person"]
+third_person = ["mods/TexMechanica/behavior/thechaperone/animations/third_person"]
+power_armor = ["mods/TexMechanica/behavior/thechaperone/animations/power_armor_third_person"]
+
+[[weapon]]
+name = "the_huckleberry"
+file = "destiny/port/extract/the_huckleberry/the_huckleberry_first_person.glb"
+set = "destiny/port/sets/the_huckleberry.toml"
+first_person = ["mods/TexMechanica/behavior/thehuckleberry/animations/first_person"]
+third_person = ["mods/TexMechanica/behavior/thehuckleberry/animations/third_person"]
+
+# The M77 of Marathon: the same converter, with the set file of marathon/port.
+[[weapon]]
+name = "m77_omnipositor"
+file = "marathon/extract/out/m77_omnipositor/m77_omnipositor_first_person.glb"
+set = "marathon/port/sets/m77_omnipositor.toml"
+first_person = [
+    "destiny/port/out/m77_omnipositor",
+    "mods/M77/behavior/m77/animations/first_person",
+]

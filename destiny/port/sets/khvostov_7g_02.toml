@@ -1,0 +1,200 @@
+# The first-person clips of the Khvostov 7G-02 (Destiny 2, an auto rifle) for Fallout 4.
+#
+#   ./port destiny convert data/destiny/port/extract/khvostov_7g_02/khvostov_7g_02_first_person.glb \
+#       --set destiny/port/sets/khvostov_7g_02.toml -o OUT
+#
+# The names in the comments of this file: extract/ is data/destiny/port/extract/, work/ is
+# data/destiny/port/work/, rig/ is data/destiny/port/rig/, and tools/ is destiny/port/tools/.
+# A file or a folder that this file names (`folder`, `dyes`, `file`, the files of
+# [model.shaders]) is beside the .glb file.
+#
+# The clip of each game state is from the animation graph of Destiny 2. The table of the
+# extraction (manifest.json) does not have the states of this rifle, so tools/d2states.py
+# reads the graph again with the tags of the weapon (extract/khvostov_7g_02/states.json).
+template = "combatrifle"
+# The hold pose (CLIP:FRAME). It gives the place of the gun in Fallout 4 weapon space, and it
+# is the pose "ready" of the clips of [synth].
+hold = "fp_001_80BC5F49:0"
+# The pose in the sights, for the clips of [synth]: this clip with the move of [sight].
+sighted = "fp_015_80BC5F3D:0"
+
+# The aim point of the sight in Fallout 4 weapon space: the center of the reticle on the
+# glass of the sight (tools/d2model.py prints it; [model.sight] below). The window of the
+# housing is from x -1.35 to 1.35 and from z 7.55 to 9.95, and its center (z 8.75) was the
+# aim point before the work on the reticle. The clip in the sights of Destiny is the clip of
+# each rifle, and Destiny aligns the sight of each weapon when the game runs: in the clip
+# the eye is at z 11.55, which is above the housing of this sight (z 10.18). Each clip of
+# `clips` gets the move that puts the aim point on the view axis in its first frame (2.69
+# units up): the arms, the hands and the gun move as one body.
+[sight]
+point = [0.0, 8.61, 8.86]
+clips = ["fp_015_80BC5F3D"]
+
+# More poses for the clips of [synth].
+[poses]
+# The sprint loop of the rifles (sprint_loop, 20 frames) is one pose: no bone moves in it.
+sprint = "fp_008_80BC5F50:0"
+
+# The kind of a weapon bone that has a hash in place of a name (tools/d2rig.py has the kinds
+# of the bones with a name). This bone is the charging handle: it moves in the reload.
+[roles]
+bone_68719972 = "bolt"
+
+# Fallout 4 clip = clip of the file.
+[clips]
+WPNIdleReady = "fp_001_80BC5F49"          # idle, the first choice, 97 frames, a loop
+# The game plays these four now and then in place of the idle. Destiny has two more clips in
+# the state idle of a rifle (the thresholds of the three clips are 0.962, 0.981 and 1.0): the
+# gun moves 0.8 and 1.3 units, and each clip starts and ends in the idle pose.
+WPNIdleReadyA = "fp_057_80BC5EF6"         # idle, the second choice, 71 frames
+WPNIdleReadyB = "fp_056_80BC5EF5"         # idle, the third choice, 35 frames
+WPNIdleReadyC = "fp_057_80BC5EF6"
+WPNIdleReadyD = "fp_056_80BC5EF5"
+WPNIdleSighted = "fp_015_80BC5F3D"        # iron_sight_idle, 97 frames, a loop
+# The graph blends this clip into the sighted idle with the weight AimWobble. The reader
+# cannot read the vanilla clip, so the clip is the sighted idle: the gun does not wobble.
+WPNIdleSightedWobble = "fp_015_80BC5F3D"
+WPNEquip = "fp_068_80BC5EF8"              # ready, 30 frames: the clip of the Khvostov (its own tag)
+WPNEquipFast = "fp_068_80BC5EF8"
+WPNUnEquip = "fp_004_80BC5F51"            # put_away, 4 frames, and 8 frames of [hold_end]
+WPNReload = "fp_067_80BC5EF7"             # reload_empty and reload_full, 105 frames: the clip of the Khvostov
+# Destiny has no clip of the first-person rig for the shot of this rifle (the states fire and
+# iron_sight_fire have no entry for its tags), so the shots are in [synth].
+# sprint_enter (fp_010_80BC5F4F) and sprint_exit (fp_009_80BC5F4E) have no clip: the Fallout 4
+# graph blends from the idle to the sprint loop and back.
+
+# Events of a clip, more than those that the tools find (a reload gets its events).
+# {sound} is the sound name of the template.
+[events]
+WPNEquip = [[0, "SoundPlay.{sound}EquipUp"]]
+WPNEquipFast = [[0, "SoundPlay.{sound}EquipUpFast"]]
+
+# The last pose of a clip on this count of more frames at its end. The first-person graph of
+# the game (GunBehavior, state WPNUnEquip) removes the gun 0.233 s before the end of the
+# put-away clip. The Destiny clip is 0.1 s long (the gun is out of the view at its last
+# frame). With 8 frames the clip is 0.367 s long, and the game removes the gun at 0.133 s:
+# after the motion.
+[hold_end]
+WPNUnEquip = 8
+
+# Clips that the source does not have. Each one takes the rigid motion of the weapon bone
+# from the vanilla clip of the template with the same name, against the vanilla ready (or
+# sighted) pose, and applies it to the pose "ready" or "sighted" above: the arms, the hands
+# and the gun move as one body. The bolt (the charging handle) has its motion of the vanilla
+# clip. The camera bone and the events are those of the vanilla clip.
+[synth]
+WPNFireSingleReady = "ready"
+WPNFireSingleReadyA = "ready"
+WPNFireSingleReadyB = "ready"
+WPNFireSingleSighted = "sighted"
+# The automatic shots: 67 frames with 20 shots (the events weaponFire of the vanilla clip).
+WPNFireAutoReadyForward = "ready"
+WPNFireAutoReadyBack = "ready"
+WPNFireAutoSighted = "sighted"
+WPNWalkForwardReady = "ready"
+WPNWalkForwardSighted = "sighted"
+WPNRunForwardReady = "ready"
+WPNRunLeftReady = "ready"
+WPNRunRightReady = "ready"
+WPNRunGunDown = "ready"
+WPNJumpImpactLand = "ready"
+# The sprint: the motion of the vanilla sprint against its own first frame, on the sprint
+# pose of Destiny.
+WPNSprint = { pose = "sprint", reference = "wpnsprint" }
+# WPNMelee and WPNMeleeBayonet are not here (a large turn of the gun; see destiny/port/README.md).
+# The game uses the vanilla clips, with the hands in the pose of the combat rifle.
+
+# One weapon place of a vanilla clip on each frame (the reader cannot read the vanilla
+# wpnidlegundown.hkx).
+[static]
+WPNIdleGunDown = { pose = "ready", vanilla = "wpnrungundown", frame = 0, frames = 30 }
+
+# The third-person clips. Fallout 4 has few third-person clips of its own for a weapon: the
+# reload is the one that shows. The source of a clip is a file of tools/d2third.py
+# (extract/khvostov_7g_02/third_person/STATE.npz): the clip of the player body that the game
+# graph has for this rifle (its content group), with the clip of the gun parts.
+#   ./port destiny convert FILE.glb --set destiny/port/sets/khvostov_7g_02.toml third --third-output DIR
+# The Destiny reload has 105 frames in the two views. The charging handle moves 3 frames
+# later in the third-person clip, so each event of the first-person reload is 3 frames later
+# here.
+[third]
+folder = "third_person"
+
+# Fallout 4 clip = state of the file.
+[third.clips]
+WPNReload = "reload"
+
+# Fallout 4 clip = one frame of a clip of [third.clips], as a pose. The game takes the place
+# of the left hand on the gun in third person from the clip WPNAssemblyPose of the weapon
+# (its bone WeaponIKTargetL). The vanilla pose has the place for the combat rifle.
+[third.poses]
+WPNAssemblyPose = "WPNReload:0"
+
+# The Fallout 4 model of the gun for an esx project (tools/d2model.py).
+[model]
+# Meshes/Weapons/NAME/NAME.nif, Materials/Weapons/NAME and Textures/Weapons/NAME
+name = "Khvostov"
+# The place of the node ProjectileNode, in Fallout 4 weapon space: the bore at the front of the
+# barrel (the ring of 136 vertices at the front, with its center at x 0 and z 4.69).
+muzzle = [0.0, 48.4, 4.69]
+
+# A texture set of the file (the material name) = the name of the Fallout 4 material.
+[model.materials]
+81522FDF = "Body"         # the gun, the magazine and the charging handle
+815234B8 = "Sight"        # the sight on the rail
+
+# The glass of the sight and the reticle: a second part of the weapon (Khvostov + Sight).
+# `file` is the file of tools/d2reticle.py beside the file of the gun, and `source` is its
+# entity with the part of the render stage `reticle`. The extraction of the gun has only the
+# opaque parts, so these parts are not in the file of the gun.
+[model.sight]
+file = "sight.json"
+source = "region21_8152332A"
+# The vanilla mesh that gives the two effect shaders (esx makes no new effect shader), and
+# its two shapes with alpha blending: the first one becomes the glass, the second one the reticle.
+template = "Meshes/Weapons/CombatShotgun/CombatShotgunReflexSightDot.nif"
+template_shapes = ["TubeGlass:0", "TubeGlass001:0"]
+# The scale of the color of the glass in its material. In Destiny the value changes with the
+# time, from 1 to 4.5 (the constants 17 to 22 of the material 81523323).
+glass_scale = 2.0
+
+# The glass (55 vertices). The pixel shader of its material
+# (extract/khvostov_7g_02/sight/81523323_ps.dxbc; tools/dxasm.py prints it) gives the rule:
+#   color = red x RED + the mirror picture of the scene   (red: the albedo plate)
+#   picture = color x a + scene x (1 - 0.5 x a)           (a: the green value of the gstack plate)
+# The red value is two marks at the left and at the right and one mark below. The green
+# value of the gstack plate is high at the edge of the glass: the edge is dark. RED is a value
+# that the game calculates: 0.8194 red is the value with no alarm (the constant 10; with the
+# alarm it is 3.0, the constant 9). The mirror picture is not done.
+# The entity has a second glass (1012 vertices, the material 8152331F): dust and a mirror
+# picture with a weight of 0.09 at most, and a dark green tint. It is not in the model.
+[[model.sight.glass]]
+material = "81523323"
+red = [0.8194, 0.0, 0.0]
+alpha = 0.5
+
+# The reticle: the quad of the stage `reticle`, with the texture of its material (a dot and
+# four arcs). Its pixel shader is that of the reticle of Hammerhead:
+#   color = red x RED + green x GREEN       (cb0[1] and cb0[2] of the material)
+#   picture = blue x color + scene x (1 - alpha x blue)       (alpha: cb0[0].x)
+# In Destiny the reticle shows only in the sights (the input 1 of the material is 0.99 or
+# more). In Fallout 4 it shows at each time, as the dot of a vanilla reflex sight.
+[model.sight.reticle]
+material = "8152C446"
+texture = "80BC0F0D"
+red = [1.0, 1.0, 1.0]                 # the dot and the four arcs
+green = [8.0, 0.0, 0.0]               # their edge
+alpha = 0.5
+# The size. The quad of the file is 1.74 x 1.77 cm, and its vertex shader
+# (extract/khvostov_7g_02/sight/8152C446_vs.dxbc) puts it 1.1 m before the camera
+# (cb0[11].x): the player sees it at an angle of 0.91 degrees. `eye` is the eye point of the
+# clip in the sights in weapon space (tools/d2points.py prints it). The quad on the glass has
+# the same angle from that point. `scale` changes the size.
+distance = 1.1
+eye = [0.0, -17.28, 8.86]
+scale = 1.0
+# The place of its center on the glass: a texture coordinate of the glass material (the
+# middle between the two marks at the sides, above the mark below). The aim point of [sight]
+# must be this place.
+center = [0.499, 0.499]
+

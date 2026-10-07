@@ -1,0 +1,13 @@
+# The vanilla combat rifle with each weapon bone of the Fallout 4 skeleton, for a gun with
+# many moving parts (a machine gun with a cover, a box and a belt). CombatRifle.nif has no
+# node for WeaponExtra2 and WeaponExtra3; the skeleton has the two bones, and the vanilla
+# clips have keys for them. Their rest place is that of the walk clip, as for the other bones.
+base = "combatrifle"
+
+[pivots]
+WeaponExtra2 = [0.0, 6.010495, -7.909477]
+WeaponExtra3 = [0.0, 6.010495, -7.909477]
+
+[parents]
+WeaponExtra2 = "Weapon"
+WeaponExtra3 = "Weapon"

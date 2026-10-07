@@ -1,0 +1,90 @@
+# The vanilla combat rifle of Fallout 4 as the template of a conversion.
+# The template gives the weapon bones, the names of the sounds in the clip events and the
+# pose of the body bones that a first-person source does not have.
+
+# The sound name in the events of a clip (SoundPlay.<sound>EquipUp).
+sound = "WPNRifleCombat"
+# The sound name in the events of the reload (SoundPlay.<reload_sound>Reload<NAME>). The combat
+# rifle has the clips of the combat shotgun, and its reload has the sounds of the shotgun.
+reload_sound = "WPNShotgunCombat"
+# The first-person clips of the template, in rig/ (data/destiny/port/rig). Each name is in lower case.
+clips = "combatrifle"
+# The folders of these clips in the game (Meshes/Actors/Character/_1stPerson/Animations). The
+# combat rifle has the clips of the combat shotgun, and one clip of its own
+# (WPNFireSingleSighted) in the second folder.
+game_clips = ["CombatShotgun", "CombatShotgun/CombatRifle"]
+# The reload sounds that the template weapon has. The vanilla reload has them in this order:
+# MagOut, MagIn, BoltOpen, BoltClose.
+reload_sounds = ["MagOut", "MagIn", "BoltOpen", "BoltClose"]
+# The vanilla clip whose first frame has the weapon at the ready. Its first frame gives the
+# pose of each body bone (a Destiny first-person clip has useful poses of the arms only), and
+# the local transform of each weapon bone that has no part.
+ready = "wpnfiresingleready"
+# The vanilla clip whose first frame has the weapon in the sights. It gives the bone
+# Camera Control of each clip in the sights (-5.48 on Z in the vanilla sighted clips).
+sighted = "wpnfiresinglesighted"
+# The third-person clips of the template, in rig/ (tools/make_rig.py): the clips of the player
+# in this folder of the game (Meshes/Actors/Character/Animations/Weapon). The combat rifle has
+# the third-person clips of the combat shotgun.
+third_clips = "third/combatshotgun"
+third_game_clips = "CombatShotgun/Player"
+# The vanilla third-person clip whose first frame is the stance of the body with the gun. A
+# third-person clip of Destiny has the motion of the upper body only, and that motion goes on
+# this stance (tools/blender/d3retarget.py).
+third_ready = "wpnreload"
+# The third-person clips of the template for a body in power armor, in rig/
+# (tools/make_rig.py), and their folder in the game (Meshes/Actors/PowerArmor/Animations/Weapons).
+# A reload clip with a new name ([third.power_armor] of a set file) is a copy of one of them.
+third_power_armor_clips = "third_power_armor/combatshotgun"
+third_power_armor_game_clips = "CombatShotgun"
+# The material file of the template weapon (in Fallout4 - Materials.ba2). The material of each
+# texture set of a ported gun is a copy of it with other textures (tools/d2model.py).
+material = "Materials/Weapons/CombatShotgun/TGunReceiver.BGSM"
+# The grip point of the template in Fallout 4 weapon space: the middle of the first joints of
+# the index finger and the middle finger of the right hand, in the first frame of that clip.
+# The grip point of the ported gun goes here, so the hands of the vanilla clips (third
+# person, and each clip that the conversion does not replace) hold its grip.
+grip = [2.6936, 0.7911, -0.7912]
+# The bones that a clip with vanilla weapon motion moves on the gun as the vanilla clip does.
+# The bolt goes 3.67 units to the rear in each shot.
+synth_bones = ["WeaponBolt"]
+
+# The rest place of each weapon bone relative to its parent bone, from the vanilla clips
+# (the walk clip, where each part is at rest). CombatRifle.nif has the same values.
+#   WeaponBolt            the bolt with the charging handle (the part CombatShotgunBolt)
+#   WeaponMagazine        the magazine (the mesh of the magazine mod goes on this node)
+#   WeaponMagazineChild1..5, WeaponExtra1, WeaponOptics1..2
+#                         no part in CombatRifle.nif. The model of a ported gun has them too,
+#                         so a vanilla clip finds each node that it can move.
+#   WeaponTrigger         the trigger. The vanilla reload moves it 1.8 units.
+[pivots]
+WeaponBolt = [-2.953693, 18.846905, 2.647336]
+WeaponMagazine = [-0.046969, 17.142818, 0.323509]
+WeaponMagazineChild1 = [0.0, -9.695819, -8.555034]
+WeaponMagazineChild2 = [0.0, -8.356684, -7.386243]
+WeaponMagazineChild3 = [0.0, -7.878603, -6.581021]
+WeaponMagazineChild4 = [0.0, -8.148144, -6.837589]
+WeaponMagazineChild5 = [0.0, -8.701192, -8.080792]
+WeaponExtra1 = [0.0, 6.010495, -7.909477]
+WeaponOptics1 = [0.0, 4.941637, -7.130713]
+WeaponOptics2 = [0.0, 4.399108, -7.136787]
+WeaponTrigger = [0.0, 4.947533, -1.264524]
+
+[parents]
+WeaponBolt = "Weapon"
+WeaponMagazine = "Weapon"
+WeaponMagazineChild1 = "WeaponMagazine"
+WeaponMagazineChild2 = "WeaponMagazine"
+WeaponMagazineChild3 = "WeaponMagazine"
+WeaponMagazineChild4 = "WeaponMagazine"
+WeaponMagazineChild5 = "WeaponMagazine"
+WeaponExtra1 = "Weapon"
+WeaponOptics1 = "Weapon"
+WeaponOptics2 = "Weapon"
+WeaponTrigger = "Weapon"
+
+# The bone of each kind of gun part.
+[roles]
+magazine = "WeaponMagazine"
+bolt = "WeaponBolt"
+trigger = "WeaponTrigger"

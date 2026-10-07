@@ -1,0 +1,128 @@
+# The first-person clips of The Last Word (Destiny 2) for Fallout 4.
+#
+#   ./port destiny convert data/destiny/extract/handoff/the_last_word_v1/the_last_word_first_person.glb \
+#       --set destiny/port/sets/the_last_word.toml -o OUT
+#
+# The names in the comments of this file: extract/ is data/destiny/port/extract/, work/ is
+# data/destiny/port/work/, rig/ is data/destiny/port/rig/, and tools/ is destiny/port/tools/.
+# A file or a folder that this file names (`folder`, `dyes`, `file`, the files of
+# [model.shaders]) is beside the .glb file.
+#
+# The clip of each game state is from the animation graph of Destiny 2 (HANDOFF.md of the
+# extraction, data/destiny/extract/handoff/the_last_word_v1, "Clips of other game states").
+template = "revolver44"
+# The hold pose (CLIP:FRAME). It gives the place of the gun in Fallout 4 weapon space, and it
+# is the pose "ready" of the clips of [synth].
+hold = "fp_000_80BC8633:0"
+# The pose in the sights, for the clips of [synth]. The sights of the gun are on the view
+# axis in this clip, so it needs no move.
+sighted = "fp_007_80BC8637:0"
+
+# Fallout 4 clip = clip of the file.
+[clips]
+WPNIdleReady = "fp_000_80BC8633"          # idle, 97 frames, a loop
+WPNIdleReadyA = "fp_000_80BC8633"         # the four idle variants of the vanilla graph: the same idle
+WPNIdleReadyB = "fp_000_80BC8633"
+WPNIdleReadyC = "fp_000_80BC8633"
+WPNIdleReadyD = "fp_000_80BC8633"
+WPNIdleSighted = "fp_007_80BC8637"        # iron_sight_idle, 97 frames, a loop
+# The graph blends this clip into the sighted idle with the weight AimWobble (a crippled arm,
+# for example). The vanilla clip has the hands and the sights of the .44, and the reader
+# cannot read it, so the clip is the sighted idle: the pose is correct, and the gun does not
+# wobble.
+WPNIdleSightedWobble = "fp_007_80BC8637"
+WPNFireSingleReady = "fp_054_80BC8650"    # fire, 30 frames: the left hand fans the hammer
+WPNFireSingleReadyA = "fp_054_80BC8650"   # the two fire variants of the vanilla graph: the same shot
+WPNFireSingleReadyB = "fp_054_80BC8650"
+WPNFireSingleSighted = "fp_055_80BC8651"  # iron_sight_fire, 33 frames
+WPNEquip = "fp_040_80BC864A"              # ready, 33 frames, with a spin of the gun
+WPNEquipFast = "fp_040_80BC864A"
+WPNUnEquip = "fp_005_80BC8662"            # put_away, 5 frames, and 8 frames of [hold_end]
+WPNReload = "fp_001_80BC8660"             # reload_empty, reload_full and reload_special, 127 frames
+WPNSprint = "fp_018_80BC863E"             # sprint_loop, 20 frames
+# sprint_enter (fp_017_80BC8666) and sprint_exit (fp_020_80BC8667) have no clip: the Fallout 4
+# graph blends from the idle to the sprint loop and back.
+
+# Events of a clip, more than those that the tools find (a reload and a shot get theirs).
+# {sound} is the sound name of the template. The camera bone is lowest at the frames 6 and 16
+# of the sprint loop: the two steps.
+[events]
+WPNEquip = [[0, "SoundPlay.{sound}EquipUp"]]
+WPNEquipFast = [[0, "SoundPlay.{sound}EquipUpFast"]]
+WPNSprint = [[6, "FootSprintRight"], [6, "SoundPlay.WPNSprintShakePistolA"], [16, "FootSprintLeft"], [16, "SoundPlay.WPNSprintShakePistolA"]]
+
+# The last pose of a clip on this count of more frames at its end. The first-person graph of
+# the game (GunBehavior, state WPNUnEquip) removes the gun 0.233 s before the end of the
+# put-away clip. The Destiny clip is 0.133 s long (the gun is out of the view at its last
+# frame), so with no more frames the gun goes out of the hand before the hand moves. With 8
+# frames the clip is 0.4 s long, and the game removes the gun at 0.167 s: after the motion.
+[hold_end]
+WPNUnEquip = 8
+
+# Clips that the source does not have. Each one takes the rigid motion of the weapon bone
+# from the vanilla clip of the template with the same name, against the vanilla ready (or
+# sighted) pose, and applies it to the pose "ready" or "sighted" above: the arms, the hands
+# and the gun move as one body. The camera bone and the events are those of the vanilla clip.
+[synth]
+WPNWalkForwardReady = "ready"
+WPNWalkForwardSighted = "sighted"
+WPNRunForwardReady = "ready"
+WPNRunLeftReady = "ready"
+WPNRunRightReady = "ready"
+WPNRunGunDown = "ready"
+WPNJumpImpactLand = "ready"
+# WPNMelee (the hit with the gun) is not here: the vanilla clip turns the gun far to the side,
+# and with the arms as one body with the gun the shoulders go through the view. The game uses
+# the vanilla .44 clip, with the hands in the pose of the .44.
+
+# One weapon place of a vanilla clip on each frame (the reader cannot read the vanilla
+# wpnidlegundown.hkx).
+[static]
+WPNIdleGunDown = { pose = "ready", vanilla = "wpnrungundown", frame = 0, frames = 30 }
+
+# The third-person clips. Fallout 4 has few third-person clips of its own for a weapon: the
+# reload is the one that shows. The source of a clip is a file of tools/d2third.py: the clip
+# of the player body that the game graph has for a pistol (The Last Word has no reload of its
+# own in third person, and no leaf for a revolver), with the clip of the gun parts (the
+# cylinder swings out).
+#   ./port destiny third data/destiny/extract/handoff/the_last_word_v1/manifest.json \
+#       -o data/destiny/port/extract/the_last_word/third_person
+#   ./port destiny convert FILE.glb --set destiny/port/sets/the_last_word.toml third --third-output DIR
+# The reload has 127 frames in the two views. `align` names the part whose first motion gives
+# the count of frames by which each event of the first-person reload is later here.
+# The folder is not beside the .glb file (that file is in the folder of the extraction), so
+# it is a path below data/destiny/port.
+[third]
+folder = "extract/the_last_word/third_person"
+align = ["WeaponMagazine"]
+# The gun has its place of Destiny against the right shoulder (tools/blender/d3retarget.py):
+# the stance of Fallout 4 has the revolver 4.7 units more to the front, and with the motion of
+# Destiny on that place the left arm is up to 3.7 units too short. On the first and the last 8
+# frames the gun goes from the stance to the place of Destiny and back.
+gun = "source"
+blend = 8
+
+# Fallout 4 clip = state of the file.
+[third.clips]
+WPNReload = "reload"
+
+# Fallout 4 clip = one frame of a clip of [third.clips], as a pose. The game takes the place
+# of the left hand on the gun in third person from the clip WPNAssemblyPose of the weapon.
+[third.poses]
+WPNAssemblyPose = "WPNReload:0"
+
+# The Fallout 4 model of the gun for an esx project (tools/d2model.py).
+[model]
+# Meshes/Weapons/NAME/NAME.nif, Materials/Weapons/NAME and Textures/Weapons/NAME
+name = "TheLastWord"
+# The place of the node ProjectileNode, in Fallout 4 weapon space: the bore at the front of the
+# barrel. The gun fires from the lowest chamber of the cylinder, so the bore is below the
+# center of the cylinder (the ring of vertices with the radius 0.62 at the front face).
+muzzle = [0.0, 27.7, -1.85]
+
+# A texture set of the file (the material name) = the name of the Fallout 4 material.
+[model.materials]
+8152853B = "Grip"         # the grip, the back of the frame and the hammer
+8152838A = "Frame"        # the frame and the barrel
+81528843 = "Rib"          # the rib on the barrel
+81528697 = "Cylinder"     # the cylinder, the crane and the rounds

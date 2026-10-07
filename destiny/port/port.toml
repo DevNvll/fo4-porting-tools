@@ -1,0 +1,316 @@
+# The commands of destiny/port (the converter d2fo4): ./port destiny COMMAND
+# docs/ARCHITECTURE.md describes this file. destiny/port/README.md describes each program.
+
+# --- the conversion
+
+[[command]]
+name = "destiny convert"
+help = "Convert the clips of a set file to Fallout 4 clips (HKX): FILE.glb --set SET.toml [-o OUT] [STEP ...]."
+run = ["python", "destiny/port/d2fo4.py"]
+needs = ["blender", "data/fnv/rig/1st_skeleton.hkx", "data/destiny/port/rig/third/skeleton.hkx"]
+
+[[command]]
+name = "destiny regress"
+help = "Make the clips of each ported weapon again and compare the bytes with the baseline clips (destiny/port/regress.toml)."
+run = ["python", "destiny/port/check/regress.py"]
+needs = ["blender", "data/fnv/rig/1st_skeleton.hkx", "data/destiny/port/rig/third/skeleton.hkx"]
+
+[[command]]
+name = "destiny model"
+help = "Make the model, the materials, the textures and the sight of a weapon in data/mods/NAME: FILE.glb --set SET.toml [--mod NAME]."
+run = ["python", "destiny/port/tools/d2model.py"]
+needs = ["esx", "fo4_data", "data/fnv/rig/1st_skeleton.hkx"]
+
+[[command]]
+name = "destiny points"
+help = "Print the muzzle, the eye point and a map of the sight of a gun, for a set file: WORK/parts.json [--poses FILE.npz]."
+run = ["python", "destiny/port/tools/d2points.py"]
+
+[[command]]
+name = "destiny make-rig"
+help = "Put the vanilla clips of each template weapon into data/destiny/port/rig, from the archives of Fallout 4."
+run = ["python", "destiny/port/tools/make_rig.py"]
+needs = ["fo4_data"]
+
+[[command]]
+name = "destiny measure-hands"
+help = "Measure the Destiny hand mesh against the Fallout 4 hand mesh (d2_hands.json): FILE.glb [-o FILE.json]."
+run = ["python", "destiny/port/tools/d2hands.py"]
+needs = ["data/fnv/rig/1stpersonmalehands.glb"]
+
+[[command]]
+name = "destiny measure-template"
+help = "Measure the weapon bones of the vanilla clips of a template folder, for a new template file: FOLDER CLIP ..."
+run = ["python", "destiny/port/tools/template_measure.py"]
+needs = ["data/fnv/rig/1st_skeleton.hkx"]
+
+[[command]]
+name = "destiny shader-text"
+help = "Print the instructions of a Direct3D 11 shader file of a sight material: FILE.dxbc."
+run = ["python", "destiny/port/tools/dxasm.py"]
+
+# --- the data of Destiny 2 that the extraction does not have (these programs import d2x)
+
+[[command]]
+name = "destiny states"
+help = "The clip of each game state of a weapon, from the animation graph: MANIFEST.json [-o states.json]."
+run = ["python:d2x", "destiny/port/tools/d2states.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny dyes"
+help = "The dyes of a weapon or of a shader item: ITEM [--shader NAME] -o dyes.json."
+run = ["python:d2x", "destiny/port/tools/d2dyes.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny reticle"
+help = "The glass of the sight of a weapon and its reticle: ITEM -o sight.json."
+run = ["python:d2x", "destiny/port/tools/d2reticle.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny third"
+help = "The third-person clips of a weapon (the body with the gun): MANIFEST.json [--state reload ...] [-o FOLDER]."
+run = ["python:d2x", "destiny/port/tools/d2third.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny pose"
+help = "Clips with the hand pose of a pose clip of the gun, for [hand_pose]: MANIFEST.json --pose TAG --hold CLIP --clip CLIP ..."
+run = ["python:d2x", "destiny/port/tools/d2pose.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+# --- the analysis programs of the game data (destiny/port/notes; they import d2x and print what the tools were made from)
+
+[[command]]
+name = "destiny notes dye-dump"
+help = "Print the data of the tag of a dye: WRAPPER_TAG ..."
+run = ["python:d2x", "destiny/port/notes/dye_dump.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny notes dye-slots"
+help = "Print the dye slot data of each mesh part of an item: ITEM_HASH ..."
+run = ["python:d2x", "destiny/port/notes/dye_slots.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny notes dye-values"
+help = "Print the values of the dyes of an item: ITEM_HASH ..."
+run = ["python:d2x", "destiny/port/notes/dye_values.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny notes dyes-explore"
+help = "Find the dye tables of the game build: ITEM_HASH ..."
+run = ["python:d2x", "destiny/port/notes/dyes_explore.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny notes graph-tags"
+help = "Print the weapon tag tree and the leaves of the main states of each first-person rig: MANIFEST.json."
+run = ["python:d2x", "destiny/port/notes/graph_tags.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny notes weapon-tags"
+help = "Print the weapon tags that the pattern entity of a weapon lists: MANIFEST.json."
+run = ["python:d2x", "destiny/port/notes/weapon_tags.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny notes third-clip-index"
+help = "Write a table of each animation clip tag of the game (name hash, frames, bones): OUT.npy."
+run = ["python:d2x", "destiny/port/notes/third_clip_index.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+[[command]]
+name = "destiny notes third-graph-dump"
+help = "Write each state and leaf of the third-person graph of the player body: OUT.json."
+run = ["python:d2x", "destiny/port/notes/third_graph_dump.py"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["destiny_game"]
+
+# --- the checks
+
+[[command]]
+name = "destiny check validate"
+help = "The numbers and the videos of each clip of a set: FILE.glb --set SET.toml --out FOLDER [--clips FOLDER] [--no-video]."
+run = ["python", "destiny/port/check/validate.py"]
+needs = ["blender", "data/fnv/rig/1st_skeleton.hkx", "data/destiny/port/rig/third/skeleton.hkx"]
+
+[[command]]
+name = "destiny check gun"
+help = "Compare the gun of a clip with the gun of the source, vertex by vertex: FILE.glb CLIP WORK/parts.json CLIP.hkx."
+run = ["python", "destiny/port/check/gun.py"]
+needs = ["data/fnv/rig/1st_skeleton.hkx", "data/destiny/port/rig/third/skeleton.hkx"]
+
+[[command]]
+name = "destiny check touch"
+help = "How near each hand is to the gun, source and result (in Blender): --glb FILE.glb --bake FILE.npz --poses CLIP.hkx --parts FILE.json."
+run = ["sh", "destiny/port/check/bl.sh", "destiny/port/check/touch.py", "--"]
+needs = ["blender", "data/fnv/rig/1stpersonmalehands.glb"]
+
+[[command]]
+name = "destiny check touch-table"
+help = "The distance of each hand to the gun for each clip of a set: FILE.glb --set SET.toml --clips FOLDER [--out FILE.txt]."
+run = ["python", "destiny/port/check/touch_table.py"]
+needs = ["blender", "data/fnv/rig/1stpersonmalehands.glb"]
+
+[[command]]
+name = "destiny check contact"
+help = "The hand vertices inside the gun, source and result (in Blender): --glb FILE.glb --bake FILE.npz --poses CLIP.hkx --parts FILE.json --out FILE.json."
+run = ["sh", "destiny/port/check/bl.sh", "destiny/port/check/contact.py", "--"]
+needs = ["blender", "data/fnv/rig/1stpersonmalehands.glb"]
+
+[[command]]
+name = "destiny check contact-table"
+help = "A short table of a file of `destiny check contact`: FILE.json."
+run = ["python", "destiny/port/check/contact_table.py"]
+
+[[command]]
+name = "destiny check fingers"
+help = "The finger joints of a clip against the vanilla clips of the template: CLIP.hkx [--bake FILE.npz] [--vanilla FOLDER]."
+run = ["python", "destiny/port/check/fingers.py"]
+needs = ["data/fnv/rig/1st_skeleton.hkx"]
+
+[[command]]
+name = "destiny check render"
+help = "Pictures of the source and of the result of a clip (in Blender): --glb FILE.glb --clip CLIP --poses CLIP.hkx --parts FILE.json --out DIR."
+run = ["sh", "destiny/port/check/bl.sh", "destiny/port/check/render.py", "--"]
+needs = ["blender", "data/fnv/rig/1stpersonmalehands.glb", "data/destiny/port/rig/third/skeleton.hkx"]
+
+[[command]]
+name = "destiny check sheet"
+help = "Pictures of `destiny check render` in one picture, the source above the result: DIR CLIP VIEW \"0 10 20\" OUT.jpg."
+run = ["sh", "destiny/port/check/sheet.sh"]
+
+[[command]]
+name = "destiny check look-sheet"
+help = "One frame of `destiny check render` from more views, the source above the result: DIR CLIP FRAME OUT.jpg VIEW[,VIEW...]."
+run = ["python", "destiny/port/check/look_sheet.py"]
+
+[[command]]
+name = "destiny check frame-sheet"
+help = "Each frame of `destiny check render` of one view in one picture: DIR TAG OUT.jpg [--columns N] [--view fp]."
+run = ["python", "destiny/port/check/frame_sheet.py"]
+
+[[command]]
+name = "destiny check hand-sheet"
+help = "The left hand before and after a change, as game pictures and as check pictures: --before DIR --after DIR --clip CLIP --out OUT.jpg."
+run = ["python", "destiny/port/check/hand_sheet.py"]
+
+[[command]]
+name = "destiny check video"
+help = "A video from the pictures of `destiny check render`, the source beside the result: DIR CLIP OUT.mp4 VIEW [VIEW2] [RATE]."
+run = ["sh", "destiny/port/check/video.sh"]
+
+[[command]]
+name = "destiny check strip"
+help = "Frames of a video at equal steps, in one row: VIDEO OUT.jpg [COUNT] [WIDTH]."
+run = ["sh", "destiny/port/check/strip.sh"]
+
+[[command]]
+name = "destiny check video-sheet"
+help = "Frames of a video at equal steps with the time of each one, in rows: VIDEO OUT.jpg [--count N] [--columns N]."
+run = ["python", "destiny/port/check/video_sheet.py"]
+
+[[command]]
+name = "destiny check third-sheet"
+help = "A third-person clip as lines, the source above the result: SOURCE.npz RESULT.npz OUT.png [--frames 8]."
+run = ["python", "destiny/port/check/third_sheet.py"]
+
+# --- the game tests (esx probe: a headless test copy of the game; one session at a time for the whole computer)
+
+[[command]]
+name = "destiny game session"
+help = "Build a mod, start a game test session with its release and print the session ID: NAME LABEL."
+run = ["sh", "destiny/port/check/third_session.sh"]
+needs = ["esx", "fo4_data", "proton"]
+
+[[command]]
+name = "destiny game record"
+help = "Record the game test of a weapon as a video: --session ID --weapon EDITORID --capacity N [--auto] --out DIR."
+run = ["python", "destiny/port/check/game_record.py"]
+needs = ["esx"]
+
+[[command]]
+name = "destiny game third"
+help = "The game test of the third-person clips, pictures from three sides: --session ID --weapon EDITORID --capacity N [--record] --out DIR."
+run = ["python", "destiny/port/check/game_third.py"]
+needs = ["esx"]
+
+[[command]]
+name = "destiny game reloads"
+help = "The game test of one reload for each count of rounds, in the two views: --session ID --weapon EDITORID --capacity N --out DIR."
+run = ["python", "destiny/port/check/game_reloads.py"]
+needs = ["esx"]
+
+[[command]]
+name = "destiny game sight"
+help = "Game pictures of a weapon at the hip and in the sights: --session ID --weapon EDITORID --capacity N --out DIR."
+run = ["python", "destiny/port/check/game_sight.py"]
+needs = ["esx"]
+
+[[command]]
+name = "destiny game trace"
+help = "Print the clips and the events of one reload in the game: --session ID --weapon EDITORID --loaded N --view first|third."
+run = ["python", "destiny/port/check/game_trace.py"]
+needs = ["esx"]
+
+[[command]]
+name = "destiny game shots"
+help = "Game pictures of the gun in a slow third-person reload: --session ID --weapon EDITORID --loaded N --from T0 --to T1 --count N --out DIR."
+run = ["python", "destiny/port/check/game_shots.py"]
+needs = ["esx"]
+
+[[command]]
+name = "destiny game all"
+help = "Each game test of the weapons of a mod in one session: --weapon EDITORID:CAPACITY[:auto][:reloads] ... --out DIR [--dry-run]."
+run = ["python", "destiny/port/check/game_all.py"]
+needs = ["esx"]
+
+[[command]]
+name = "destiny game results"
+help = "Copy the results of the game tests of a weapon into its validation folder and print the numbers: --out FOLDER [--record DIR] ..."
+run = ["python", "destiny/port/check/game_results.py"]
+
+# --- what the commands need
+
+[[check]]
+setting = "blender"
+what = "Blender 4.5. The steps `retarget` and `third` of the converter and the checks with pictures run in it, with no window."
+make = "Install Blender 4.5 and give its program as `blender` in data/config.toml (or in BLENDER)."
+
+[[check]]
+setting = "esx"
+what = "The esx command. It writes the textures and the materials of a model, builds a mod and runs the game test."
+make = "Build esx and give its program as `esx` in data/config.toml (or in ESX_BIN)."
+
+[[check]]
+path = "data/fnv/rig"
+what = "The rig folder of fnv (files of the game). destiny/port reads the first-person skeleton and the arm meshes of Fallout 4 from it."
+make = "./port fnv make-rig --nvcs /path/to/NVCS/Skeleton.nif (the skeleton), then ./port fnv make-rig --arm-meshes (the arm meshes)"
+
+[[check]]
+path = "data/destiny/port/rig/third/skeleton.hkx"
+what = "The rig folder of destiny/port: the vanilla clips of each template weapon and the third-person skeleton (files of the game)."
+make = "./port destiny make-rig"
+
+[[check]]
+path = "data/destiny/extract/venv/bin/python"
+what = "The Python environment of d2x. The commands destiny states, dyes, reticle, third and pose import d2x."
+make = "./port destiny setup"
