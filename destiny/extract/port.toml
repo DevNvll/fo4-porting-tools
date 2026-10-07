@@ -1,0 +1,105 @@
+# The commands of destiny/extract (d2x): a weapon of Destiny 2 as glTF files.
+# docs/ARCHITECTURE.md has the schema. destiny/extract/README.md has the details.
+#
+# One command for each d2x subcommand (not one pass-through command), because:
+#   - `./port list` shows each one with its help line;
+#   - each one needs different things: find, extract and tag read the game; check-glb and
+#     video use Blender and do not read the game;
+#   - `./port destiny extract --help` shows the options of that subcommand.
+# The options --packages and --version are correct after the subcommand.
+# `destiny/extract/d2x.sh SUBCOMMAND` runs the same program with no `./port`.
+# `./port` puts data/destiny/extract/venv/bin/python in `needs` of each `python:d2x` command.
+
+[[command]]
+name = "destiny setup"
+help = "Prepare d2x below data/destiny/extract: clones, patch, cargo build, Python environment, Oodle link. Safe to run again."
+run = ["bash", "destiny/extract/setup.sh"]
+
+[[command]]
+name = "destiny find"
+help = "List the items of Destiny 2 whose name contains TEXT: item hash, pattern entity, name."
+run = ["python:d2x", "destiny/extract/d2x_cli.py", "find"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = [
+    "destiny_game",
+    "data/destiny/extract/venv/bin/python",
+    "data/destiny/extract/target/release/libtigerpkg_ffi.so",
+    "data/destiny/extract/runtime/liblinoodle3.so",
+    "data/destiny/extract/runtime/oo2core_3_win64.dll",
+]
+
+[[command]]
+name = "destiny extract"
+help = "Export a weapon (name or item hash) as glTF files with a manifest: model, textures, rigs, clips. Options: --arms ARMOR, --out DIR."
+run = ["python:d2x", "destiny/extract/d2x_cli.py", "extract"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = [
+    "destiny_game",
+    "data/destiny/extract/venv/bin/python",
+    "data/destiny/extract/target/release/libtigerpkg_ffi.so",
+    "data/destiny/extract/runtime/liblinoodle3.so",
+    "data/destiny/extract/runtime/oo2core_3_win64.dll",
+    "data/destiny/extract/vendor/tiger-animation-parser/tag_readers/read_rig.py",
+]
+
+[[command]]
+name = "destiny check-glb"
+help = "Import a .glb file of d2x in Blender, do the checks, and render previews (the d2x subcommand `check`)."
+run = ["python:d2x", "destiny/extract/d2x_cli.py", "check"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["blender", "data/destiny/extract/venv/bin/python"]
+
+[[command]]
+name = "destiny video"
+help = "Render clips of a .glb file from the first-person camera: .mp4 (needs ffmpeg) or a .png frame sheet."
+run = ["python:d2x", "destiny/extract/d2x_cli.py", "video"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = ["blender", "data/destiny/extract/venv/bin/python"]
+
+[[command]]
+name = "destiny tag"
+help = "Write the raw data of package entries (hex tag hashes, for example 80BC8633) to files."
+run = ["python:d2x", "destiny/extract/d2x_cli.py", "tag"]
+env = { PYTHONPATH = "destiny/extract" }
+needs = [
+    "destiny_game",
+    "data/destiny/extract/venv/bin/python",
+    "data/destiny/extract/target/release/libtigerpkg_ffi.so",
+    "data/destiny/extract/runtime/liblinoodle3.so",
+    "data/destiny/extract/runtime/oo2core_3_win64.dll",
+]
+
+[[check]]
+setting = "destiny_game"
+what = "The game folder of Destiny 2 (it has packages/ and bin/x64/oo2core_3_win64.dll). d2x reads it and does not change it."
+make = "Give destiny_game in data/config.toml, or the environment variable D2X_GAME. Then: ./port destiny setup"
+
+[[check]]
+path = "data/destiny/extract/venv/bin/python"
+what = "The Python environment of d2x (destiny/extract/requirements.txt). The programs that import d2x use it (`python:d2x`)."
+make = "./port destiny setup"
+
+[[check]]
+path = "data/destiny/extract/target/release/libtigerpkg_ffi.so"
+what = "The built wrapper of tiger-pkg (cargo, destiny/extract/tigerpkg-ffi). Python reads the packages through it."
+make = "./port destiny setup"
+
+[[check]]
+path = "data/destiny/extract/vendor/tiger-animation-parser/tag_readers/read_rig.py"
+what = "The clone of tiger-animation-parser with the d2_sk patch: the decoder of the clips."
+make = "./port destiny setup"
+
+[[check]]
+path = "data/destiny/extract/runtime/liblinoodle3.so"
+what = "The linoodle shim (a copy from the clone of tiger-pkg): it loads the Oodle DLL of the game on Linux."
+make = "./port destiny setup"
+
+[[check]]
+path = "data/destiny/extract/runtime/oo2core_3_win64.dll"
+what = "The link to the Oodle DLL of the game. The packages do not decompress with no Oodle library."
+make = "./port destiny setup    (the setting destiny_game must have a value first)"
+
+[[check]]
+setting = "blender"
+what = "Blender 4.5: `destiny check-glb` and `destiny video` use it. The extraction does not need it."
+make = "Give blender in data/config.toml, or the environment variable BLENDER, or put blender in the PATH."

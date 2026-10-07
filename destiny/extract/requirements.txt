@@ -1,0 +1,10 @@
+# The Python packages of d2x and of tiger-animation-parser.
+# These versions made the results that the ports use (Python 3.13). A different version of
+# numpy, pillow or texture2ddecoder can change the bytes of a result; if you change one, run
+# the extraction of a weapon again and compare it with the earlier result (README.md).
+numpy==2.5.3
+scipy==1.18.1
+pygltflib==1.16.5
+pyglm==2.8.3
+pillow==12.3.0
+texture2ddecoder==1.0.6

@@ -1,0 +1,24 @@
+[package]
+name = "tigerpkg-ffi"
+version = "0.1.0"
+edition = "2021"
+description = "C ABI and CLI wrapper around tiger-pkg, used by the d2x Python tools"
+
+[lib]
+name = "tigerpkg_ffi"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "tigerx"
+path = "src/main.rs"
+
+[dependencies]
+# setup.sh clones tiger-pkg at this commit below the data folder and gives cargo the clone
+# (`--config patch...path=...`), so cargo does not fetch it and Cargo.lock does not change.
+# The commit here and the commit in setup.sh must be the same.
+tiger-pkg = { git = "https://github.com/v4nguard/tiger-pkg.git", rev = "657f41c0851001b2d371592b2f7a5cb9c686ddb4" }
+anyhow = "1"
+clap = { version = "4.6", features = ["derive"] }
+
+[profile.release]
+opt-level = 3

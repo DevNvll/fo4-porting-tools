@@ -1,0 +1,48 @@
+diff --git a/tag_readers/read_rig.py b/tag_readers/read_rig.py
+index 0419b8c..41f5f8c 100644
+--- a/tag_readers/read_rig.py
++++ b/tag_readers/read_rig.py
+@@ -15,6 +15,7 @@ from fnv_hashes.int_to_hex import u32_to_be_hex
+ rig_secondary_classes = {
+ 	Game_Version.D1_DEV_ALPHA: 0x80800A98,
+ 	Game_Version.D1_ROI: 0x808008B2,
++	Game_Version.D2_SK: 0x80808F96,
+ 	Game_Version.D2_EOF: 0x80808B66,
+ 	Game_Version.MARATHON: 0x8080AD85
+ }
+@@ -58,6 +59,7 @@ def read_runtime_rig_main_struct(f: BinaryIO, pointer: Base_Tag_Pointer, game_ve
+ 	padding = {
+ 		Game_Version.D1_DEV_ALPHA: 68,
+ 		Game_Version.D1_ROI: 8 * 16,
++		Game_Version.D2_SK: 9 * 16,
+ 		Game_Version.D2_EOF: 10 * 16 + 8,
+ 		Game_Version.MARATHON: 10 * 16 + 8
+ 	}
+@@ -101,6 +103,7 @@ def read_runtime_rig_data(f: BinaryIO, main_struct: Runtime_Rig_Main_Struct, gam
+ 	relations_functions = {
+ 		Game_Version.D1_DEV_ALPHA: read_control_relation_d1,
+ 		Game_Version.D1_ROI: read_control_relation_d1,
++		Game_Version.D2_SK: read_control_relation_d2,
+ 		Game_Version.D2_EOF: read_control_relation_d2,
+ 		Game_Version.MARATHON: read_control_relation_d2
+ 	}
+diff --git a/tag_readers/read_skeleton.py b/tag_readers/read_skeleton.py
+index 839480b..fb57d20 100644
+--- a/tag_readers/read_skeleton.py
++++ b/tag_readers/read_skeleton.py
+@@ -21,6 +21,7 @@ from .read_s_pattern_component import S_Pattern_Component_Header, read_s_pattern
+ skeleton_secondary_classes = {
+ 	Game_Version.D1_DEV_ALPHA: 0x80800DC9,
+ 	Game_Version.D1_ROI: 0x808006BD,
++	Game_Version.D2_SK: 0x80808545,
+ 	Game_Version.D2_EOF: 0x808081DD,
+ 	Game_Version.MARATHON: 0x80809FB6
+ }
+@@ -170,6 +171,7 @@ def read_skeleton_main_struct(f: BinaryIO, pointer: Base_Tag_Pointer, game_versi
+ 	padding = {
+ 		Game_Version.D1_DEV_ALPHA: 88,
+ 		Game_Version.D1_ROI: 8 * 16 + 8,
++		Game_Version.D2_SK: 8 * 16,
+ 		Game_Version.D2_EOF: 9 * 16,
+ 		Game_Version.MARATHON: 12 * 16
+ 	}
