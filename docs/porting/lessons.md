@@ -37,8 +37,8 @@ How to read the tables:
 | | 12:36 | "can this process be deterministic or does it only work with the MP7?" | Two Python files had data of the MP7. | The tool grew with one weapon. | The answer: deterministic (two runs, the same sha256), and not general. | Prove "the same bytes" with two runs. |
 | **C** | 12:41, 12:44 | "make only the changes to make it general and run in the mateba." Then: "if theres no animation, don'tport it I'll find another" | The agent started to read the model and the vanilla revolver for a mod with no animation file. | The archive had 4 models, textures, one sound and the plugin. The mod uses the vanilla revolver animations of New Vegas. | Stop. Check an archive for `.kf` files first. | Check the input before the work. A port of animations needs animations. |
 | **C** | 13:25 | "the fingers are a bit deformed" (a crop of 70 x 89 pixels of the left thumb) | The thumb was fully straight with a twist at its base. The skin had lumps. | The Fallout 4 hand mesh is modelled with bent fingers (about 45 and 30 degrees at the two joints). The source thumb is straight on the handguard. | `[fingers] min_bend = 0.3`: each joint keeps 30 percent of its rest bend. With 0 the output has the same bytes as before. | Each check passed with this fault: the Blender sheets, the contact counts, the game test (55 of 55). The user looks at a small part of a picture. Look at each visible finger at a large zoom. |
-| **C** | 14:54 | "improve the config file for the port. can we assume most of the defaults? no need to handle archives." | A configuration file of 165 lines for each weapon, and an archive step. | Each value was a key. | Defaults for each value. Two keys are sufficient. The extracted mod is the input. | Ask only what the tools cannot find. |
-| **C** | 15:14 | "i mean, I don't want to create a mod. i just want the animations to work on fo4" | Each weapon was a complete esx project (records, attachments, textures, test plans). | The agent had made more than the user wanted. | One command with a folder as its input, no configuration file, no esx. | Decide the scope with the user at the start. Do not add a feature that the user did not ask for. |
+| **C** | 14:54 | "improve the config file for the port. can we assume most of the defaults? no need to handle archives." | A conversion file of 165 lines for each weapon, and an archive step. | Each value was a key. | Defaults for each value. Two keys are sufficient. The extracted mod is the input. | Ask only what the tools cannot find. |
+| **C** | 15:14 | "i mean, I don't want to create a mod. i just want the animations to work on fo4" | Each weapon was a complete esx project (records, attachments, textures, test plans). | The agent had made more than the user wanted. | One command with a folder as its input, no conversion file, no esx. | Decide the scope with the user at the start. Do not add a feature that the user did not ask for. |
 | **C** | 16:22 | "the thumb is kinda misaligned need a bit of touches" (a crop of one panel of a check sheet, frame 88) | The thumb was 0.7 units in front of its place on the grip, and its first joint was bent 12 degrees back. | The skin of a finger is not at the center of its bones: the Fallout 4 thumb skin is 0.4 units to the pad side, the New Vegas thumb skin 0.13 units to the nail side. And the least-bend rule accepted a joint that bent back. | `skin_center` (skin on skin, not bone on bone), and the least bend about the hinge of the bone. | The user compares each Fallout 4 panel with the source panel above it. Do the same. |
 | **C** | 16:59 | "cleanup the repo files. remove esx integration. just the fnv animation in fnv animation out." | The tool had steps for the model, the attachments, the textures and the project files, and a reader for 3ds Max. | The tool had grown with each request. | 60 files became 21. The tag `before-animation-only` has the removed programs. | The tools of `fnv/` make only the clips. The models of the mods `PPK` and `FAMAS` are from the tools at that tag. |
 
@@ -87,7 +87,24 @@ The agent said so in its report.
 Three times the user wrote only "continue". Two times the agent had ended its turn with "No
 response requested." while a task was open: one time after a message that said "No reply is
 necessary", and one time in the middle of a search for a cause. The lesson: "No reply is
-necessary" is about the message. It does not close the open task.
+necessary" is about the message. It does not close the open task. Do not end a turn while a
+task is open.
+
+### Rules of the chat tool
+
+These rules are for the chat tool of these chats. They are not rules of the repository, so
+they are only here.
+
+* "No reply is necessary" in a message does not close the open task (above).
+* A report in the chat embeds a picture or a video by its absolute path. A document of the
+  repository has no path of one computer.
+* The chat shows the old picture of a file that was made again with the same name. Give a
+  picture or a video that is made again a new file name.
+* A `cd` in a compound command changes the working folder that the tool reports. Start each
+  command in the root of the repository, or use absolute paths.
+* The chat sends the notice "The user hasn't heard from you in a while" when the agent is
+  silent. Give a short status line while a long step runs.
+* The exit code of a background run is that of its wrapper. Read the last line of the log.
 
 ### Marathon, 2026-10-06
 
@@ -183,8 +200,9 @@ The lessons:
 | Sounds in the default reload clip | Three shell sounds in a reload with one shell | `silent`, and a clip for each count |
 | A recording 2 minutes after the start of the session | The camera turned about the player in the video | A session that is older than 2 minutes |
 | Tests before the last build | The hash of the plugin was not that of the tested file | All tests again on the last release |
-| A stop command with the session ID of the state file | It stopped the session of a second thread, which had started its session with the same program | `esx probe status` first. The ID that the start command printed. |
-| The clips of the weapon class for the left hand, with no pose clip of the gun | The user saw in the game that the left hand did not touch the gun | `./port destiny pose`, `[hand_pose]`, and `./port destiny check touch` for each new gun |
+| A stop command with the session ID of the session file | It stopped the session of a second thread, which had started its session with the same program | `esx probe status` first. The ID that the start command printed. The program now stops with the exit code 1 for a session file with a different label. |
+| Tests before the hand distance check | The game tests of The Chaperone passed, and the user then found the hand fault in a game picture | The numbers of each clip and the hand distance before the game test ([destiny.md](destiny.md), step 9) |
+| The clips of the weapon class for the left hand, with no pose clip of the gun | The user saw in the game that the left hand did not touch the gun | `./port destiny pose`, `[hand_pose]`, and `./port destiny check touch` for each new gun, before the game test |
 | The game pictures at the hip were made for the sight | The left hand was in those pictures, and the agent did not examine it | Examine each hand in the game picture of the hold pose |
 | A statement in a document was written from memory | The test of a program of the document showed a different number | Run each program that a document shows |
 | Three statements about a shader were not measured | The agent measured the built textures before the report, and removed them. One was false: the three shaders have an iridescence value (33, 35 or 25). | Check each number of a document against the built files |

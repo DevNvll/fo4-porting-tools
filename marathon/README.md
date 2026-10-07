@@ -58,11 +58,13 @@ SET=marathon/port/sets/m77_omnipositor.toml
 # 6. The checks
 ./port marathon regress              # the extraction: the same bytes as the stored result
 ./port marathon regress-clips        # the clips: the same bytes as the baseline clips
+./port baseline check                # no stored result (the extraction, the clips, the release) was replaced
 ./port destiny check validate $GLB --set $SET --out data/destiny/port/validation/m77 \
     --clips data/mods/M77/behavior/m77/animations/first_person --no-video
 
-# 7. The game test (one session for the computer: look at `esx probe status` first)
-./port destiny game session M77 LABEL
+# 7. The game test (one session for the computer: look at `esx probe status` first).
+#    --no-build: the release that is on record. For a new weapon, leave it out.
+./port destiny game session M77 LABEL --no-build
 ./port destiny game record --session ID --weapon M77 --capacity 30 --auto --out DIR
 esx probe stop --session ID
 ```
@@ -95,7 +97,7 @@ Finished:
     reload went from 6.20 to 2.15 units.
 * **The mod** `M77` (`mods/M77/`): a copy of the combat rifle with the automatic receiver,
   294 records, one model with 12 shapes, 7 materials, 21 textures.
-* **The game test**: 40 steps, 0 failed. The weapon loads, fires, reloads (14 to 30 rounds),
+* **The game test**: 40 ops, 0 failed. The weapon loads, fires, reloads (14 to 30 rounds),
   goes into the sights (the top of the front post is at the center of the picture), sprints,
   is put away and drawn.
 
@@ -123,7 +125,11 @@ Not done:
 * `./port marathon regress-clips`: the agent that adapted `destiny/port/` ran it on
   2026-10-06 and reports 27 clips with 0 differences (`port/README.md`).
 * The three release files of `data/mods/M77/build/release/` have the sha256 values of the
-  release of the game test (`data/destiny/port/validation/m77/release_tested.sha`).
+  release of the game test (`data/destiny/port/validation/m77/release_tested.sha`). The same
+  values are in `baselines.sha256`: `./port baseline check` compares with them.
+* On 2026-10-06 esx at the commit `d3e520c` built the mod from nothing (a copy of
+  `data/mods/M77` with no `build/` folder, in a scratch folder): the three release files had
+  the bytes on record.
 
 ## What is not proved
 

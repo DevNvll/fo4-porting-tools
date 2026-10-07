@@ -1,8 +1,10 @@
 # The checks: what each one proves, and what passed it
 
-From the notes of the three chats and from
+From the notes of the chats and from
 [destiny/port/README.md](../../../../destiny/port/README.md), "Checks". The column "Faults
 that passed it" is the reason for each gate of the skill.
+[docs/porting/checks.md](../../../../docs/porting/checks.md) is the source of the numbers of
+this file: change the two together.
 
 ## The checks of the converter d2fo4
 
@@ -16,6 +18,7 @@ that passed it" is the reason for each gate of the skill.
 | `./port destiny check render` with `sheet`, `look-sheet`, `frame-sheet`, `video`, `strip` | What a person sees: the source beside the result with one camera. | A number. A fault that the source has also. | The shoulders in the melee clip. The hands with no gun in the source of The Huckleberry. | The left hand of The Chaperone: the pictures were equal to the source. |
 | `./port destiny check third-sheet` | The source above the result as lines, for a third-person clip. | The hand IK of the game. The fingers. | The arms that were too short in the reload of Hammerhead. | The left hand that the game pulled to the grip, and the open fingers. The game pictures showed the two. |
 | `./port destiny regress`, and a second complete run | The same input gives the same bytes. A tool change did not change an earlier weapon. | That a clip is correct. | A change of 3e-5 in two source files made the releases different from the recorded ones. | |
+| `./port baseline check` | Each stored result of `data/` (the baseline clips of the regress commands, the clips and the release of each mod) has the sha256 on record in `baselines.sha256`. Nobody replaced a stored result. | That the bytes on record are correct. It reports a file that is not there and a file that the list does not have, with the exit code 0. | | |
 | `./port mod build`, and `plugin check-weapons`, `scene weapon`, `render weapon` of esx | The records, the slots, the meshes, the materials and the textures resolve. | The look in the light of the game. A glass. A clip. | The flag `Bolt Action`, the missing nodes `WeaponOptics1` and `WeaponOptics2`, the power armor rules, the missing clip for power armor. | The light gray guns and the reticle that was too large. The game showed these. |
 | The game tests (`./port destiny game ...`) with the trace | The game loads the weapon, starts its graphs and its clips, fires, and fills the gun. The trace gives each clip and each event with its time. | The look of the hands. The walk, run and jump clips. The sound. Power armor. The workbench. | The put-away, the sight below the center, the left hand at the grip, the reload that ended early, the haze. | The hands that did not touch the gun. A reload that ended 12 frames early passed with 0 failed ops until the agent read the trace. |
 
@@ -34,21 +37,23 @@ that passed it" is the reason for each gate of the skill.
 
 The game test of the first MP7 build passed 30 of 30 with the fingers in the gun. A broken
 collision step made the contact count better (631 against 1184 vertices) while the fingers
-pointed away from the grip.
+pointed away from the grip. The check programs of that chat are not in the work tree: they
+are in git at the tag `before-animation-only` (`port-fnv-animations`, step 4).
 
 ## The numbers of a correct port
 
 | Value | The ported weapons |
 | --- | --- |
 | A gun vertex against the source | at most 0.009 units (The Last Word), 0.012 (the Khvostov, The Chaperone, The Huckleberry), 0.015 (Hammerhead), 0.0102 (the M77) |
-| A wrist against the source wrist | at most 0.003 units |
+| A wrist against the source wrist | at most 0.003 units (Destiny 2). About 1.02 units in `NAME.txt` of the M77: `knuckles = "align"` moves each wrist. The line `[retarget]` of the converter has 0.00 for the two. |
 | `pos err` of an HKX clip that is read again | below 0.02 units |
 | Hand vertices inside the gun, result against source | The Last Word 2.2 to 5.7 percent against 3.3 to 10.5. The Khvostov 8.0 to 9.4 against 8.1 to 9.8. Hammerhead 9.0 to 11.5 against 7.7 to 9.5. The M77 6.1 to 10.6 against 8.3 to 24.1. |
 | Vertices of the left Fallout 4 hand nearer than 0.5 cm to the gun in the hold pose | The Last Word 10.6 percent, the Khvostov 5.6, Hammerhead 5.1, The Chaperone 5.2, The Huckleberry 20.9 |
 | A Fallout 4 hand that holds a gun, nearer than 0.5 cm | 5 to 42 percent |
+| Where these values are | `hand_distance.txt` of the validation folders of The Chaperone and The Huckleberry. The values of the three first guns, and the range, are from runs of `check touch` in the first chat (2026-10-06): no file stores them. The M77 has no such file. |
 | The reticle in the sights, in a picture of 1280 x 720 | less than 1 pixel from (640, 360) |
 | The built mesh against the parts file | at most 0.008 units |
-| A finger joint that bends back | none. The first joint of a thumb of the M77 bends back 3.3 to 4.9 degrees in the reload. |
+| A finger joint that bends back | none. The first joint of a thumb of the M77 (`Finger11-2`) bends back 3.3 to 4.9 degrees in the reload and 3.5 in the put-away. |
 
 Zero hand vertices inside the gun is not the target: the source hands are partly in the gun.
 
@@ -65,14 +70,15 @@ Zero hand vertices inside the gun is not the target: the source hands are partly
   `CLIP_fFFF_VIEW_src.png` and `CLIP_fFFF_VIEW_fo4.png`.
 * `--template` has the default `revolver44`. Give the template of the weapon.
 * `./port destiny check fingers` has the default `--vanilla data/destiny/port/rig/revolver44`.
-  Give the folder of the template of the weapon.
+  Give the clip folder of the template of the weapon: `combatrifle` also for
+  `combatrifle_parts` (the rig folder has no folder with that name).
 * The source in a picture is the file as Blender reads it. For a set file with `[gun]` or
   `[compose]` the source has the pose of the bake with those rules.
 * The check pictures do not draw the part of the sleeve at the shoulder.
 * The camera bone of the source is on the camera bone of Fallout 4. So a check picture from
   `fp` and a game picture show the same view, and you can compare the two.
-* `./port destiny check sheet`, `video` and `strip` are shell programs with no help text. Do
-  not run them with `--help`. `./port list` has the arguments of each one.
+* Each check program has a help text (`--help`). `render`, `touch` and `contact` start Blender
+  to print it.
 
 ## What a recording shows that is not a fault of a clip
 

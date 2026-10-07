@@ -41,7 +41,7 @@ shoulders go through the view.
 
 | Key | Use it when | Example |
 | --- | --- | --- |
-| `[gun] rest = true` | The gun bone is not on the grip bone in the clips of the hands (`scripts/gun_on_grip.py`). Off by default. | The Huckleberry: 57 of its 59 full-pose clips |
+| `[gun] rest = true` | The gun bone is not on the grip bone in the clips of the hands (`./port destiny check gun-on-grip`). Off by default. | The Huckleberry: 57 of its 59 full-pose clips |
 | `[gun.parts]` | The parts do not move in the clip of the hands. `CLIP = "CLIP2"`: the parts of CLIP move as they do in CLIP2, against the first frame of CLIP2, on their rest place. | `fp_105_80EF5694 = "fp_103_80EF5692_add"` (The Huckleberry), `fp_088_80A5E82E = "weapon_000_80A5E484"` (the M77) |
 | `[compose.NAME]`, `[piece_events]` | The reload is more than one state. | The skill `port-staged-reload` |
 
@@ -62,6 +62,7 @@ game, or the game test, proves such a rule. Write it under "What is not proved".
 | Key | Skill |
 | --- | --- |
 | `[model]`: `name`, `muzzle`, `[model.materials]`, `dyes`, `[model.shaders]`, `specular`, `occlusion` | `port-dyes-and-materials` |
+| `[model.materials]`: `TAG = "Name"` | TAG is the material of a shape of the file: the tag of its texture set (`plate_set` of each mesh in `manifest.json`, and the start of the file names in `textures/`). Name is the name of the Fallout 4 material and of its textures (`Barrel.bgsm`, `Barrel_d.dds`). A material with no line has its tag as its name. Example: `80EF39D0 = "Barrel"` (The Chaperone). |
 | `[model.sight]`, `[[model.sight.glass]]`, `[model.sight.reticle]`, `glass_scale` | `port-sight-and-reticle` |
 | `[third]` and its tables | `port-third-person-clips` |
 

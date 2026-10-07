@@ -28,9 +28,10 @@ The grip code at the start of a name (`1hp`, `2ha`, `2hr`, `2hh`, `2hl`, `1hm`, 
 * Not connected, because the vanilla graph has no place: empty-gun poses, a last shot, a jam,
   draw variants, an inspect clip, an ammunition check, dry fire.
 
-## The configuration file
+## The conversion file
 
-`./port fnv convert CONFIG show` prints each value. A file of your own replaces a value.
+`./port fnv convert CONFIG show` prints each value. A conversion file of your own replaces a
+value (the help text of the program has the words "configuration file" for it).
 
 | Value | Default |
 | --- | --- |
@@ -132,6 +133,9 @@ muzzle in an idle clip with 40 bits.
 * The sounds are those of the template. The sound files of the mod are not used.
 * `kfbake.py` does not read B-spline data. `fnvnif.py` reads version 20.2.0.7, and a gun
   with skinned parts is not supported.
-* The check programs with pictures of the first work are not in this repository.
+* The check programs with pictures of the first work are not in the work tree. They are in
+  git at the tag `before-animation-only` (`tools/validate_clip.sh`, `tools/closeup.sh`,
+  `tools/blender/render_fo4.py`, `render_source.py`, `hand_contact.py`), with the paths of the
+  old layout. Nobody adapted or ran them in this repository.
 * `fnv/tools/anim_fo4.py` is based on code with a GPL-3.0 origin (`fnv/README.md`, "Origin of
   one file").

@@ -26,21 +26,25 @@ in `data/config.toml`, or an environment variable.
 ### 1. Look
 
 ```sh
-./port doctor            # or: ./port doctor fnv | destiny | marathon, for one area
+./port doctor            # or: ./port doctor fnv | destiny | marathon | destiny/port, for one area
 ./port paths
 ```
 
-The exit code is 1 when a setting or a check is not ok. Each line has `ok` or `MISSING`, what
-the thing is, and the command that makes it.
+The exit code is 1 when a setting or a check is not ok, or when Python has no `numpy`. Each
+line has `ok` or `MISSING`, what the thing is, and the command that makes it. The line
+`pillow` is a report only: `./port destiny model` and the picture sheets need it
+(`requirements.txt` has the two packages).
 
 ### 2. The settings
 
 ```sh
-cp config.example.toml data/config.toml
+cp -n config.example.toml data/config.toml     # -n: only when the file is not there
 ```
 
-Then give each setting that you need in `data/config.toml`. An environment variable replaces
-the value of the file.
+If `data/config.toml` is there, edit it. Do not copy the example over it: `data/` is not in
+git, so the paths of the file are lost. Then give each setting that you need. An environment
+variable replaces the value of the file. `./port doctor` names each key of the file that is
+not a setting (a wrong spelling).
 
 | Setting | Variable | What | Who needs it |
 | --- | --- | --- | --- |
@@ -65,11 +69,14 @@ download a game file.
 ./port marathon setup                  # m2x: the Oodle 9 shim, the link, tag64, the table of the tag hashes
 ```
 
-* An area that you do not use needs no setup. `fnv` needs only the first line.
-  `destiny/port` needs the first three. An extraction of Destiny 2 needs `destiny setup`.
-  Marathon needs `destiny setup`, then `marathon setup`.
+* An area that you do not use needs no setup. `fnv` needs only the first line, and
+  `./port doctor fnv` can be ok with no esx. `destiny/port` needs the first three. An
+  extraction of Destiny 2 needs `destiny setup`. Marathon needs `destiny setup`, then
+  `marathon setup`.
+* esx is a separate program. The arm meshes (line 2), a model, a mod build and the game test
+  need it: [docs/getting-started.md](../../../docs/getting-started.md), "esx", says where it is.
 * Each setup command is safe to run again: it skips each step that is complete.
-* `./port destiny setup` needs `git`, `cargo` and `python3`. It uses `uv` if it is there. It
+* `./port destiny setup` needs `git` and `cargo`, and `uv` or a `python3` of 3.12 or later. It
   uses the network: the two clones, the packages of cargo and the Python packages.
 * `./port marathon setup` needs a C compiler and `cargo`. It is for Linux on x86-64. Its last
   step opens the packages and reads 50 entries. `--force` builds again.
@@ -86,10 +93,12 @@ download a game file.
 ```
 
 Gate: `./port doctor` has the exit code 0, or each `MISSING` line is for an area that you do
-not use. `./port selftest` has the exit code 0: it needs no game file. The three regressions
-compare with the results of the ported weapons in `data/`. On a computer with no such
-results they cannot pass, and that is not a fault of the setup (`./port fnv regress` then
-prints `NO RESULT`).
+not use. `./port selftest` has the exit code 0: it needs no game file (a failed part:
+`change-shared-tool`, "When `./port selftest` fails"). The three regressions compare with the
+results of the ported weapons in `data/`. With no such results, `./port fnv regress` and
+`./port marathon regress` say that they have nothing to compare (exit code 0), and
+`./port destiny regress` fails for each weapon whose file is not there. That is not a fault
+of the setup. With the results, `./port baseline check` must have `0 different`.
 
 ## Stop and ask the user
 
@@ -113,9 +122,10 @@ prints `NO RESULT`).
 
 ## What to report
 
-Each setting with its source (the file, a variable, the `PATH`) but not its value in a
-document, each command that you ran, the last output of `./port doctor`, and each thing that
-stays missing with the reason.
+* Each setting with its source (the file, a variable, the `PATH`). Do not write its value
+  into a document.
+* Each command that you ran, and the last output of `./port doctor`.
+* Each thing that stays missing, with the reason.
 
 ## More
 

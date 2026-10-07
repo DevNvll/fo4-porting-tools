@@ -131,12 +131,13 @@ pictures of the weapon file and of some frames of first-person clips.
 
 ## What to report
 
-The item hash, the weapon bones (each `bone_HASH` with no name), the count of rigs, bones and
-clips, the clip of each main state with its frames and its weapon tag, each state with no
-name that matters, the pictures, and what is not proved (the weapon tag rule is proved by
-pictures on The Last Word only). When a second agent starts from the files: make a frozen
-copy, write each fact with its proof, and send a correction with its effects when a fact was
-wrong.
+* The item hash. The weapon bones (each `bone_HASH` with no name). The count of rigs, bones
+  and clips.
+* The clip of each main state, with its frames and its weapon tag. Each state with no name
+  that matters. The pictures.
+* What is not proved: the weapon tag rule is proved by pictures on The Last Word only.
+* When a second agent starts from the files: make a frozen copy, write each fact with its
+  proof, and send a correction with its effects when a fact was wrong.
 
 ## More
 

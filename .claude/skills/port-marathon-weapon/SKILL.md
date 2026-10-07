@@ -1,6 +1,6 @@
 ---
 name: port-marathon-weapon
-description: Gives the complete procedure to port a weapon of the game Marathon to Fallout 4 (the extraction with m2x, then the converter d2fo4 of the Destiny area with a set file in marathon/port/sets), and says what differs from a Destiny 2 port (a variant item with --art, the clip of the gun parts in a second clip, the two hand rules knuckles and closed_fingers, gray pieces, no third-person clip, no game start because of the anti-cheat). Use when the user asks to port or extract a Marathon weapon ("now extract the rig and port it to fallout 4", "port the M77", "Overrun AR", "V75 SCAR"), or to change the M77 mod.
+description: Gives the complete procedure to port a weapon of the game Marathon to Fallout 4 (the extraction with m2x, then the converter d2fo4 of the Destiny area with a set file in marathon/port/sets), and says what differs from a Destiny 2 port (a variant item with --art, the clip of the gun parts in a second clip, the two hand rules knuckles and closed_fingers, gray pieces, no third-person clip, no game start because of the anti-cheat). Use when the user asks to port a Marathon weapon to Fallout 4 ("now extract the rig and port it to fallout 4", "port the M77", "Overrun AR", "V75 SCAR"), or to change the M77 mod. Only the files of the game, with no port, is extract-game-weapon.
 ---
 
 # Port a weapon of Marathon to Fallout 4
@@ -13,9 +13,8 @@ bone on `b_r_grip`. So the extraction has its own tool (`m2x`), and the converte
 
 ## When to use it, and when not
 
-* Use it for a port of a Marathon weapon, and for a change of the M77 port.
-* Each step that is the same as for Destiny is in `port-destiny-weapon` and its skills. This
-  skill has the order and the differences.
+* Use it for a port of a Marathon weapon, and for a change of the M77 port. Each step that is
+  the same as for Destiny is in `port-destiny-weapon`: this skill has the order and the differences.
 
 ## Before the start
 
@@ -25,8 +24,7 @@ bone on `b_r_grip`. So the extraction has its own tool (`m2x`), and the converte
    game folder. No picture of Marathon is the reference: "correct" is from the game files
    and from pictures of Blender. Tell the user this.
 3. After an update of the game: `./port marathon tag64`. If the extraction then stops with
-   "no tag of the class ...: the layouts of this file are for another build", load
-   `decode-game-data`.
+   "no tag of the class ...: the layouts of this file are for another build": `decode-game-data`.
 
 ```sh
 E=data/marathon/extract/out/NAME          # NAME: the folder that the extraction makes
@@ -81,8 +79,9 @@ of each state. What differs from a Destiny set file:
 `destiny model`. The work files are in `data/destiny/port/work/NAME/`, and the model program
 reads `parts.json` from there: do the convert first.
 
-Gate: the gates of step 3 of `port-destiny-weapon` (`wrist`, `weapon`, `pos err`). The line
-`[retarget]` of each clip has the count of fingers with the rule for a closed finger. The
+Gate: the gates of step 5 of `port-destiny-weapon` (`wrist`, `weapon`, `pos err`). With
+`knuckles = "align"` the line `[retarget]` measures `wrist` against the moved place, so it is
+0.00 also. The line has `closed`: the count of fingers with the rule for a closed finger. The
 build has 0 issues and 0 warnings.
 
 ### 4. Check
@@ -98,14 +97,19 @@ V=data/destiny/port/validation/NAME
 `marathon regress` extracts each stored weapon again and compares the bytes.
 `marathon regress-clips` is `./port destiny regress --only m77_omnipositor`: for a new
 weapon, add it to `destiny/port/regress.toml` and run `./port destiny regress --only NAME`.
+Then run `./port baseline check`. For the M77 the left hand has 23.4 percent in the hold pose (`data/destiny/port/validation/m77/hand_distance.txt`).
 
 Then load `validate-port`. Make pictures of each hand in the reload, from four sides, for
 each frame in which a hand takes or lets go a part. The user saw a dislocated finger at
 frame 78 of the reload of the M77, and the agent had looked at pictures from the camera only.
 
-Gate: the numbers of the M77 are the reference: the gun at most 0.0102 units from the source
-gun, no finger joint that bends back, hand vertices in the gun 6.1 to 10.6 percent (source
-8.3 to 24.1).
+Gate: the numbers of the M77 are the reference (`data/destiny/port/validation/m77/`):
+
+* The gun is at most 0.0102 units from the source gun.
+* `joints bent back` has only the first joint of a thumb (`Finger11-2`): 3.3 to 4.9 degrees.
+* The wrist line of `NAME.txt` is about 1.02 units: `knuckles = "align"` moves each wrist by
+  that length. For a Destiny weapon the gate is 0.003 units. Do not remove the key for this.
+* Hand vertices in the gun: 6.1 to 10.6 percent (source 8.3 to 24.1).
 
 ### 5. The game test and the documents
 
@@ -114,10 +118,8 @@ Marathon. Then `document-port`.
 
 ## Stop and ask the user
 
-* Before the game starts.
-* When the weapon has other gun bones than the arm rig.
-* Before a change of the solver for a Marathon hand: the Destiny weapons use the same solver
-  (`change-shared-tool`).
+* Before the game starts. When the weapon has other gun bones than the arm rig.
+* Before a change of the solver for a Marathon hand (`change-shared-tool`): Destiny uses it also.
 
 ## Common faults
 
@@ -127,23 +129,21 @@ Marathon. Then `document-port`.
 | The packages do not open, or SIGSEGV when they open | The runtime folder of m2x is not complete | `./port marathon setup` (`--force` builds again) |
 | A finger points to the wrist in one frame | A closed finger with the base rule | `closed_fingers = true` |
 | The fingertips are 1 unit from the source | The knuckles are 1.42 units from the source knuckles | `knuckles = "align"` |
-| Three pieces are gray | The game calculates the colors of the regions when it runs | A limit. Say so. |
-| The sound `BoltOpen` is at frame 0 | The bolt is to the rear from frame 0 | `[events]` |
 
 ## What to report
 
-As for a Destiny port, and the limits of a Marathon port: the mod has the name and the look
-of the base item when the item is a variant; the pieces that are gray; the solver uses the
-measurements of the Destiny hand mesh, because the hand mesh of Marathon is not extracted;
-each third-person clip is a vanilla clip; no comparison with Marathon; the two hand rules
-are tested on one weapon and one template; the frame rate of 30 is the value of Destiny 2.
+As for a Destiny port. Then the limits of a Marathon port:
+
+* The mod has the name and the look of the base item when the item is a variant.
+* The pieces that are gray (the game calculates their colors when it runs).
+* The solver uses the measurements of the Destiny hand mesh: that of Marathon is not extracted.
+* Each third-person clip is a vanilla clip. No comparison with Marathon.
+* The two hand rules are tested on one weapon and one template.
+* The frame rate of 30 is the value of Destiny 2.
 
 ## More
 
-* [marathon/README.md](../../../marathon/README.md): the order of the commands, and the
-  state of the M77 port.
-* [marathon/extract/README.md](../../../marathon/extract/README.md),
-  [marathon/port/README.md](../../../marathon/port/README.md).
+* [marathon/README.md](../../../marathon/README.md): the order of the commands, the state of the M77 port.
+* [marathon/extract/README.md](../../../marathon/extract/README.md), [marathon/port/README.md](../../../marathon/port/README.md).
 * [destiny/port/README.md](../../../destiny/port/README.md), "The M77 of Marathon".
-* [docs/porting/marathon.md](../../../docs/porting/marathon.md),
-  [mods/M77/README.md](../../../mods/M77/README.md).
+* [docs/porting/marathon.md](../../../docs/porting/marathon.md), [mods/M77/README.md](../../../mods/M77/README.md).

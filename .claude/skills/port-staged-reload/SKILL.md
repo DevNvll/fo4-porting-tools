@@ -87,18 +87,18 @@ by itself, so name each one with `--additive`. Then write, as in the model set f
 ```
 
 The step `third` also writes the folder `power_armor_third_person` beside the folder of
-`--third-output`. Then, with the permission of the user (`game-test-port`):
+`--third-output`. With the permission of the user (`game-test-port`; `game trace` did not run here):
 
 ```sh
 ./port destiny game reloads --session ID --weapon EDITORID --capacity N --out DIR
 ./port destiny game trace --session ID --weapon EDITORID --loaded K --view third
 ```
 
-Gate (the values of The Chaperone): one reload for each count in each view, 12 reloads, 0
-failed. Each one played the clip of its count, filled the gun to 6 rounds, started one round
-sound for each round and the two sounds of the lever one time, and ended at the time of the
-event of its clip (7.25 s to 2.73 s in first person, 6.27 s to 2.44 s in third person). A
-passed test is not sufficient: read the trace for the clips and for the time of each event.
+Gate (the values of The Chaperone, `game_test_reloads.txt` of its validation folder): one
+reload for each count in each view, 12 reloads, 0 failed. Each one played the clip of its
+count, filled the gun to 6 rounds, started one round sound for each round and the two sounds
+of the lever one time, and ended at the event of its clip (7.23 s to 2.75 s in first person,
+6.28 s to 2.45 s in third person). A passed test is not sufficient: read the trace.
 
 ## Case B: the parts move in a second clip
 
@@ -139,9 +139,9 @@ Gate: pictures of the reload show each part with the hand that moves it, in each
 
 ## What to report
 
-The states and the clip of each one, the frames of each reload clip, each event with its
-frame, the result of the test of each count, and what is not proved. The proof that two clips
-are a pair is the same frames and the pictures: it is not a picture of the source game.
+The states and the clip of each one. The frames of each reload clip, and each event with its
+frame. The result of the test of each count. What is not proved: the proof that two clips are
+a pair is the same frames and the pictures, and it is not a picture of the source game.
 
 ## More
 

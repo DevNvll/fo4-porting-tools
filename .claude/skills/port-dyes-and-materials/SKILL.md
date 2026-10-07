@@ -1,6 +1,6 @@
 ---
 name: port-dyes-and-materials
-description: Gives the procedure to give a ported Destiny 2 weapon its colors in Fallout 4 (the dyes of the gun and the gear shader, the conversion to a Fallout 4 material), and to add a shader item of Destiny as a second receiver part, with the tools d2dyes and d2model and the keys dyes and [model.shaders] of a set file. Use when a ported gun has wrong colors in the game (light gray where Destiny is dark, flat gray where Destiny has paint), when the user says "make destiny shaders work in the weapons", names a shader such as "Golden Trace", or asks why a Marathon piece is gray.
+description: Gives the procedure to give a ported Destiny 2 weapon its colors in Fallout 4 (the dyes of the gun and the gear shader, the conversion to a Fallout 4 material), and to add a shader item of Destiny as a second receiver part, with the tools d2dyes and d2model and the keys dyes and [model.shaders] of a set file. Use when a ported gun has wrong colors in the game (light gray where Destiny is dark, flat gray where Destiny has paint, too bright in daylight), when the user says "make destiny shaders work in the weapons", names a shader such as "Golden Trace", or asks why a Marathon piece is gray.
 ---
 
 # The dyes, the shaders and the materials
@@ -81,7 +81,8 @@ session keeps the first gun, so each part shows the default colors. Do not use
 
 Gate: `item.give` with the part gives the part in `mods_attached`. You looked at each picture.
 The light of the test cell `QASmoke` gives each dark surface a green tint. The vanilla .44
-has the same tint there, so it is not a fault of the material.
+has the same tint there, so it is not a fault of the material. The test world (`--world`) has
+direct daylight: the light parts of two guns were too bright there (a limit, see below).
 
 ## A weapon of Marathon
 
@@ -101,6 +102,7 @@ fault of the tools. `./port marathon notes dxil MATERIAL` prints the pixel shade
 | Sign | Cause | Rule |
 | --- | --- | --- |
 | A dark metal is light gray in the game | A high specular value for each metal pixel, with the reflection of the environment | The specular value from the reflectance (in the tool). `specular` and `occlusion` of `[model]` change the two weights. |
+| The light parts of a gun are too bright, with a glow, in direct daylight | Not known. Seen for The Chaperone and The Huckleberry in the test world (`WeapTest`). In the dark cell `QASmoke` the same materials looked correct. | No rule yet: the materials are not corrected for it. Report it as a limit. Do not change `specular` or `occlusion` with no measurement and no game picture of before and after. |
 | Flat gray surfaces where Destiny has paint | The colors are in the dyes | `dyes = "dyes.json"` |
 | A shader item does not change the gun | The gun has no pixel with a dye, or its dyes are locked (The Last Word) | No rule. Say so. |
 | Each shader part shows the default colors in the test | A second `item.give` in one session | One new session for each shader |
@@ -108,12 +110,13 @@ fault of the tools. `./port marathon notes dxil MATERIAL` prints the pixel shade
 
 ## What to report
 
-The percent of pixels with a dye for each texture set, the dyes of each look, the pictures
-from the game, the files that changed, and the limits: no emission, iridescence, fuzz or
-transmission; the size of the detail pattern can be different from the game; a colored metal
-has a reflection with no color; "as in Destiny" is from the dye values; the shader parts were
-tested with the probe, not at the weapons workbench. Name the public source of the gear
-shader formula, and say what is your own reading.
+* The percent of pixels with a dye for each texture set, and the dyes of each look.
+* The pictures from the game (name the cell and its light), and the files that changed.
+* The limits: no emission, iridescence, fuzz or transmission. The size of the detail pattern
+  can be different from the game. A colored metal has a reflection with no color. "As in
+  Destiny" is from the dye values. The shader parts were tested with the probe, not at the
+  weapons workbench.
+* The public source of the gear shader formula, and what is your own reading.
 
 ## More
 

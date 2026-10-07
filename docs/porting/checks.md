@@ -19,12 +19,14 @@ V=data/destiny/port/validation/NAME                          # the results of th
 
 | Check | Command | It proves | It does not prove |
 | --- | --- | --- | --- |
-| The repository | `./port selftest` | Each Python file compiles, each `port.toml` is correct, the tests of `portkit` pass. | That a converter gives a correct clip. It reads no game file. |
+| The repository | `./port selftest` | Each Python file compiles, each `port.toml` is correct, the tests of `portkit` pass, and git has no file that is not source. | That a converter gives a correct clip. It reads no game file. |
 | The setup | `./port doctor [AREA]` | Each setting has a value, and each necessary file is there. | That a file has the correct content. |
+| The stored results | `./port baseline check` | Each stored result of `data/` (the baseline clips of the regress commands, the clips and the release of each mod) has the sha256 on record in `baselines.sha256`. Nobody replaced one. | That the bytes on record are correct. |
 | The regression of New Vegas | `./port fnv regress` | A new conversion of each fixture gives the bytes of `data/fnv/out/`. | That a clip is correct. It does not look at the hands. |
 | The regression of the Destiny converter | `./port destiny regress` | A new conversion of each weapon of `destiny/port/regress.toml` gives the bytes of the baseline clips. | That a clip is correct. |
 | The regression of the Marathon extraction | `./port marathon regress` | A new extraction of each weapon of `data/marathon/extract/out/` gives the same files. | That a layout is correct for a second weapon or a new build of the game. |
 | A glTF file for Blender | `./port destiny check-glb FILE.glb` | One armature, weights for each vertex, finite keys, keys for each bone. | That a clip is the clip of the state that you think. |
+| The gun in the hand | `./port destiny check gun-on-grip MANIFEST.json` | For each full-pose clip of an extraction: the distance of the gun bone to the grip bone. | That the hands hold the gun at the correct place. |
 | The lines of the converter | `./port destiny convert`, `./port fnv convert` | Each shape is on a bone. The wrists and the gun are at the source. The HKX file has the poses. | That the source pose is correct. |
 | The gun | `./port destiny check gun` | Each gun vertex of the HKX clip is at its place of the source. | A rule that changes the source (`[gun]`, `[compose]`, `[hand_pose]`). |
 | The finger joints | `./port destiny check fingers` | Each joint between two finger bones is a hinge. No joint bends back. The largest turn in one frame against the source. | That a finger is at the correct place on the gun. |
@@ -48,14 +50,45 @@ when a file is added):
 
 ```
 ok    python     107 files, 0 do not compile
-ok    port.toml  5 files, 73 commands, 28 checks, 0 faults
-ok    tests      27 tests, unittest exit code 0
+ok    port.toml  6 files, 74 commands, 28 checks, 0 faults
+ok    tests      32 tests, unittest exit code 0
+ok    git        259 files that git has or can add, 0 that are not source
 ```
+
+A part that fails has `FAIL`, and the lines below it name each fault. The part `git` fails
+for a file with a game file ending (`.hkx`, `.nif`, `.glb`, `.png` and others) or with a NUL
+byte: such a file is not source, and its place is below `data/`.
 
 `./port doctor` prints `ok` or `MISSING` for each setting and each check of the `port.toml`
 files, and the command that makes a missing thing. The last line is
 `Result: each setting and each check is ok.` when nothing is missing. The exit code is 1 when
-a line is not ok.
+a line is not ok, or when Python has no `numpy`. The line `pillow` is a report only. AREA is
+`fnv`, `destiny`, `marathon`, or a path such as `destiny/port`.
+
+## The stored results: `./port baseline check`
+
+A regress command compares new results with the stored results of `data/`. It does not show
+that a stored result was replaced: a convert run with `-o` into a baseline folder, a new
+extraction or a build can do that. `baselines.sha256` (in git) has the sha256 of each stored
+result: the baseline clips of the regress commands, the clips of each mod and the three
+release files of each of the 7 mods.
+
+```sh
+./port baseline check      # compare the files of data/ with baselines.sha256
+./port baseline update     # write baselines.sha256 again
+```
+
+Result of 2026-10-06:
+`baseline: 602 files in baselines.sha256; 602 the same, 0 different, 0 not there, 0 in data/ that the list does not have.`
+
+* `DIFFERENT` names a file with other bytes, and the exit code is then 1.
+* A file that is not there, and a file of `data/` that the list does not have, are reported
+  with the exit code 0. A new weapon gives such files until the next update.
+* Run the check after a regress command passes, and after a build of a mod.
+* Run `./port baseline update` only for a change that the user accepted. Put the file into
+  git with that change.
+* The patterns of the files are the `[[baseline]]` tables of the `port.toml` files (8
+  patterns; `docs/ARCHITECTURE.md`).
 
 ## The regress commands
 
@@ -114,6 +147,7 @@ Result in this repository: no file is different for The Last Word (154 files), T
 
 ```sh
 ./port destiny check-glb FILE.glb                         # prints NO PROBLEMS, or the list of problems (exit code 1)
+./port destiny check gun-on-grip MANIFEST.json            # the gun bone against the grip bone, for each full-pose clip
 ./port destiny video FILE.glb --clip NAME --out sheet.png # a frame sheet from the first-person camera
 ./port marathon render FILE.glb OUT.png --views side,quarter
 ./port destiny pose MANIFEST.json --measure --hold CLIP:0 # the distance of each Destiny hand to the gun
@@ -121,6 +155,11 @@ Result in this repository: no file is different for The Last Word (154 files), T
 
 * `check-glb` reports an action that has bones with no keys. That fault put the gun 0.9 m
   from the hand in one picture.
+* `check gun-on-grip` prints the distance of the gun bone to the grip bone for each full-pose
+  clip, and the count of correct clips for each node count. A correct clip has 0.000 m. For
+  The Huckleberry: `2 of 59 full-pose clips have the gun on the grip bone` (a run of
+  2026-10-06). With `--clip CLIP` it does only those clips, and the exit code is 1 when one of
+  them is not correct. A set file with such a clip needs `[gun] rest = true`.
 * A frame sheet proves that a clip is the clip that you think. Look at it. In
   `iron_sight_idle` the sight is in the middle of each frame.
 * `pose --measure` counts the vertices of each Destiny hand that are nearer than 0.5 cm and
@@ -174,7 +213,7 @@ WPNReload  fp_088_80A5E82E  104 frames | gun 0.0085 units | vertices in the gun:
 
 | Field | Meaning | How to read it |
 | --- | --- | --- |
-| `gun` | The largest distance of a gun vertex to its place in the source, on each frame. | 0.009 to 0.015 units for the ported weapons. A larger value is a fault of the parts or of the clip format (0.15 units with 40-bit rotations). |
+| `gun` | The largest distance of a gun vertex to its place in the source, on each frame. | At most about 0.015 units: the largest value of each ported weapon is 0.009 to 0.015, and one clip can have less (0.0030). A larger value is a fault of the parts or of the clip format (0.15 units with 40-bit rotations). |
 | `vertices in the gun` | The percent of hand vertices inside the gun, source and result, all frames. | The result must not be much above the source. The Khvostov: 8.0 to 9.4 against 8.1 to 9.8. Hammerhead is worse: 9.0 to 11.5 against 7.7 to 9.5. |
 | `deeper than the source` | The hand bones that are deeper in the gun than the same bone of the source. | `NAME.txt` has the depth of each bone. Look at these bones in a picture. |
 | `joints bent back` | Each joint that bends to the back of the finger, with the angle. | `none` for the Destiny ports. The M77 has the first joint of a thumb at 3.3 to 4.9 degrees. |
@@ -207,7 +246,7 @@ prove the retarget and do not prove the rules.
 
 ```sh
 ./port destiny check gun $GLB CLIP $W/parts.json $O/WPNReload.hkx
-./port destiny check fingers $O/WPNReload.hkx --bake $W/bake/CLIP.npz
+./port destiny check fingers $O/WPNReload.hkx --bake $W/bake/CLIP.npz --vanilla data/destiny/port/rig/combatrifle
 ./port destiny check contact --glb $GLB --bake $W/bake/CLIP.npz --poses $O/WPNReload.hkx \
     --parts $W/parts.json --frames all --quiet --out contact.json
 ./port destiny check contact-table contact.json
@@ -215,6 +254,11 @@ prove the retarget and do not prove the rules.
     --parts $W/parts.json --frames 0
 ./port destiny check touch-table $GLB --set $SET --clips $O --out $V/hand_distance.txt
 ```
+
+`check fingers` compares with the vanilla clips of one folder. The default of `--vanilla` is
+the folder of the revolver (`data/destiny/port/rig/revolver44`). For the templates
+`combatrifle` and `combatrifle_parts` give `data/destiny/port/rig/combatrifle`: the rig folder
+has no folder `combatrifle_parts`. `check validate` gives the correct folder itself.
 
 ### The hands on the gun
 
@@ -237,13 +281,19 @@ WPNIdleReady  fp_002_80BBD611      99 |  1.8 % mean,  1.7 % least  |  5.2 % mean
 | The Huckleberry before its pose clip | 12.4 percent, with the wrist 2.5 cm from its place |
 
 Do this check for each new gun. If the source has 0 percent in the hold pose, the gun needs a
-pose clip. A value above 0 does not prove the place of the hand (The Huckleberry).
+pose clip. A value above 0 does not prove the place of the hand (The Huckleberry): measure
+each pose clip candidate of the gun also.
+
+Where these values are: `hand_distance.txt` is in the validation folders of The Chaperone and
+of The Huckleberry. The values of The Last Word, the Khvostov and Hammerhead, and the range
+of 5 to 42 percent, are from runs of `check touch` on the hold pose in the first chat
+(2026-10-06). No file stores them. The M77 has no table of the hand distance.
 
 ### Pictures
 
 ```sh
 ./port destiny check render --glb $GLB --clip CLIP --poses $O/WPNReload.hkx --parts $W/parts.json \
-    --out DIR --frames all --views fp,r_thumb,r_back,l_thumb,l_palm,gun_left
+    --out DIR --template TEMPLATE --frames all --views fp,r_thumb,r_back,l_thumb,l_palm,gun_left
 ./port destiny check sheet DIR CLIP VIEW "0 12 24" OUT.jpg          # the source above the result
 ./port destiny check look-sheet DIR CLIP FRAME OUT.jpg VIEW,VIEW    # one frame from more views
 ./port destiny check frame-sheet DIR CLIP OUT.jpg --view fp         # each frame of one view
@@ -258,21 +308,26 @@ The views of `check render`: `fp` is the first-person camera. `r_thumb`, `r_back
 `r_front`, `r_under`, `r_palm` and the same with `l_` look at one hand. `gun_left`,
 `gun_right`, `gun_top`, `gun_back` and `gun_under` look at the grip from a side of the gun.
 The source and the result of a frame have the same camera. The camera bone of the source is
-on the camera bone of Fallout 4, so a game picture is comparable with a check picture.
+on the camera bone of Fallout 4, so a game picture is comparable with a check picture. Give
+`--template` the template of the set file: its default is `revolver44`, and the template
+gives the place of the camera of the source. Each check program has a help text (`--help`).
 
 What to look for: fingers through the gun, broken or deformed fingers, a wrong wrist
 rotation, a thumb that is not aligned. Look at each hand in a close view. In the New Vegas
 chat a sheet at a normal zoom did not show a thumb that was 0.7 units from its place. A close
 view at 300 percent, the source above the result, showed each fault that the user found.
 
-`fnv/` has no picture program. The check programs of the New Vegas chat (pictures from the
-game camera, the contact count, the joint bends against the vanilla range, the jitter) are
-not in this repository.
+The work tree of `fnv/` has no picture program. The check programs of the New Vegas chat
+(pictures from the game camera, the contact count, the joint bends against the vanilla range,
+the jitter) are in git at the tag `before-animation-only` (`tools/validate_clip.sh`,
+`tools/closeup.sh`, `tools/blender/render_fo4.py`, `render_source.py`, `hand_contact.py`).
+They have the paths of the old layout. Nobody adapted them or ran them in this repository.
 
 ## The checks of a built mod
 
 ```sh
 ./port mod build NAME --update-lock          # 0 issues and 0 warnings; it prints the sha256 of each release file
+./port baseline check                        # the release of a tested mod has the bytes on record
 esx --data "/path/to/Fallout 4/Data" plugin check-weapons data/mods/NAME/build/release/NAME.esp
 esx --data "/path/to/Fallout 4/Data" scene weapon data/mods/NAME/build/release/NAME.esp WEAPON
 esx --data "/path/to/Fallout 4/Data" render weapon data/mods/NAME/build/release/NAME.esp WEAPON --sheet -o data/mods/NAME/docs/WEAPON.png
@@ -321,7 +376,12 @@ esx --data "/path/to/Fallout 4/Data" render weapon data/mods/NAME/build/release/
   test shows that a different version gives the same bytes.
 * The documents give 0.008 units for the built mesh against the parts file. They name no
   command for that measurement.
-* `fnv/` has no check with pictures. A change that moves a finger of a New Vegas clip needs a
-  person or an agent who looks at pictures of the hands on the gun.
+* The work tree of `fnv/` has no check with pictures, and the programs at the tag
+  `before-animation-only` were not run here. A change that moves a finger of a New Vegas clip
+  needs a person or an agent who looks at pictures of the hands on the gun.
+* `./port baseline check` proves that a stored result has the bytes on record. It does not
+  prove that those bytes are correct. On 2026-10-06 esx at the commit `d3e520c` built each of
+  the 7 mods from nothing with the release bytes on record: that is the one comparison of
+  two esx versions.
 * The value "5 percent" for a hand that holds a gun is the lowest value of five guns. It is
   not a limit that a test proved.

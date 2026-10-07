@@ -49,7 +49,9 @@ For a game picture, make the same view in Blender from the game camera (`--views
 put it beside the game picture. If the two agree, the game plays the clip data exactly, and
 the fault is in the clip.
 
-To learn a rule of a graph of Fallout 4:
+To learn a rule of a graph of Fallout 4 (`esx` is the program of the setting `esx`:
+`./port paths get esx`; `FILE` is a graph of the build, for example
+`data/mods/MOD/build/behavior/Meshes/Actors/Character/_1stPerson/Behaviors/PREFIXGunBehavior.hkx`):
 
 ```sh
 esx behavior explain reload --like KEYWORD
@@ -57,6 +59,9 @@ esx hkx events FILE --event NAME
 esx hkx show FILE --selector 'object(N)'
 ./port destiny game trace --session ID --weapon EDITORID --loaded N --view first
 ```
+
+`game trace` needs a game session (`game-test-port`, with the permission of the user). It did
+not run in this repository yet.
 
 ### 4. Measure the property that is wrong
 
@@ -69,6 +74,8 @@ W=data/destiny/port/work/NAME ; C=data/mods/MOD/behavior/WEAPON/animations/first
 ./port destiny check touch --glb $G --bake $W/bake/CLIP.npz --poses $C/WPNIdleReady.hkx --parts $W/parts.json --frames 0
 ./port destiny check fingers $C/WPNReload.hkx --bake $W/bake/CLIP.npz --vanilla data/destiny/port/rig/TEMPLATE
 ```
+
+`--vanilla` is the clip folder of the template: `combatrifle` also for `combatrifle_parts`.
 
 Gate: you can name the cause with a number from the data (a distance, an angle, a frame, a
 time of the graph). A cause from the name of a bone is not a cause: `b_pump` of The Chaperone
@@ -90,7 +97,8 @@ Gate: the check of step 4 fails before the correction and passes after it.
 Name each clip that changed and say why. Look for the same fault in the other frames of the
 clip and in the other clips: the dislocated finger of the M77 at frame 78 had a second place
 at the frames 28 to 46. Make the pictures of the fault frames again, with a new file name.
-Then test in the game again, with the permission of the user (`game-test-port`).
+Then test in the game again, with the permission of the user (`game-test-port`). When the
+user accepts the change, make the new baseline (`write-set-file`, step 6).
 
 ### 7. Write the row
 
@@ -118,9 +126,9 @@ weapon (`document-port`).
 
 ## What to report
 
-The cause with its number, the change, a picture of before and after, the clips that
-changed, the weapons that kept their bytes, and the limit that stays. If the fault was your
-error, say so.
+* The cause with its number, and the change. A picture of before and after.
+* The clips that changed, and the weapons that kept their bytes. The limit that stays.
+* If the fault was your error, say so.
 
 ## More
 

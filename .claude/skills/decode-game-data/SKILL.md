@@ -120,9 +120,10 @@ that weapon, so the set files that name the bone change also: run the regression
 
 ## What to report
 
-Each class with its layout and the proof of step 5, the weapons that you tested, each name
-that you found and each hash that still has no word, and each reading. A reading is not a
-fact of a file: "the meaning of the 27 dye vectors is my reading of the values".
+* Each class with its layout, and the proof of step 5. The weapons that you tested.
+* Each name that you found, and each hash that still has no word.
+* Each reading. A reading is not a fact of a file: "the meaning of the 27 dye vectors is my
+  reading of the values".
 
 ## More
 

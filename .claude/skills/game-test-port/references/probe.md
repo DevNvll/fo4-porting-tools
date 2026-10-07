@@ -3,6 +3,8 @@
 From the notes of the first work and from
 [destiny/port/README.md](../../../../destiny/port/README.md), "Checks" and "The game test".
 `esx help-topic game-test` is the document of esx.
+[docs/porting/game-test.md](../../../../docs/porting/game-test.md) is the source of the lists
+of this file (the ops, the action names, the pipeline, the rules): change the two together.
 
 ## The session commands of esx
 
@@ -15,7 +17,10 @@ esx probe stop --session ID
 ```
 
 `./port destiny game session MOD LABEL` does the start for you, with the settings `esx`,
-`fo4_data` and `proton` of `data/config.toml`.
+`fo4_data` and `proton` of `data/config.toml`. It keeps the ID and the label of its session
+in `data/destiny/port/work/probe_session.txt` (one file for all users). When the file has a
+session with another label, the program does not stop it and has the exit code 1.
+`--take-over` stops that session: ask the user before you give it.
 
 * `--mod` must be the release folder. With the project folder the game loads no plugin.
 * `--proton` is necessary on Linux.
@@ -111,11 +116,18 @@ seconds. So wait until the session is 140 seconds old, then set the view, then r
 
 ## The sha256 of the release
 
-* Write down the hashes of the three files of `build/release/` before the tests. Compare
-  them after the tests and after each later change of a file.
+* `baselines.sha256` (in git) has the sha256 of the release of each of the 7 mods, with the
+  baseline clips. `./port baseline check` compares the files of `data/` with it. Do not write
+  a `release_tested.sha` file again.
+* For a test: take the hashes of the three files of `build/release/` after the build and
+  before the first test. Compare them after the tests (`--mod` and `--tested` of `game all`)
+  and after each later change of a file.
 * One build gave a plugin with other bytes: the first build after a change of a behavior
   source, with the same count of records and the same two archives. Each build after that
   gave the same bytes. The tests ran again on the last release.
+* A build with another esx version can give other bytes. One comparison was made, on
+  2026-10-06: esx at the commit `d3e520c` built each of the 7 mods from nothing, and each
+  release had the bytes on record (the older esx `a996de8` made the stored releases).
 * A file for the user (a zip) has the files with the tested hashes.
 
 ## More known faults
@@ -151,7 +163,9 @@ A pass count is not a look. These plans were not run in this repository.
 
 1. Before a start, run `esx probe status`. Start only when `session` is null and
    `fallout4_pids` is empty.
-2. Keep your session ID in a note of your own task.
+2. Keep your session ID in a note of your own task. The session file of
+   `./port destiny game session` is one file for all users: give `--session ID` to each game
+   test program, and use a label of your own.
 3. Stop only the session that you started, by its ID.
 4. Do not stop a session that you find. Wait, or ask its owner.
 5. When you stop or change a thing of a second agent, tell it at once: the time, the ID, the
@@ -161,7 +175,8 @@ A pass count is not a look. These plans were not run in this repository.
 8. Record with no other heavy job on the computer.
 
 The event behind these rules: two agents used one session file. The stop command of one agent
-stopped the session of the other, 56 seconds after its start.
+stopped the session of the other, 56 seconds after its start. The program now has the exit
+code 1 for a session file with another label.
 
 ## What a passed test does not prove
 

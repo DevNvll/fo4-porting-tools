@@ -9,7 +9,7 @@ The headings of `mods/TexMechanica/README.md` and `mods/M77/README.md`:
 | The title, and one paragraph | What the mod is, the source game of each weapon, the three release files. The sentence that the assets are those of a game and that a built mod must not be published. |
 | What the mod has | Each weapon with its editor ID, the vanilla weapon that it copies, its values, its parts, its clips (the count, and a table of the source of each clip). |
 | How the project was made | The commands that make the generated files again, complete, from the root of the repository: the extraction, `./port destiny convert`, `./port destiny model`, the step `third`, `./port mod build NAME --update-lock`. |
-| Checks that passed (or: What is proved) | Each check with its command and its result: the build, the checks of esx, the regression, the numbers of the clips, the game test with its count of ops, the sha256 of the tested release. |
+| Checks that passed (or: What is proved) | Each check with its command and its result: the build, the checks of esx, the regression, the numbers of the clips, the game test with its count of ops, the result of `./port baseline check` (`baselines.sha256` is the record of the tested release). |
 | What is not proved (or: What is not correct or not done) | Each thing that no test shows: the clips that did not play in the game, power armor, the workbench, the installed game, a comparison with the source game. |
 | Limits | Each known defect that stays, with its number. Each choice (the damage, the capacity, a pose clip, the state of a glass). |
 

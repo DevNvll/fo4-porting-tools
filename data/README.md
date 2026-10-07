@@ -19,7 +19,9 @@ textures and the animations belong to the owners of the games.
 | `transcripts/`, `notes/` | The chat transcripts as short text, and the notes that the documents came from | |
 
 The environment variable `FO4PORTS_DATA` moves this folder. `./port doctor` shows which
-necessary files are there.
+necessary files are there. `./port baseline check` compares the stored results of this
+folder (the baseline clips of the regress commands, the clips and the release of each mod)
+with `baselines.sha256` of the root: it shows a stored result that a command replaced.
 
 Most files of this folder are results that a command makes again from your own copies of
 the games and of the mods. These are not:

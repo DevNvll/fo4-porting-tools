@@ -61,6 +61,13 @@ The release of a mod is `data/mods/NAME/build/release/`: the plugin (`NAME.esp`)
 `NAME - Main.ba2` and `NAME - Textures.ba2`. To use the mod, copy these three files into the
 `Data` folder of the game and enable the plugin. A build does not write into the game.
 
+`baselines.sha256` (in the root, in git) has the sha256 of the release and of the clips of
+each of the 7 mods: the releases that passed the game tests. `./port baseline check` compares
+the files of `data/mods/` with it. A build replaces the release, so run the check after each
+build of a tested mod: `DIFFERENT` says that the build did not give the tested bytes. Run
+`./port baseline update` only for a change that the user accepted (`mods/port.toml` has the
+patterns of the files).
+
 To make the generated files of a project again (the example is `Khvostov`; the `README.md`
 of each mod has its commands):
 
@@ -81,8 +88,13 @@ esx --data "$FO4" plugin check-weapons data/mods/NAME/build/release/NAME.esp
 esx --data "$FO4" scene weapon data/mods/NAME/build/release/NAME.esp WEAPON
 esx --data "$FO4" render weapon data/mods/NAME/build/release/NAME.esp WEAPON --sheet -o data/mods/NAME/docs/WEAPON.png
 ./port destiny regress --only WEAPON_NAME     # the clips of the project have the bytes that the converter gives
-./port destiny game session NAME LABEL        # the game test: destiny/port/README.md, "The game test"
+./port baseline check                         # the clips and the release have the bytes on record
+./port destiny game session NAME LABEL        # the game test: docs/porting/game-test.md (--no-build for a release on record)
 ```
+
+A faster or a slower reload is a `speed` line in the `reload` block of the behavior source
+(the document of esx, `docs/BEHAVIOR.md`: `speed 1.5`, or `speed reloadSpeedMult * 1.5`). No
+mod of this repository has such a line, and no build or game test of this repository used it.
 
 ## A new mod
 
@@ -94,12 +106,20 @@ esx --data "$FO4" render weapon data/mods/NAME/build/release/NAME.esp WEAPON --s
 4. Add the weapon to `destiny/port/regress.toml`, with the clip folders of `data/mods/NAME/`
    as its baseline.
 5. Write `mods/NAME/README.md`.
+6. When the user accepts the mod, run `./port baseline update`, and put `baselines.sha256`
+   into git with the mod.
 
 ## What is not proved
 
 * `./port mod build` ran for `TexMechanica`, `PPK` and `FAMAS` in this repository, and each
   release has the bytes that it had before the move. It did not run for `TheLastWord`,
   `Khvostov`, `Hammerhead` and `M77`.
+* One build of each of the 7 mods was compared. On 2026-10-06 esx at the commit `d3e520c`
+  built a copy of each `data/mods/NAME` with no `build/` folder, in a scratch folder. Each
+  of the 3 release files of each mod had the bytes of `baselines.sha256`. So a build from
+  nothing gives the tested release, and esx `d3e520c` gives the bytes of the older esx
+  (`a996de8`) that made the stored releases. No other esx version was compared, and a build
+  on a second computer was not compared.
 * The model program (`./port destiny model`) gives the same bytes as the files of
   `data/mods/` for 196 of the 200 files of `meshes/` and `assets/` of the five projects (run of
   2026-10-06, with scratch projects). The 4 other files are the model files of The Chaperone

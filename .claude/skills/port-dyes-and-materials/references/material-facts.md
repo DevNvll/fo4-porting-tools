@@ -83,6 +83,12 @@ specular value of the body texture is now 0.12 for Hammerhead and 0.13 for the K
 * Fallout 4 has a white specular color, so the reflection of a colored metal has no color.
 * No reference picture of Destiny is here.
 * The shader parts were tested with the probe, not at the weapons workbench.
+* In direct daylight (the test world, cell `WeapTest`) the light parts of The Chaperone and
+  of The Huckleberry are too bright, with a glow. In the dark cell `QASmoke` the same
+  materials looked correct. The cause is not known, and the materials are not corrected for
+  it. No test with other values of `specular` or `occlusion` was made
+  ([docs/porting/game-test.md](../../../../docs/porting/game-test.md), "The state of the game
+  test programs").
 
 ## The materials of Marathon
 

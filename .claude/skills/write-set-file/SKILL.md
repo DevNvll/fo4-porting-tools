@@ -1,6 +1,6 @@
 ---
 name: write-set-file
-description: Gives the procedure to write or change a set file of the converter d2fo4 (destiny/port/sets/NAME.toml or marathon/port/sets/NAME.toml), with the examination of the data before the file, the two passes, the gate of each pass and the measurement that each rule needs as a comment. Use when the user or a port needs a new set file, a new key in a set file, the clip of a game state for a Fallout 4 clip, a rule such as [gun], [synth], [hold_end], [events] or [roles], or when the converter prints a wrist, weapon or pos err value that is not near zero.
+description: Gives the procedure to write or change a set file of the converter d2fo4 (destiny/port/sets/NAME.toml or marathon/port/sets/NAME.toml), with the examination of the data before the file, the two passes, the gate of each pass and the measurement that each rule needs as a comment. Use when the user or a port needs a new set file, a new key in a set file, the clip of a game state for a Fallout 4 clip, a rule such as [gun], [synth], [hold_end], [events] or [roles], a new template for a weapon class that has none (references/clips-and-templates.md, "When no template fits"), or when the converter prints a wrist, weapon or pos err value that is not near zero.
 ---
 
 # Write a set file
@@ -42,14 +42,17 @@ For a weapon of Marathon: `E=data/marathon/extract/out/NAME` and `S=marathon/por
 2. **The gun is in the hand.** For each clip that you will use:
 
    ```sh
-   python3 .claude/skills/write-set-file/scripts/gun_on_grip.py $E/manifest.json --clip CLIP --clip CLIP2
+   ./port destiny check gun-on-grip $E/manifest.json --clip CLIP --clip CLIP2
    ```
 
-   A correct clip has the gun bone 0.000 m from the grip bone. With no `--clip` the script
+   A correct clip has the gun bone 0.000 m from the grip bone. With no `--clip` the command
    lists each full-pose clip of the file. A clip that fails needs `[gun] rest = true`. The
    node count alone does not find the fault for each gun, so measure each clip.
-3. **The parts.** For each weapon bone: the count of its vertices (the lines `[parts]` of
-   the step `parts`), and the clips in which it moves (`moving_weapon_bones` in `manifest.json`).
+3. **The parts.** For each weapon bone: the count of its vertices, and the clips in which it
+   moves (`moving_weapon_bones` in `manifest.json`). The step `parts` prints one line `[parts]`
+   for each shape, with its bone and its vertices. Before a set file is there, use the form
+   with one clip and a scratch work folder (read in `d2fo4.py`, not run for this skill):
+   `./port destiny convert $G --clip IDLE=WPNIdleReady --template TEMPLATE --hold IDLE:0 --work $W/probe parts`.
    A bone with no vertex needs no Fallout 4 bone. A bone name is not a part name.
 4. **The clip that moves each part.** It can be the clip of the hands, an additive clip with
    the same frame count, or a clip of the gun entity (`weapon_NNN_TAG`).
@@ -63,9 +66,11 @@ For a weapon of Marathon: `E=data/marathon/extract/out/NAME` and `S=marathon/por
    ```
 
    Read the motion from the pictures. A hand that holds the gun has many vertices nearer
-   than 0.5 cm. If the left hand has none, load `fix-hand-pose`.
+   than 0.5 cm. If the left hand has none, load `fix-hand-pose`. If it has some, measure
+   each pose clip candidate also (`--list`): The Huckleberry had 12.4 percent with its
+   wrist 2.5 cm from its place.
 
-Gate: for each clip you can answer the four questions of step 2 of `port-destiny-weapon`.
+Gate: for each clip you can answer the four questions of step 3 of `port-destiny-weapon`.
 
 ### 2. Select the template
 
@@ -95,8 +100,9 @@ Gate, from the output:
 | `[hkx]` | `pos err` is below 0.02 units. Each reload has `reloadComplete` and `reloadEnd` at the frames that the pictures show. |
 | each name of the graph | The set has a clip for it (the clip table). |
 
-Then look at pictures of the hold pose and of one reload, the source beside the result
-(`validate-port`).
+A value that is not in its range: do not go on. Load `diagnose-port-fault` (the source is
+correct and the result is wrong). Then run the finger check and look at pictures of the hold
+pose and of one reload, the source beside the result (`validate-port`, steps 2 and 4).
 
 ### 4. Second pass
 
@@ -114,10 +120,12 @@ Above each rule write the measurement that gave it: the frames, the distances, t
 Write the word "choice" where the data does not decide (a pose clip, the state of a glass, the
 motion of the parts in third person). The set files of `destiny/port/sets/` are the model.
 
-### 6. The regression
+### 6. The regression and the baseline
 
 For a change of a set file of a ported weapon, run `./port destiny regress --only NAME`. Say
-which clips are different and why. Gate: no other clip changed.
+which clips are different and why. Gate: no other clip changed. When the user accepts the
+change: convert with `-o` into each baseline folder that `destiny/port/regress.toml` names for
+the weapon, run the regression again (0 differ), then run `./port baseline update`.
 
 ## Stop and ask the user
 
@@ -126,25 +134,17 @@ which clips are different and why. Gate: no other clip changed.
 
 ## Common faults
 
-| Sign | Cause | Rule |
-| --- | --- | --- |
-| The hands hold no gun in the pictures | The gun bone is at the origin of the world in that clip | `[gun] rest = true` |
-| A state has no clip for this weapon | The graph has no entry for the tags of the weapon | `[synth]` |
-| The sprint loop is one pose | The file has no motion there | `[synth]` with `pose = "sprint"` |
-| The gun is out of the hand before the hand moves in the put-away | The graph removes the gun 0.233 s before the end of the clip | `[hold_end] WPNUnEquip = 8` for a clip of 4 or 5 frames |
-| A weapon bone has a hash, not a name | The name is not in the word list | `[roles]` or `[bones]` |
-
 [The troubleshooting table](../../../docs/porting/troubleshooting.md) and `diagnose-port-fault` have each sign.
 
 ## What to report
 
-The table of the clips with the source of each one, each rule with its measurement, each choice,
-the clips with vanilla weapon motion, the states with no clip, and the output lines of the gates.
+* The table of the clips with the source of each one. Each rule with its measurement.
+* Each choice. The clips with vanilla weapon motion. The states with no clip.
+* The output lines of the gates.
 
 ## More
 
 * [references/keys.md](references/keys.md): each key, with the sign and an example.
 * [references/clips-and-templates.md](references/clips-and-templates.md): states, templates, events.
 * [destiny/port/README.md](../../../destiny/port/README.md), "The keys of a set file".
-* [docs/porting/destiny.md](../../../docs/porting/destiny.md),
-  [docs/porting/marathon.md](../../../docs/porting/marathon.md).
+* [docs/porting/destiny.md](../../../docs/porting/destiny.md), [docs/porting/marathon.md](../../../docs/porting/marathon.md).

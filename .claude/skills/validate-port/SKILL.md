@@ -5,16 +5,16 @@ description: Gives the checks that an agent must do before it says that a port, 
 
 # Validate a port before you say that it is correct
 
-In the three chats that made these tools, the tests passed many times while the result was
-wrong. The user found each hand fault in a picture. So a number alone is not a proof, and a
-passed game test alone is not a proof. Do each step below, and read what each check does not
-prove.
+In the chats that made these tools, the tests passed many times while the result was wrong.
+The user found in a picture each hand fault that had passed the checks. So a number alone is
+not a proof, and a passed game test alone is not a proof. Do each step below, and read what
+each check does not prove.
 
 ## When to use it, and when not
 
 * Use it for the clips of the converter `d2fo4` (Destiny 2 and Marathon), and for its rules.
-* The clips of `fnv/` have no check program with pictures in this repository:
-  `port-fnv-animations` says what is there.
+* The clips of `fnv/`: its check programs with pictures are only in git, at the tag
+  `before-animation-only`. `port-fnv-animations` says how to get them.
 * A test in the game is the next stage: `game-test-port`.
 
 ## Before the start
@@ -41,7 +41,9 @@ V=data/destiny/port/validation/NAME
 Gate: 0 clips differ, or you can name each clip that changed and say why. For a new weapon
 that is not in `destiny/port/regress.toml`: convert a second time with another `--work` and
 `-o`, and compare each file with `cmp`. This check proves that the same input gives the same
-bytes. It does not prove that a clip is correct.
+bytes. It does not prove that a clip is correct. Then run `./port baseline check`: it proves
+that nobody replaced a stored result (the baseline clips, the release of each mod). Gate:
+`0 different`.
 
 ### 2. The numbers of each clip
 
@@ -51,13 +53,17 @@ bytes. It does not prove that a clip is correct.
 
 Gate, in `$V/summary.txt` (one line for each clip) and `$V/NAME.txt`:
 
-* The largest distance of a gun vertex to the source is in the range of the six ports: 0.009
-  to 0.015 units. Each wrist is at most 0.003 units from the source wrist.
-* No joint between two finger bones bends to the back of the finger.
-* Each large finger turn in one frame that the source does not have: look at those frames in
-  pictures (step 4). A turn of 170 degrees was a finger that pointed to the wrist.
+* The largest distance of a gun vertex to the source is at most about 0.015 units (the six
+  ports have 0.003 to 0.015 in a clip). A larger value is a fault of the parts or of the clip.
+* Each wrist is at most 0.003 units from the source wrist. With `knuckles = "align"` (a rig of
+  Marathon) the wrist line of `NAME.txt` is about 1.02 units: that is the rule, not a fault.
+* `joints bent back: none`. The M77 has the first joint of a thumb (`Finger11-2`) at 3.3 to
+  4.9 degrees. A value for another joint is a fault.
+* A finger turn in one frame of more than about 30 degrees that the source does not have:
+  look at those frames in pictures (step 4). 170 degrees was a finger that pointed to the wrist.
 
-Run the finger check on each clip before the first look at pictures.
+Run the finger check on each clip before the first look at pictures. A gate that fails for a
+finger: `fix-hand-pose`. For the gun or a wrist: `diagnose-port-fault`.
 
 ### 3. The distance of each hand to the gun
 
@@ -67,7 +73,9 @@ Run the finger check on each clip before the first look at pictures.
 
 Gate: in the hold pose each hand that holds the gun has at least 5 percent of its vertices
 nearer than 0.5 cm to the gun. That is the lowest value of the five Destiny ports (5 to 42
-percent). If the source hand has 0 percent, the gun needs a pose clip: `fix-hand-pose`.
+percent). If the source hand has 0 percent, the gun needs a pose clip: `fix-hand-pose`. A
+value above 0 does not prove the place of the hand: The Huckleberry had 12.4 percent with its
+wrist 2.5 cm from its place. Measure each pose clip candidate of the gun (`fix-hand-pose`, 3A).
 
 This is the check that the first port of The Chaperone did not have. Its left hand was 1.0 cm
 from the gun in the result and 0.9 cm in the source. Each check against the source passed.
@@ -103,7 +111,9 @@ text in its command line.
 
 `./port mod build MOD --update-lock`, then the checks of esx
 ([the mod project](../port-destiny-weapon/references/mod-project.md)). Gate: 0 issues, 0
-warnings, 0 findings. Write down the sha256 of each release file.
+warnings, 0 findings. For a mod that passed a game test, run `./port baseline check` after the
+build: `DIFFERENT` for a release file says that the build did not give the tested bytes. Stop
+and tell the user. Do not run `./port baseline update` before the user accepts the change.
 
 ### 7. The proof of each statement
 
@@ -126,17 +136,15 @@ proves.
 | A game picture that was made for another purpose | Look at each hand in it. The left hand was in the pictures that were made for the sight. |
 | A picture of an unfinished step shown to the user | Do not show it |
 | A picture that is made again with the same file name | Give it a new file name: a chat can show the old picture |
-| The exit code 0 of a background run whose work failed | Read the last line of the log |
 
 ## What to report
 
-Each check with its command and its result, the numbers against the ranges, the pictures
-that you looked at, and the part "What is not proved". Give a number its true precision.
+Each check with its command and its result. The numbers against the ranges. The pictures
+that you looked at. The part "What is not proved". Give a number its true precision.
 
 ## More
 
-* [references/checks.md](references/checks.md): each check, what it proves, the faults that
-  passed it, the numbers of a correct port, the views of the pictures.
+* [references/checks.md](references/checks.md): what each check proves, the faults that passed it, the numbers, the views.
 * [docs/porting/checks.md](../../../docs/porting/checks.md),
   [docs/porting/lessons.md](../../../docs/porting/lessons.md).
 * [destiny/port/README.md](../../../destiny/port/README.md), "Checks" and "What is proved".

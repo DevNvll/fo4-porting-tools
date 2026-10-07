@@ -135,11 +135,11 @@ reload no part of the glass stays at its old place.
 
 ## What to report
 
-The move of each clip in the sights, the rule of each material with its shader file, the
-state of the glass as a choice, the pixel of the reticle in the game picture ("less than 1
-pixel", not "0.4 pixels"), the clips that changed, and the limits: the reticle shows at each
-time and is fixed to the glass, no reference picture of Destiny is here, and the sight part
-was not tested at the weapons workbench.
+* The move of each clip in the sights. The rule of each material, with its shader file.
+* The state of the glass, as a choice. The clips that changed. The pixel of the reticle in the
+  game picture ("less than 1 pixel", not "0.4 pixels").
+* The limits: the reticle shows at each time and is fixed to the glass. No reference picture
+  of Destiny is here. The sight part was not tested at the weapons workbench.
 
 ## More
 

@@ -1,6 +1,6 @@
 ---
 name: change-shared-tool
-description: Gives the rules and the procedure for a change of a tool that more than one weapon or more than one area of this repository uses (the converter d2fo4, the hand solver and the HKX writer of fnv/, the modules of d2x, a template, a check program, portkit and ./port), with the regression commands of each area, the rule "a new rule is off by default and has a set file key", and what to do when a second agent works in the repository. Use before an edit of a file below fnv/tools, destiny/port (but not a set file of a new weapon), destiny/extract/d2x, marathon/extract or portkit, when a regress command prints DIFFERENT or a count of clips that differ, and when a second agent reports a change of a shared file.
+description: Gives the rules and the procedure for a change of a tool that more than one weapon or more than one area of this repository uses (the converter d2fo4, the hand solver and the HKX writer of fnv/, the modules of d2x, a template, a check program, portkit and ./port), with the regression commands of each area, the rule "a new rule is off by default and has a set file key", and what to do when a second agent works in the repository. Use before an edit of a file below fnv/tools, destiny/port (but not a set file of a new weapon), destiny/extract/d2x, marathon/extract or portkit, when a regress command or "./port baseline check" prints DIFFERENT or a count of clips that differ, when "./port selftest" fails, and when a second agent reports a change of a shared file.
 ---
 
 # Change a tool that other weapons use
@@ -29,6 +29,7 @@ with no option: it changed the poses of the Destiny guns.
 | `marathon/extract/` | The extraction of Marathon | `./port marathon regress` |
 | `marathon/port/sets/` | The M77 | `./port marathon regress-clips` |
 | `portkit/`, `port`, a `port.toml` | Each command | `./port selftest`, `./port list`, `./port doctor` |
+| `baselines.sha256` | The record of each stored result of `data/` | `./port baseline check` |
 
 Keep the name and the behavior of each public function of a module that another area imports.
 
@@ -38,19 +39,21 @@ Keep the name and the behavior of each public function of a module that another 
 
 ```sh
 ./port selftest
+./port baseline check
 ./port fnv regress
 ./port destiny regress
 git --no-optional-locks status --short
 ```
 
-Gate: each regression prints no difference. Each line of `fnv regress` is `same`, and
-`destiny regress` has 0 clips that differ. If one fails before your change, stop: a second
-agent can be in the middle of a change, or the baseline is old. Find which, and tell the user.
+Gate: `baseline check` has `0 different` (nobody replaced a stored result). Each line of
+`fnv regress` is `same`, and `destiny regress` has 0 clips that differ. If one fails before
+your change, stop: a second agent can be in the middle of a change, or the baseline is old.
+Find which, and tell the user.
 
 ### 2. Make the change behind a key
 
 * A new rule is off by default. A weapon turns it on with a key of its set file (for `fnv`:
-  a key of its configuration file). `d2fo4.py` gives the key to the step as an option: the
+  a key of its conversion file). `d2fo4.py` gives the key to the step as an option: the
   keys `knuckles` and `closed_fingers` became `--knuckles align` and `--closed-fingers on`
   of the retarget step.
 * Write the reason and the measurement of the rule in the docstring of its function.
@@ -69,7 +72,9 @@ Run the commands of the table for your file. Gate: the same bytes.
 
 `./port destiny regress --only NAME` does one weapon. `--jobs N` runs N weapons at the same
 time. `--against DIR` compares with the scratch folder of an earlier run, not with the
-baseline folders. The scratch results are in `data/destiny/port/work/_regress/`.
+baseline folders. The scratch results are in `data/destiny/port/work/_regress/`. `./port`
+starts a command with `exec`, so a signal to its process ID goes to the program. A regress
+run starts its converters as children: stop it with Ctrl-C, or stop its children also.
 
 ### 4. When a clip is different
 
@@ -80,13 +85,26 @@ baseline folders. The scratch results are in `data/destiny/port/work/_regress/`.
    (`validate-port`). A byte check does not look at the hands.
 4. Stop and ask the user before you make new baseline clips for a weapon that passed its
    game test. The game test of that weapon is then old, and it must run again.
-5. The new baseline is the result of the convert command with `-o` into the baseline folder
-   that `destiny/port/regress.toml` names (for `fnv`: `data/fnv/out/NAME`).
+5. The new baseline is the result of the convert command with `-o` into each baseline folder
+   that `destiny/port/regress.toml` names for the weapon (for `fnv`: `data/fnv/out/NAME`). Then
+   run the regression again, and `./port baseline update`. Say that `baselines.sha256` changed:
+   it goes into git with the change that made the difference.
 
 ### 5. A document for the change
 
 Update the reference of the area (`destiny/port/README.md`, `fnv/README.md`) in the same
 change: the key, its default, the measurement, what is proved and what is not (`document-port`).
+
+## When `./port selftest` fails
+
+It prints one line for each of its four parts, `ok` or `FAIL`, and the faults below the line.
+
+| Part | A fault means | What to do |
+| --- | --- | --- |
+| `python` | A `.py` file of the source tree does not compile | Correct the file that the line names |
+| `port.toml` | A table has a wrong key, a wrong name or a wrong `needs` entry, or the program file of a command is not there | Correct the table ([portkit/README.md](../../../portkit/README.md)) |
+| `tests` | A test of `tests/` failed (`python3 -B -m unittest discover -s tests` shows it) | Correct `portkit`, or the test when the behavior changed with a reason |
+| `git` | Git has, or can add, a file that is not source: a game file ending, or a file with a NUL byte | Move the file below `data/`. Nothing of a game goes into git. |
 
 ## A second agent in the repository
 
@@ -119,17 +137,14 @@ change: the key, its default, the measurement, what is proved and what is not (`
 | Each clip of `fnv` is different, and the log has "moved 0" | The step `parts` did not run | Run each step |
 | A small numeric change is ignored | A change of 3e-5 in two source files made the releases different from the recorded ones | Each byte counts |
 | The rule works for the weapon of the task and moves a finger of another | The rule was tuned on one weapon | The hand review of each weapon that changed |
-| `__pycache__` in the source tree after a run | A Blender program with no `sys.dont_write_bytecode` | Add the line, and delete the folders |
 
 ## What to report
 
-The files that you changed, the commands that you ran with their results, each clip that is
-different with the reason, the weapons that kept their bytes, what is not tested (a second
-weapon, a second template), and each file of a second agent that you saw.
+The files that you changed. The commands that you ran, with their results. Each clip that is
+different, with the reason. The weapons that kept their bytes. What is not tested (a second
+weapon, a second template). Each file of a second agent that you saw.
 
 ## More
 
-* [docs/ARCHITECTURE.md](../../../docs/ARCHITECTURE.md), "Rules for a change".
-* [portkit/README.md](../../../portkit/README.md): how to add a command.
-* [fnv/README.md](../../../fnv/README.md), "This area in the monorepo" and "The regression".
-* [destiny/port/README.md](../../../destiny/port/README.md), "This area in the monorepo".
+* [docs/ARCHITECTURE.md](../../../docs/ARCHITECTURE.md), "Rules for a change"; [portkit/README.md](../../../portkit/README.md): how to add a command.
+* "This area in the monorepo" of [fnv/README.md](../../../fnv/README.md) and of [destiny/port/README.md](../../../destiny/port/README.md).

@@ -5,7 +5,7 @@
 
 SOURCE is the folder of the extracted mod: the gun model (.nif) and the first-person
 animations (.kf). The result is one HKX clip for each first-person clip of a Fallout 4 gun,
-in the folder OUT (default: data/fnv/out/NAME). No configuration file is necessary. The
+in the folder OUT (default: data/fnv/out/NAME). No conversion file is necessary. The
 tools find the model, the animations, the gun parts, the clips and their events
 (fnv/tools/port_defaults.py).
 
@@ -16,7 +16,7 @@ tools find the model, the animations, the gun parts, the clips and their events
                 case. Default: the name of the model file.
     --work      the work folder. Default: data/fnv/work/NAME.
 
-A configuration file replaces a value that the tools assume:
+A conversion file (a TOML file) replaces a value that the tools assume:
 
     ./port fnv convert CONFIG [STEP ...]
 
@@ -33,7 +33,7 @@ The steps, in this order (all steps when none is given):
 `port.py CONFIG plan` prints the source of each clip and the events of each reload; the bake
 step prints the same.
 
-The same input gives the same bytes. The work folder is `work` of the configuration file
+The same input gives the same bytes. The work folder is `work` of the conversion file
 (default data/fnv/work/NAME).
 
 The rig folder is data/fnv/rig (`./port fnv make-rig` makes it); PORT_RIG names a different
@@ -124,7 +124,7 @@ def main():
     if os.path.isdir(sys.argv[1]):
         config, given = from_folder(sys.argv[1:]), []
     elif not os.path.isfile(sys.argv[1]):
-        raise SystemExit('[port] %s is not a folder and not a configuration file' % sys.argv[1])
+        raise SystemExit('[port] %s is not a folder and not a conversion file' % sys.argv[1])
     else:
         config, given = sys.argv[1], sys.argv[2:]
     os.environ['PORT_CONFIG'] = os.path.abspath(config)

@@ -54,6 +54,13 @@ weapon TheChaperone like AnimsCombatShotgun {
 * The graphs of the mod get the prefix and the vanilla name: `TLWGunBehavior`,
   `KHVGunBehavior`, `TXCGunBehavior`. The game test looks for these names.
 * A weapon with one reload clip needs no `reload` block.
+* A faster or a slower reload: a line `speed 1.5` (or `speed reloadSpeedMult * 1.5`) in the
+  `reload` block. The document of esx says that this line changes the playback speed of the
+  reload clips (`docs/BEHAVIOR.md` of esx, "Mod sources"). No mod of this repository has such
+  a line, and no test of this repository used it: build, then test in the game. No key of a
+  set file changes the speed of a clip. Do not change `reload_seconds` to make a reload
+  faster: it is the field `FNAM\Animation Reload Seconds` of the record, and what the game
+  does with it at another speed is not verified.
 * The first-person graph asks for clips by name. A clip that the mod does not have is the
   vanilla clip, with the hands of the vanilla gun. So give the mod a clip for each name:
   `WPNIdleReadyA` to `D`, `WPNIdleSightedWobble`, `WPNEquipFast`, `WPNFireSingleReadyA` and
@@ -72,6 +79,7 @@ ESX=$(./port paths get esx); FO4=$(./port paths get fo4_data); R=data/mods/MOD/b
 | Check | Expected | It does not prove |
 | --- | --- | --- |
 | `./port mod build` | 0 issues, 0 warnings, and the sha256 of each release file | That a clip is correct |
+| `./port baseline check` | `0 different`: each stored clip and each release has the bytes on record in `baselines.sha256` | That the bytes on record are correct |
 | `plugin check-weapons` | 0 findings | The look in the light of the game |
 | `scene weapon` | 0 findings, or 2 notes for the two effect materials of a sight | A glass |
 | `render weapon` | A picture of the gun. `--overwrite` when the file is there. | A glass: `esx render` draws no effect material (the note `SCENE_NOT_DRAWN`). Only a game test shows it. |
@@ -85,10 +93,15 @@ ESX=$(./port paths get esx); FO4=$(./port paths get fo4_data); R=data/mods/MOD/b
 | `plugin check-weapons --reference` warns about `WeaponOptics1` and `WeaponOptics2` | The template of the converter has no such node | Add the two nodes to the template file |
 | The build stops with `CLIP_MISSING`: no folder of `power_armor_third_person` has the clip | The two third-person views have one graph, and a clip with a new name must be there for the two | `[third.power_armor]` in the set file (`port-third-person-clips`) |
 | The plugin of one build has other bytes than the builds after it | Seen one time: the first build after a change of a behavior source. The cause is not known. | Do the last tests after the last build. Compare the sha256 of the release before and after the tests. |
+| `./port baseline check` prints `DIFFERENT` for a release file | A build replaced a release that was tested | Stop and tell the user. `./port baseline update` only for a change that the user accepted. |
 | `./port mod sync` has the exit code 1 | `ids.lock` of `data/mods/MOD/` is different and newer | `./port mod build MOD --update-lock` keeps it and copies it back. `./port mod sync MOD --force` replaces it. |
 
-A change of a comment in an item file gives the same release hashes. A build with a newer
-esx version can give other bytes than a release that was tested before.
+A change of a comment in an item file gives the same release hashes. A build with another
+esx version can give other bytes than a release that was tested before, so run
+`./port baseline check` after each build of a tested mod. One comparison was made, on
+2026-10-06: esx at the commit `d3e520c` built each of the 7 mods from nothing (a copy of the
+project with no `build/` folder), and each release had the bytes of `baselines.sha256`. The
+older esx (`a996de8`) made those stored releases.
 
 The models, the textures and the animations of a built mod are assets of the game. Do not
 publish a built mod.

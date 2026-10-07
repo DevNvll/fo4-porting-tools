@@ -18,7 +18,7 @@ No file of `d2x` and no file of the game is changed. The programs here use the m
 | Packages | 629 package files open, 1,032,829 entries. |
 | Item | `M77 Omnipositor`, item hash `DF4263CA`, found by its name in the string tables. |
 | Models | 5 pieces: the body (2,468 triangles), the magazine (2,739), a second magazine for the reload, the muzzle device (5,448; the slot `barrel`) and the sight unit (14,173: a rear sight with a box, and a front sight). |
-| Places of the pieces | 4 pieces have their place on the weapon, from the named points of the weapon entity. The second magazine has none. |
+| Places of the pieces | 4 pieces have their place on the weapon, from the named points of the gun entity. The second magazine has none. |
 | Textures | 13 textures of 7 materials, as PNG files, and each material as a texture set of Destiny 2 (albedo, normal, gstack). |
 | Skeleton of the weapon | 10 bones: `b_handle`, `b_magazine`, `b_bolt`, `b_bullet_1`, `b_bullet_2`, `b_casing`, `b_mag_release`, `b_safety`, `b_trigger`, `b_bolt_handle`. |
 | Clips of the weapon | 15 clips of the animation set of the weapon, each decoded with no error. 10 are for this skeleton. The reload has 105 frames. |
@@ -179,7 +179,7 @@ weapon, 9 bones of the arm rig and most condition values have no word.
 `states.json` has the clip of each state, in the form of `destiny/port/tools/d2states.py`.
 
 * `fp_NNN_TAG`: a clip of the arms (NNN is its place in the animation set). 68 clips.
-* `weapon_NNN_TAG`: a clip of the weapon entity on the same skeleton: the body bones at rest,
+* `weapon_NNN_TAG`: a clip of the gun entity on the same skeleton: the body bones at rest,
   the gun parts as in the clip. 10 clips. A clip of the arms does not move the gun parts in
   a reload; the weapon has that motion, and the game plays the two at the same time. The
   rest places of the gun bones are the same in the two skeletons (difference 0.000000).
@@ -239,7 +239,7 @@ Each statement names the command that proves it. I ran each command on 2026-10-0
   its well (`data/marathon/extract/validation/m77_weapon_all_pieces.jpg`).
 * **A layout.** `./port marathon notes find-value B3C9A7B2 --pkg investment_globals` finds the
   assignment hash of the M77 in one tag of the class `80806CAC` (the art table), and
-  `./port marathon notes walk 80A7C262 --depth 1` prints the pieces of the weapon entity.
+  `./port marathon notes walk 80A7C262 --depth 1` prints the pieces of the gun entity.
 
 ## What is not proved
 
@@ -276,7 +276,7 @@ first work (2026-10-06), and the stored pictures are its evidence.
   here. "Correct" is from the data and from the pictures of Blender.
 * **The variant.** The item definitions of `M77 Omnipositor` and of `M77 Assault Rifle`
   differ in one index (0xFC and 0xF9 at 0x918) and in three small values. The tools do not
-  read the table that the index points into. The files are those of the weapon entity of
+  read the table that the index points into. The files are those of the gun entity of
   the base item.
 * **The colors of the regions** (see "The materials"). Emission is not done.
 * **The hands.** The file has no hand mesh of Marathon: the arm entities have no model, and

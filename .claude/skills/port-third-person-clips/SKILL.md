@@ -68,9 +68,14 @@ Gate, from the line `[third]` of each clip:
 | Value | Must be true |
 | --- | --- |
 | `left hand to gun` | 0.0000 units: the left hand has its place of the source against the gun. |
-| `shoulder shift` | Small. With a large value, write `gun = "source"` and `blend = 8` in `[third]` and run the step again. The left arm was up to 8.3 units too short for Hammerhead with the default, 3.7 units for The Last Word. |
+| `shoulder shift` | Small: 0.00 to 0.08 units for four of the five ports. For a new weapon with a large value (3.7 units for The Last Word and 8.3 for Hammerhead, with the default), write `gun = "source"` and `blend = 8` in `[third]` and run the step again. |
 | `right hand on the grip` | The count of frames that you expect (105 of 105 for the Khvostov, 138 of 169 for Hammerhead). |
-| `bone length` | Near zero (0.0004 to 0.028 units in the three first ports). |
+| `bone length` | Near zero: 0.0004 to 0.028 units for four of the five ports. |
+
+The Chaperone is the exception: each of its clips has `shoulder shift 2.85` and
+`bone length 0.9111` (the right arm is too short in the turn of the gun). These clips passed
+their game test with these values. Do not change `[third]` of a weapon that passed its game
+test to make this gate true: report the value as a limit, or ask the user.
 
 The converter also prints the count of frames by which the events of the first-person clip
 are later or earlier in this clip (+3 for the Khvostov, -2 for Hammerhead, 0 for The Last Word).
@@ -91,7 +96,8 @@ Run `./port destiny regress --only NAME`. Gate: the first-person clips kept thei
 
 ### 6. Build, then test in the game
 
-`./port mod build MOD --update-lock`, then load `game-test-port`:
+`./port mod build MOD --update-lock`, then load `game-test-port` (`game trace` did not run in
+this repository yet):
 
 ```sh
 ./port destiny game third --session ID --weapon EDITORID --capacity N --record --out DIR
@@ -127,10 +133,11 @@ frames early and with the sounds of another clip.
 
 ## What to report
 
-What Fallout 4 has in third person, which clips you converted and which not, the values of
-the line `[third]`, the result of the game test, and the limits: the legs and the pelvis do
-not move, the rule for the right hand is a choice, a body in power armor has the vanilla
-reload and was not tested, and no test had a reload while the player walks.
+* What Fallout 4 has in third person. Which clips you converted, and which not.
+* The values of the line `[third]`, and the result of the game test.
+* The limits: the legs and the pelvis do not move. The rule for the right hand is a choice. A
+  body in power armor has the vanilla reload and was not tested. No test had a reload while
+  the player walks.
 
 ## More
 

@@ -77,7 +77,7 @@ the commands of the port.
   `esx scene weapon` and `esx render weapon` have no finding (`docs/weapon.png`).
 * The game test (`data/destiny/port/validation/m77/game_test.mp4`, `game_test.log`): a headless
   test copy of the game with this release (`release_tested.sha`), in the cell `QASmoke`. 40
-  steps, 0 failed. The game loads the plugin, gives and equips the weapon, and starts the graph
+  ops, 0 failed. The game loads the plugin, gives and equips the weapon, and starts the graph
   `M77GunBehavior.hkb`. Two bursts use 16 of 30 rounds. The reload ends with the event
   `reloadEnd` and fills the gun (14 to 30 rounds, 100 to 84 in reserve). The weapon goes into
   the sights, fires there, goes down and up, sprints, is put away and drawn again. A second
@@ -95,7 +95,7 @@ the commands of the port.
 ## What is not correct or not done
 
 * **The item.** The request was the `M77 Omnipositor`. That item has no art row of its own:
-  the model is that of the weapon entity of the item `M77 Assault Rifle`. The two item
+  the model is that of the gun entity of the item `M77 Assault Rifle`. The two item
   definitions differ in one index and in three small values, and the tools do not read the
   table that the index points into. So the mod has the name and the look of the base M77.
 * **The colors of three pieces.** The muzzle device, the magazine and the sight unit are

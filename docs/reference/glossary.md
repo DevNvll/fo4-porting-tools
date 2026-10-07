@@ -11,7 +11,7 @@ one thing.
 | arm entity | In Marathon: the entity with the first-person rig of the arms, its clips and its animation graph (`fp_rifle_arms`). |
 | automatic clip | A clip of `[auto]`: one shot of the source that starts again at each event `weaponFire` of the vanilla automatic clip. |
 | bake | The step that evaluates each source clip on the bones of the source and writes the matrix of each bone for each frame. |
-| baseline | The stored results that a regress command compares new results with. For `destiny regress`: the clip folders that `destiny/port/regress.toml` names. |
+| baseline | The stored results that a regress command compares new results with. For `destiny regress`: the clip folders that `destiny/port/regress.toml` names. `baselines.sha256` (in git) has the sha256 of each baseline file and of each release: `./port baseline check` compares the files of `data/` with it. |
 | behavior source | The file `behavior/WEAPON/WEAPON.bhv` of an esx project. It gives a weapon its own animation keyword, its graph copies and its reload rules. |
 | body entity | The entity of Destiny 2 with the third-person clips of the player: 72 bones, one graph. |
 | clip | One animation. A clip of a source file has a name such as `fp_001_80BC8660`. A Fallout 4 clip has a name such as `WPNReload` and is one HKX file. |
@@ -19,7 +19,7 @@ one thing.
 | composed clip | A clip of `[compose]`: clips of the file, one after the other, with a blend at each join. |
 | connect point | A named point of a Fallout 4 mesh where a part attaches: `P-Scope` on the gun, `C-Scope` on the sight. |
 | content group | The tag of one gun in the tag tree of Destiny 2. It can be the weapon tag. |
-| conversion file | `conversion.toml`: the file of a New Vegas conversion that replaces values that the tools assume (the name, the template, the output folder, a clip). The command needs none. |
+| conversion file | `conversion.toml`: the file of a New Vegas conversion that replaces values that the tools assume (the name, the template, the output folder, a clip). The command needs none. The help text of the program calls it "configuration file". |
 | counted reload | One reload clip for each count of rounds in the gun, selected by a line `when ammo == N play CLIP` of a behavior source. |
 | d2fo4 | The converter of `destiny/port/` (`d2fo4.py`, `./port destiny convert`). |
 | d2x | The extraction tool of Destiny 2 (`destiny/extract/`). |
@@ -36,7 +36,7 @@ one thing.
 | grip code | The start of the name of a New Vegas animation that names the grip (`1hp`, `2ha`). It is not a part of the animation name. |
 | grip point | The middle of the first joints of the index and the middle finger of the right hand in the hold pose. It goes on the grip point of the template. |
 | gstack | The third texture of a texture set of Destiny 2. Its green value is the smoothness, and its alpha value is the dye mask and the metal value. |
-| gun entity | The entity of the gun in Destiny 2. It has its own graph, which gives the clip of the gun parts for a state. |
+| gun entity | The entity of the gun in Destiny 2 or in Marathon. In Destiny 2 it has its own graph, which gives the clip of the gun parts for a state. In Marathon its clips are the `weapon_NNN_TAG` clips of the first-person file, and its named points give the place of each piece. |
 | hold pose | `hold = "CLIP:FRAME"`: the pose in which the hands hold the gun. It gives the place of the gun in Fallout 4 weapon space, and it is the pose `ready`. |
 | idle camera | The camera of Fallout 4 that turns about the player when the game has no input for about 2 minutes. |
 | kind | The role of a weapon bone (`bolt`, `magazine`). The template gives each kind a Fallout 4 bone. Key `[roles]`. |
@@ -46,7 +46,7 @@ one thing.
 | mod project | The esx project of a mod. Its hand-written files are `mods/NAME/` (in git), and the complete project is `data/mods/NAME/`. |
 | node count | The count of tracks of a clip. When it is not the bone count of the rig, the clip can be a clip of a different rig. |
 | NVCS | The New Vegas compatibility skeleton mod. Its first-person skeleton file gives the New Vegas skeleton of the rig folder. |
-| op | One command to the game probe, such as `item.give`. |
+| op | One command to the game probe, such as `item.give`. The result of a game test is a count of ops and of failed ops ("40 ops, 0 failed"). A step is a line of a test plan of a New Vegas mod. |
 | parts file | `parts.json` of a work folder: each shape of the gun in the space of its Fallout 4 weapon bone. A Fallout 4 model of the gun must have its shapes at these places. |
 | pattern entity | The entity of Destiny 2 whose rows give a gun its tags and its rig entity. |
 | piece | (1) One clip of the file inside a composed clip. `[piece_events]` gives its events. (2) One part of a Marathon weapon that is an entity with a model: the body, the magazine, the muzzle device, the sight unit. |

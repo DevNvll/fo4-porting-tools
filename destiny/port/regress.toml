@@ -17,6 +17,7 @@
 # A baseline folder is the result of the converter before a change. When a change of the
 # converter must change a clip, say which clips are different and why (docs/ARCHITECTURE.md,
 # "Rules for a change"), make the new baseline, and name its folder here.
+# Then run `./port baseline update`, and put baselines.sha256 into git with the change.
 
 [[weapon]]
 name = "the_last_word"

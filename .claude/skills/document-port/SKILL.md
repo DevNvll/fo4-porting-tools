@@ -23,7 +23,8 @@ Write simple technical English (the style of ASD-STE100):
 * Short sentences. One instruction for each sentence. Imperative for a step.
 * The active voice. Say who does the action: "the tool prints", "I selected".
 * One word for one thing. A clip is always "clip", not "animation" in one place and
-  "sequence" in another. [docs/reference/glossary.md](../../../docs/reference/glossary.md) has the words.
+  "sequence" in another. [docs/reference/glossary.md](../../../docs/reference/glossary.md) has the words:
+  "conversion file" (New Vegas), "gun entity", "ops" (the count of a game test).
 * No em dash, and no dash between two clauses. Use a period or a colon.
 * Sentence case for each heading.
 * No path of one computer. Write `/path/to/...`, or name the setting of `data/config.toml`.
@@ -52,11 +53,12 @@ Use the later value when two sources do not agree. Then check the commands and t
 python3 .claude/skills/document-port/scripts/check_doc.py FILE.md [FILE.md ...]
 ```
 
-The script finds each `./port` text that is not a command of `./port list`, each option that
-the help of its command does not have, each link with no target, each path of one computer
-and each em dash. For a command whose program has no help text it checks the name only, and
-says so. It does not run a conversion. Run each example yourself when its result is a
-statement of the document, if the rules of your task let you run it.
+The script finds each `./port` text that is not a command of `./port list` or of `./port`
+itself, each option that the help of its command does not have, each link with no target,
+each path of one computer and each em dash. It does not run a conversion. Run each example
+yourself when its result is a statement of the document, if the rules of your task let you
+run it. When two documents have the same list (the sign tables, the numbers of a correct
+port, the probe rules), change the two together: the document below `docs/` is the source.
 
 Gate: the script prints `ok` for each file, and you ran or verified each command.
 

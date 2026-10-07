@@ -56,9 +56,12 @@ names none. The model program reads the folder `textures` beside the `.glb` file
 # the numbers of each clip (the gun against the source gun, the hands in the gun, the finger joints)
 ./port destiny check validate $GLB --set $SET --out data/destiny/port/validation/m77 \
     --clips $M/behavior/m77/animations/first_person --no-video
-# how near each hand is to the gun, in each clip
+# how near each hand is to the gun, in each clip (this command did not run for the M77: its
+# validation folder has no table of the hand distance)
 ./port destiny check touch-table $GLB --set $SET --clips $M/behavior/m77/animations/first_person \
     --out data/destiny/port/validation/m77/hand_distance.txt
+# no stored result (a baseline clip, the release) was replaced
+./port baseline check
 ```
 
 `./port marathon regress-clips` is `./port destiny regress --only m77_omnipositor`
@@ -71,7 +74,7 @@ The game test (a headless test copy of the game; the probe has one session at a 
 whole computer, so look at `esx probe status` before a start):
 
 ```sh
-./port destiny game session M77 LABEL          # builds the mod, starts a session, prints its ID
+./port destiny game session M77 LABEL --no-build    # starts a session with the release on record, prints its ID
 ./port destiny game record --session ID --weapon M77 --capacity 30 --auto --out DIR
 esx probe stop --session ID                    # only the ID that the start command printed
 ```
@@ -82,6 +85,9 @@ esx probe stop --session ID                    # only the ID that the start comm
   game test of the M77 is in `data/destiny/port/validation/m77/` (`mods/M77/README.md` has
   its result).
 * `./port mod build M77` was not run by the port of these tools to the new folder layout.
+  One build was compared: on 2026-10-06 esx at the commit `d3e520c` built a copy of
+  `data/mods/M77` with no `build/` folder in a scratch folder, and the three release files
+  had the bytes of `baselines.sha256`.
 * The limits of the port of the M77 (the colors of three pieces, the hand measurements, one
   reload clip, the third-person clips of the vanilla combat rifle): `mods/M77/README.md`,
   "What is not correct or not done", has the list.

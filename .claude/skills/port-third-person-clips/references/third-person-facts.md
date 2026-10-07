@@ -86,6 +86,13 @@ and from the set files of this repository.
 | Frames with the right hand on the grip | 105 of 105 | 138 of 169 | 127 of 127 |
 | Rounds after the reload in the game test | 27 to 30 | 57 to 60 | 5 to 8 |
 
+The two later ports, from the lines `[third]` of the regression run of 2026-10-06
+(`data/destiny/port/work/_regress/NAME/convert.log`): The Huckleberry has `bone length 0.0004`
+and `shoulder shift 0.00`. The Chaperone has `bone length 0.9111` and `shoulder shift 2.85`
+in each of its 7 clips (its set file has no key `gun`, so the gun is on the stance): in the
+turn of the gun its right arm is up to 2.85 units too short, and the collarbone moves by that
+length. These clips passed their game test.
+
 ## What is not done
 
 * Only the reload. Destiny has more third-person clips of the body for a weapon (`ready`,

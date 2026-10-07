@@ -84,7 +84,7 @@ git. In this document a short name is one of these paths:
 | `./port destiny make-rig` | `tools/make_rig.py` | The vanilla clips of each template, into `data/destiny/port/rig/`. |
 | `./port destiny states`, `dyes`, `reticle`, `third`, `pose` | `tools/d2states.py`, `d2dyes.py`, `d2reticle.py`, `d2third.py`, `d2pose.py` | Data of Destiny 2 that the extraction does not have. These five import `d2x`, so `./port` starts them with the Python of the environment of `d2x`. |
 | `./port destiny points` | `tools/d2points.py` | The muzzle, the eye point and a map of the sight, for a set file. |
-| `./port destiny check ...` | `check/` | `validate`, `gun`, `touch`, `touch-table`, `contact`, `contact-table`, `fingers`, `render`, and the picture programs (`sheet`, `look-sheet`, `frame-sheet`, `hand-sheet`, `video`, `strip`, `video-sheet`, `third-sheet`). |
+| `./port destiny check ...` | `check/` | `validate`, `gun`, `gun-on-grip`, `touch`, `touch-table`, `contact`, `contact-table`, `fingers`, `render`, and the picture programs (`sheet`, `look-sheet`, `frame-sheet`, `hand-sheet`, `video`, `strip`, `video-sheet`, `third-sheet`). |
 | `./port destiny game ...` | `check/` | The game tests: `session`, `record`, `third`, `reloads`, `sight`, `trace`, `shots`, `all`, `results`. |
 | `./port destiny regress` | `check/regress.py` | The regression of the clips (below). |
 | `./port destiny notes ...` | `notes/` | The analysis programs of the game data. |
@@ -107,6 +107,13 @@ file with the baseline folders that `destiny/port/regress.toml` names (clips of
 it after each change of a tool. Result of 2026-10-06, after the move of the tools into this
 repository: 6 weapons (the five guns of Destiny 2 and the M77), 162 first-person clips, 16
 third-person clips and 6 clips of the power armor; 0 differ.
+
+**The baseline.** The regression compares with the stored clips. `./port baseline check`
+proves that nobody replaced a stored clip or a release: `baselines.sha256` (in the root, in
+git) has the sha256 of each one. Run it after the regression passes. Run
+`./port baseline update` only for a change that the user accepted. `out/the_chaperone` and
+`out/the_huckleberry` are older results and no baseline: the clips of these two weapons are
+in `data/mods/TexMechanica`.
 
 ## The clip set of The Last Word
 
@@ -445,8 +452,10 @@ the pose clip does not change it. The three earlier guns do not have this fault:
 clips of the file the left Fallout 4 hand has 5.6 % (22.3 %) on the Khvostov, 5.1 % (11.7 %)
 on Hammerhead and 10.6 % (46.7 %) on The Last Word. The left hand of The Chaperone holds
 the gun with its thumb on the left side of the barrel cover and its fingers below it; the
-palm does not touch. `validation/NAME/hand_distance.txt` has the values of each clip, and
-`validation/NAME/left_hand_before_after.jpg` shows the hold pose in the game.
+palm does not touch. `validation/NAME/hand_distance.txt` has the values of each clip of The
+Chaperone and of The Huckleberry, and `validation/NAME/left_hand_before_after.jpg` shows the
+hold pose in the game. The values of the three earlier guns are from runs of `check/touch.py`
+on the hold pose in the first chat (2026-10-06): no file stores them.
 
 The second solve of the rig changes the left hand, its fingers and the left arm. The matrix
 of each other bone changes by 0.0008 at most in the hold clip (rounding). The third-person clips of
@@ -539,7 +548,7 @@ What is proved (`validation/m77/`; `mod/M77/README.md` has the list):
   bolt handle go, and the source finger turns 92 degrees in that frame).
 * `reload_bolt_handle_frames.jpg`: the left hand on the bolt handle in the frames 74 to 84,
   the source above the result, from three sides.
-* The game test: 40 steps, 0 failed (`game_test.mp4`, `game_test.log`, `game_frames.jpg`,
+* The game test: 40 ops, 0 failed (`game_test.mp4`, `game_test.log`, `game_frames.jpg`,
   `game_reload_frames.jpg`). In the sights the top of the front post is at the center of the
   picture (`game_sights_center.jpg`).
 
@@ -574,6 +583,7 @@ started).
 | `[static]` | `NAME = { pose, vanilla, frame, frames }`: one weapon place of a vanilla clip on each frame. |
 | `[third]` | The third-person clips (the step `third`). `folder`: the folder with the files of `tools/d2third.py`, beside the file of the gun, or else a path below `data/destiny/port/` (default `third_person`). `gun`: `"stance"` (default) or `"source"`, and `blend` (frames): where the gun is ("The third-person clips"). `right_hand`: `"hold"` (default: the grip of the first-person hold pose) or `"source"`. `align`: the weapon bones whose first motion gives the count of frames between the events of the first-person clip and of this clip (default: the bolt of the template). `[third.clips]`: Fallout 4 clip = state file. `[third.poses]`: Fallout 4 clip = `CLIP:FRAME`, one pose of a third-person clip. `[third.events]`: more events, as `[events]`. `[third.compose.NAME]` and `[third.piece_events]`: as `[compose]` and `[piece_events]`, with state files. `[third.parts]`: state file = first-person clip that gives the motion of the gun parts. `[third.hold_end]`: more frames of the last pose. `silent`: the clips with no sound event. `[third.power_armor]`: Fallout 4 clip = vanilla clip of the power armor that is copied under that name. "The third-person clips" says why each one is there. |
 | `[model]` | The model of the gun for the esx project: `name`, `muzzle`, `[model.materials]`, `dyes` (the dyes file of the gun), `[model.shaders]` (NAME = the dyes file of a shader), and the weights `specular` (default 0.9) and `occlusion` (default 0.5) of the textures. |
+| `[model.materials]` | `TAG = "Name"`: the name of the Fallout 4 material and of its textures for one material of the file. TAG is the tag of the texture set (`plate_set` of each mesh in `manifest.json`, and the start of the file names in `textures/`). `80EF39D0 = "Barrel"` gives `Barrel.bgsm` and `Barrel_d.dds`. A material with no line has its tag as its name. |
 | `[model.sight]` | The glass of the sight and the reticle, as a second part of the weapon: `file` (the file of `tools/d2reticle.py`), `source` (its entity), `template` and `template_shapes` (the vanilla mesh with the two effect shaders), `glass_scale`, `texture_format` (default `bc7`). `[[model.sight.glass]]`: one table for each glass material, with `material`, the colors `red`, `green`, `blue`, and `alpha` (default 1). `[model.sight.reticle]`: `material`, `texture`, the colors `red`, `green`, `blue`, `alpha`, `limit`, `brightness`, `center` (its place on the glass), `distance` and `eye` (its size), `scale`, `gap`. |
 
 ## What you need
@@ -1161,9 +1171,10 @@ the game):
 * `check/game_reloads.py` did one reload of The Chaperone for each count of rounds from 0
   to 5, in each view: 12 reloads, 0 failed. Each one played the clip of its count
   (`WPNReload6` for an empty gun to `WPNReload1` for 5 rounds), ended at the time of the
-  event of its clip (7.25 s to 2.73 s in first person, 6.27 s to 2.44 s in third person),
-  filled the gun to 6 rounds, and started one shell sound for each shell and the two sounds
-  of the lever one time (`validation/the_chaperone/game_test_reloads.txt`).
+  event of its clip (7.23 s to 2.75 s in first person, 6.28 s to 2.45 s in third person, the
+  values of `validation/the_chaperone/game_test_reloads.txt`; the events of the first-person
+  clips are at 7.2333 s and 2.7333 s), filled the gun to 6 rounds, and started one shell
+  sound for each shell and the two sounds of the lever one time.
 * `check/game_third.py`: 94 ops for The Chaperone, 88 for The Huckleberry and 73 for The
   Last Word, each with 0 failed ops. The reload filled the gun in each test (3 to 6, 27 to
   30, 5 or 6 to 8 rounds). `validation/NAME/game_test_third_person.mp4` and
@@ -1263,19 +1274,25 @@ with the result only. `summary.txt` has one line for each clip. The single progr
 W=data/destiny/port/work/NAME       # the work folder of the weapon
 O=data/destiny/port/out/NAME        # the folder with its clips (or the animation folder of the mod project)
 ./port destiny check render --glb FILE.glb --clip CLIP --poses $O/WPNReload.hkx \
-    --parts $W/parts.json --out DIR --frames all --views fp,r_thumb,r_back,l_thumb,l_palm,gun_left
+    --parts $W/parts.json --out DIR --template TEMPLATE --frames all --views fp,r_thumb,r_back,l_thumb,l_palm,gun_left
 ./port destiny check sheet DIR CLIP VIEW "0 12 24" OUT.jpg        # the source above the result
 ./port destiny check video DIR CLIP OUT.mp4 VIEW [VIEW2] [RATE]   # the source at the left, the result at the right
 ./port destiny check strip VIDEO.mp4 OUT.jpg [COUNT] [WIDTH]      # frames of a video at equal steps, in one picture
 ./port destiny check contact --glb FILE.glb --bake $W/bake/CLIP.npz \
     --poses $O/WPNReload.hkx --parts $W/parts.json --frames all --quiet --out contact.json
 ./port destiny check contact-table contact.json                   # hand vertices inside the gun, source and result
-./port destiny check fingers $O/WPNReload.hkx --bake $W/bake/CLIP.npz   # joint ranges against the vanilla clips
+./port destiny check fingers $O/WPNReload.hkx --bake $W/bake/CLIP.npz \
+    --vanilla data/destiny/port/rig/combatrifle                         # joint ranges against the vanilla clips
 ./port destiny check gun FILE.glb CLIP $W/parts.json $O/WPNReload.hkx   # the gun, vertex by vertex
 ./port destiny check touch --glb FILE.glb --bake $W/bake/CLIP.npz \
     --poses $O/WPNIdleReady.hkx --parts $W/parts.json --frames 0        # how near each hand is to the gun
 ./port destiny check touch-table FILE.glb --set SET.toml --clips DIR --out data/destiny/port/validation/NAME/hand_distance.txt
 ```
+
+`--template` of `render` and `--vanilla` of `fingers` have the defaults of the revolver
+(`revolver44`, `data/destiny/port/rig/revolver44`). Give the template of the set file, and the
+folder with its vanilla clips: `data/destiny/port/rig/combatrifle` for `combatrifle` and for
+`combatrifle_parts`. `check/validate.py` gives the two itself.
 
 `render`, `contact` and `touch` run in Blender: `./port destiny check render ...` is
 `sh destiny/port/check/bl.sh destiny/port/check/render.py -- ...`. More picture programs, for
@@ -1318,8 +1335,11 @@ D=data/destiny/port
 It builds the mod with `./port mod build NAME --update-lock` and starts the session with
 `data/mods/NAME/build/release`. It keeps the session ID in
 `data/destiny/port/work/probe_session.txt`, with its label in `probe_session.txt.label`. When
-it runs again, it stops the session of that file and no other session. When the probe has a
-session that this program did not start, it does not start one, and its exit code is 1.
+it runs again with the same label, it stops the session of that file and no other session.
+When the file has a session with a different label, the program stops nothing and has the
+exit code 1: a second user can have started that session. `--take-over` stops it (ask the
+user first). When the probe has a session that this program did not start, it does not start
+one, and its exit code is 1.
 `--cell ID` gives the cell where the game starts (default `QASmoke`). `--world` gives no
 cell: the game then starts in the cell of the test world of the test folder
 (`esx probe install --world FILE`, an esx version of 2026-10-06 or later). `--no-build` starts
@@ -1337,7 +1357,8 @@ of each one.
 More game test programs: `./port destiny game sight` (pictures at the hip and in the sights),
 `./port destiny game trace` (the clips and the events of one reload, from the trace of the
 probe), `./port destiny game shots` (pictures of the gun in a slow third-person reload),
-`./port destiny game all` (each test of each weapon of a mod in one session; `--dry-run`
+`./port destiny game all` (each test of each weapon of a mod in one session; give it
+`--session ID`, because with none it takes the ID of the shared session file; `--dry-run`
 prints the commands) and `./port destiny game results` (copies the results of a weapon into
 its validation folder and prints the numbers).
 
@@ -1801,8 +1822,9 @@ What the tests show, and is not a fault of the clips:
 ## Limits
 
 * The reload of The Chaperone with 6 shells is 7.2 s long: the clips have the speed of the
-  files of Destiny (16 frames, 27 frames for each shell, 48 frames). A `speed` line in the
-  behavior source makes each reload faster.
+  files of Destiny (16 frames, 27 frames for each shell, 48 frames). The document of esx
+  (`docs/BEHAVIOR.md`) says that a `speed` line in the `reload` block of the behavior source
+  makes each reload faster. No mod has such a line, and it was not tested.
 * The shot of The Chaperone at the hip has no motion of the lever: the file has none there.
 * The glass of The Huckleberry has no tint and no mirror picture, and the two curved lines
   of its texture show only a little. Its colors are half of the values of Destiny in the

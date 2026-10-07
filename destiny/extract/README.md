@@ -67,7 +67,9 @@ The local values are settings. A setting comes from its environment variable, th
 | `FO4PORTS_DATA` | Moves the data folder (`data/`). `setup.sh` and d2x then use `destiny/extract/` below it. |
 
 `setup.sh` needs `git`, `cargo` and `python3` (3.11 or later, for `portkit`). It uses `uv` for
-the Python environment (Python 3.13) and uses `python3 -m venv` if `uv` is not there.
+the Python environment (Python 3.13) and uses `python3 -m venv` if `uv` is not there. With no
+`uv`, that `python3` must be 3.12 or later (the fixed versions of `requirements.txt` need it):
+the setup stops with a message if it is older.
 A `.mp4` video needs `ffmpeg`.
 
 ## Folders

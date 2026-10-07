@@ -28,9 +28,9 @@ true.
 | 4 | Convert | Run the converter. For Destiny 2 and Marathon, write the set file first. | The numbers that the converter prints are in the expected range ([checks.md](checks.md)). |
 | 5 | Check before the game | Make the numbers of each clip. Look at each hand in pictures from the game camera, the source above the result. | No finger joint bends back. Each hand that holds the gun touches it. You looked at each hand and found none of the four defects (below). |
 | 6 | The model and the mod project | Destiny 2 and Marathon: `./port destiny model`. Write `mods/NAME/` (`esx.toml`, the item file, the behavior source). `./port mod build NAME`. | The build has 0 issues and 0 warnings. The weapon checks of esx have no finding. |
-| 7 | The byte checks | Run the conversion a second time, and run the regress command of the area. Write down the sha256 of each release file. | The same bytes. For a change of a tool: each clip that is different has a name and a reason. |
+| 7 | The byte checks | Run the conversion a second time, and run the regress command of the area. Then run `./port baseline check`. | The same bytes. For a change of a tool: each clip that is different has a name and a reason. No stored result of `data/` is different from its sha256 on record (`baselines.sha256`). |
 | 8 | The game test | Only when the user asked for it or permitted it. Record the weapon in the test copy of the game, and read the trace ([game-test.md](game-test.md)). | 0 failed ops. You looked at frames of each recording. The trace has the clips and the events that you expect. The release has the hashes of stage 7. No game process remains. |
-| 9 | The documents | Write `mods/NAME/README.md`: what the mod has, the choices, what is proved, what is not proved, the limits. Add the weapon to the regression. | Each statement has its command or its file. Each program of the document ran. |
+| 9 | The documents | Write `mods/NAME/README.md`: what the mod has, the choices, what is proved, what is not proved, the limits. Add the weapon to the regression. When the user accepts the port, run `./port baseline update`. | Each statement has its command or its file. Each program of the document ran. `baselines.sha256` has the new clips and the new release. |
 
 ## What "correct" means
 
@@ -41,10 +41,11 @@ command. The column "Not a proof of" gives the fault that passed that check in t
 | --- | --- | --- | --- |
 | The same input gives the same bytes | `./port fnv regress`, `./port destiny regress`, `./port marathon regress`, or a second run into a second folder and `cmp` | 0 files differ | That a clip is correct |
 | A change of a tool did not change an earlier weapon | The same regress commands | 0 files differ, or a list of the clips that changed and why | That a clip is correct |
+| Nobody replaced a stored result | `./port baseline check` | 602 files, 0 different (2026-10-06) | That the bytes on record are correct |
 | The gun of each clip is at the place of the source gun | `./port destiny check gun` | At most 0.009 to 0.015 units for each vertex | A rule that changes the source (`[gun]`, `[compose]`, `[hand_pose]`) |
 | Each wrist is at the source wrist | The line `[retarget]` of the converter, `./port destiny check gun` | 0.003 units at most (Destiny 2). 1.02 units for the M77, because `knuckles = "align"` moves the wrist. | The fingers |
 | The HKX file has the poses | The line `[hkx]`, value `pos err` | Below 0.02 units (Destiny 2). 0.023 to 0.086 units (New Vegas, 40-bit rotations). | That the poses are good |
-| No finger joint bends back, and each joint is a hinge | `./port destiny check fingers` | `joints bent back: none` | The place of a finger on the gun |
+| No finger joint bends back, and each joint is a hinge | `./port destiny check fingers` | `joints bent back: none` (Destiny 2). The M77 has the first joint of a thumb at 3.3 to 4.9 degrees. | The place of a finger on the gun |
 | The hands are not deeper in the gun than the source hands | `./port destiny check contact` | The Last Word 2.2 to 5.7 percent against 3.3 to 10.5 in the source | A hand that is away from the gun |
 | Each hand that holds the gun touches it | `./port destiny check touch`, `touch-table` | 5 to 42 percent of the vertices of a hand are nearer than 0.5 cm in the hold pose | That the pose is the pose of the source game |
 | The hands look correct | Pictures from the game camera and close views of each hand, the source above the result. A person or an agent looks. | No number | A fault that the source has also |
@@ -117,8 +118,10 @@ Each rule has the event that showed it. [lessons.md](lessons.md) has the full hi
 16. **A new rule in a shared tool is off by default.** The first finger rule for the M77 was
     in the shared solver with no option, and it changed the poses of the Destiny weapons.
     The rule then went behind a key of the set file.
-17. **Test the release that you built last.** Write down the sha256 of each release file
-    before the tests, and compare after the tests.
+17. **Test the release that you built last.** Take the sha256 of each release file after the
+    build, and compare after the tests. `baselines.sha256` is the record of each tested
+    release and of each baseline clip: `./port baseline check` shows a stored result that a
+    command replaced. Run `./port baseline update` only for a change that the user accepted.
 
 ### What you tell the user
 

@@ -43,7 +43,7 @@ tools only read the game folder.
 | The first-person rig | 75 to 87 bones | 91 bones for the M77 (`fp_rifle_arms`) |
 | The hand bones | The reference of the tools | Other lengths: the forearm is 1.2 cm longer, the palm 0.7 cm shorter, some finger bones 10 to 23 percent shorter. The set file needs `knuckles = "align"` and `closed_fingers = true`. |
 | The hand mesh | In the file (`body_hands`) | Not extracted. `--hands FILE.glb` puts the hand mesh of a Destiny 2 file on the rig, for the check pictures only. |
-| The gun parts in a reload | In the clip of the arms, or in an additive clip | In a clip of the weapon entity (`weapon_NNN_TAG` in the same file). The game plays the two at the same time. `[gun.parts]` joins them. |
+| The gun parts in a reload | In the clip of the arms, or in an additive clip | In a clip of the gun entity (`weapon_NNN_TAG` in the same file). The game plays the two at the same time. `[gun.parts]` joins them. |
 | The states file | `./port destiny states` writes `states.json` | The extraction writes `states.json` beside the `.glb` file |
 | The materials | A texture set and dyes | Three rules: `palette`, `detail`, `constant`. The extraction writes each one as a texture set of Destiny 2. The colors of six of the seven regions of a `detail` material are not in the files. |
 | The shaders | Direct3D 11 bytecode: `./port destiny shader-text` | DXIL: `./port marathon notes dxil MATERIAL` (it needs `llvm-dis`) |
@@ -135,6 +135,10 @@ M=data/mods/M77
     --out data/destiny/port/validation/m77/hand_distance.txt
 ```
 
+The last command ran for the M77 in this repository on 2026-10-06. In the hold pose 23.4
+percent of the vertices of the left Fallout 4 hand are nearer than 0.5 cm to the gun (the
+Marathon hand of the source: 30.0 percent), and the right hand has 28.9 percent.
+
 With no `-o`, the clips go to `data/destiny/port/out/m77_omnipositor/`. The work files are in
 `data/destiny/port/work/m77_omnipositor/`.
 
@@ -148,7 +152,10 @@ With no `-o`, the clips go to `data/destiny/port/out/m77_omnipositor/`. The work
 
 **Gate.** The values of [checks.md](checks.md), "The numbers of a correct port". For the M77:
 the gun 0.0102 units at most from the source gun, no finger joint bent back, and the first
-joint of a thumb 3.3 to 4.9 degrees back.
+joint of a thumb (`Finger11-2` in `summary.txt`) 3.3 to 4.9 degrees back. The wrist line of
+`NAME.txt` is about 1.02 units, because `knuckles = "align"` moves each wrist: that is the
+rule, not a fault. The line `[retarget]` of the converter has `wrist` 0.00 (it measures
+against the moved place).
 
 ### 5. The model, the mod, the byte checks
 
@@ -156,6 +163,7 @@ joint of a thumb 3.3 to 4.9 degrees back.
 ./port marathon model $GLB --set $SET            # reads parts.json of the work folder: do the convert first
 ./port mod build M77 --update-lock
 ./port marathon regress-clips                    # the clips of the M77 against the baseline clips
+./port baseline check                            # no stored result (a baseline clip, the release) was replaced
 ```
 
 `./port marathon regress-clips` is `./port destiny regress --only m77_omnipositor`. For a new
@@ -163,11 +171,13 @@ weapon, add it to `destiny/port/regress.toml` and run `./port destiny regress --
 
 The mod project is as for a long gun of Destiny 2: a copy of the combat rifle, the behavior
 source `weapon M77 like AnimsCombatShotgun`, and `remove_keywords = ["AnimsCombatRifle"]` in
-the item file. `reload_seconds` is the time of the event `reloadEnd` (frame 91 of 104 for the
-M77: 3.0333 s).
+the item file. `reload_seconds` is the time of the event `reloadEnd`. For the M77 the
+converter prints `reloadEnd` at frame 90 of 104 (3.0000 s; `initiateStart` is at frame 89).
+The item file of the M77 has `reload_seconds = 3.0333`, the time of frame 91: one frame more
+than the event. The game test passed with that value.
 
 **Gate.** The build has 0 issues and 0 warnings. `./port marathon regress-clips` prints 0
-clips that differ.
+clips that differ. `./port baseline check` has `0 different`.
 
 ### 6. The game test
 
@@ -175,10 +185,13 @@ Only with the permission of the user. [game-test.md](game-test.md) has the rules
 
 ```sh
 esx probe status
-./port destiny game session M77 LABEL
+./port destiny game session M77 LABEL --no-build
 ./port destiny game record --session ID --weapon M77 --capacity 30 --auto --out DIR
 esx probe stop --session ID
 ```
+
+`--no-build` starts the session with the release that is on record. For a new weapon, leave it
+out: the program then builds the mod.
 
 **Gate.** 0 failed ops. In the frames of the reload no finger has a wrong shape. In the
 sights the sight is at the center of the picture.
@@ -220,7 +233,8 @@ Other values of the set file:
 * `[events] WPNReload = [[76, "SoundPlay.WPNShotgunCombatReloadBoltOpen"]]`. The tools find
   `MagOut` (frame 15), `MagIn` (58), `reloadComplete` (60) and `BoltClose` (82).
 * `[hold_end] WPNUnEquip = 3`.
-* The item: capacity 30 (a choice), ammunition `.45`, `reload_seconds = 3.0333`.
+* The item: capacity 30 (a choice), ammunition `.45`, `reload_seconds = 3.0333` (the event
+  `reloadEnd` of the clip is at 3.0000 s: see step 5).
 
 ## The state of the M77 port
 
@@ -235,7 +249,7 @@ Finished:
   on a pose of Marathon.
 * The mod `M77` (`mods/M77/`): 294 records, one model with 12 shapes (17,783 vertices, 54.4
   units long), 7 materials, 21 textures.
-* The game test: 40 steps, 0 failed. Two bursts use 16 of 30 rounds. The reload fills the gun
+* The game test: 40 ops, 0 failed. Two bursts use 16 of 30 rounds. The reload fills the gun
   (14 to 30 rounds). In the sights the top of the front post is at the center of the
   picture.
 
@@ -263,7 +277,10 @@ Not done:
 * `./port marathon regress-clips` gave 27 clips with 0 differences on 2026-10-06, for each of
   the two baseline folders ([marathon/port/README.md](../../marathon/port/README.md)).
 * The three release files of `data/mods/M77/build/release/` have the sha256 values of the
-  release of the game test (`data/destiny/port/validation/m77/release_tested.sha`).
+  release of the game test (`data/destiny/port/validation/m77/release_tested.sha`). The same
+  values are in `baselines.sha256`, and `./port baseline check` compares with them.
+* On 2026-10-06 esx at the commit `d3e520c` built the mod `M77` from nothing (a copy of the
+  project with no `build/` folder): the three release files had the bytes on record.
 * `data/destiny/port/validation/m77/summary.txt` has the numbers of each clip, and
   `reload_bolt_handle_frames.jpg` shows the left hand on the bolt handle in the frames 74 to
   84, the source above the result.

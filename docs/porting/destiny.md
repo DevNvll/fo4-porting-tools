@@ -44,7 +44,7 @@ The times are those of the chat (an AI agent that worked with no pause).
 ### 1. Prepare (one time)
 
 ```sh
-cp config.example.toml data/config.toml      # then give blender, esx, fo4_data, proton and destiny_game in it
+cp -n config.example.toml data/config.toml   # only when the file is not there; then give blender, esx, fo4_data, proton and destiny_game in it
 ./port destiny setup                         # the environment of d2x, for the extraction
 ./port fnv make-rig --nvcs /path/to/NVCS/Meshes/Characters/_1stPerson/Skeleton.nif    # the Fallout 4 skeleton
 ./port fnv make-rig --arm-meshes             # the arm meshes of Fallout 4, for the check programs
@@ -53,8 +53,9 @@ cp config.example.toml data/config.toml      # then give blender, esx, fo4_data,
 ```
 
 The environment variables `BLENDER`, `ESX_BIN`, `FO4_DATA` and `PROTON_DIR` replace the values
-of `data/config.toml`. The tools read the game and change no file of it.
-[getting-started.md](../getting-started.md) has what each command makes.
+of `data/config.toml`. The tools read the game and change no file of it. If `data/config.toml`
+is there, edit it: do not copy the example over it.
+[getting-started.md](../getting-started.md) has what each command makes, and where esx is.
 
 **Gate.** `./port doctor destiny` prints `Result: each setting and each check is ok.`
 
@@ -80,6 +81,11 @@ pattern entity names the rig entity of the gun. The Khvostov has three files, an
 correct ([destiny/port/README.md](../../destiny/port/README.md#the-khvostov-7g-02)).
 `./port destiny notes weapon-tags $E/manifest.json` prints the rows.
 
+Two stops of these commands are not faults. `./port destiny reticle` stops with "has no part
+in the stages transparent and reticle" for a gun with no glass. `./port destiny third` stops
+with "the graph has no state reload for this weapon" for a shotgun: its reload is three
+states ("The reload of a shotgun" in the reference of the tools).
+
 **Time.** `find` 5 s. `extract` 30 s, and 2 minutes 10 seconds the first time (the search
 for the player body entity). 3 minutes from the request to the complete extraction for the
 Khvostov.
@@ -95,34 +101,35 @@ The two last ports needed much time for facts that this step shows in minutes (2
 for two guns in the chat, before the step was a procedure). Examine these points:
 
 1. **The gun is in the hand.** For each clip that you will use, the gun bone (`b_handle`)
-   must be on the grip bone (`b_r_grip`). Save this program below `data/destiny/port/work/`
-   and run it in the root of the repository (`python3 FILE.py NAME`):
+   must be on the grip bone (`b_r_grip`):
 
-   ```python
-   import json, sys
-   import numpy as np
-   sys.dont_write_bytecode = True
-   sys.path.insert(0, 'destiny/port/tools')
-   from glb import Glb
-   from d2bake import Rig
-   name = sys.argv[1]
-   folder = 'data/destiny/port/extract/%s/' % name
-   first = json.load(open(folder + 'manifest.json'))['first_person'][0]
-   rig = Rig(Glb(folder + first['file']))
-   i = rig.index
-   print(len(first['bones']), 'bones in the rig')
-   for record in first['clips']:
-       if record.get('additive') or record['name'] not in rig.clip_names():
-           continue
-       world, _ = rig.bake(record['name'])
-       gap = np.linalg.norm(world[:, i['b_handle'], :3, 3] - world[:, i['b_r_grip'], :3, 3], axis=1).max()
-       print('%-20s %3d frames, %d nodes, the gun is %.3f m from the grip bone' % (record['name'], record['frames'], record['nodes'], gap))
+   ```sh
+   ./port destiny check gun-on-grip data/destiny/port/extract/NAME/manifest.json
+   ./port destiny check gun-on-grip data/destiny/port/extract/NAME/manifest.json --clip CLIP --clip CLIP2
    ```
+
+   The first form prints one line for each full-pose clip of the file (the frames, the node
+   count, the distance), and then the count of clips with the gun on the grip bone for each
+   node count. With `--clip` it does only those clips, and the exit code is 1 when one of them
+   has the gun more than 0.001 m from the grip bone. For The Huckleberry the last lines are
+   `2 of 59 full-pose clips have the gun on the grip bone`, `clips with 76 nodes: 2 of 37` and
+   `clips with 77 nodes: 0 of 22` (a run of 2026-10-06, less than one second).
 
 2. **The parts.** For each weapon bone: the count of its vertices, the box of its vertices, and
    its motion in each clip
    (`python3 destiny/port/tools/d2bake.py FILE.glb --clip CLIP -o data/destiny/port/work/NAME/probe`
-   writes the matrices). A bone with no vertex needs no Fallout 4 bone.
+   writes the matrices). A bone with no vertex needs no Fallout 4 bone. The step `parts` of
+   the converter prints one line `[parts]` for each shape, with its bone and its count of
+   vertices. Before a set file is there, the converter has a form with single clips
+   (`--clip CLIP=NAME`, `--template`, `--hold`, and `--work` for a scratch work folder):
+
+   ```sh
+   ./port destiny convert FILE.glb --clip IDLE_CLIP=WPNIdleReady --template combatrifle \
+       --hold IDLE_CLIP:0 --work data/destiny/port/work/NAME/probe parts
+   ```
+
+   This form is from the program text (`destiny/port/d2fo4.py`). It was not run for this
+   document.
 3. **The clips that move the parts.** A part can move in the clip of the hands, in an
    additive clip with the same frame count, or in a clip of the gun entity (`weapon_clips`
    of the manifest).
@@ -194,9 +201,11 @@ Examine the output:
 * `[retarget]`: `wrist` and `weapon` are 0.00 units.
 * `[hkx]`: `pos err` is below 0.02 units, and each reload has the events that you expect.
 * The finger joints of each clip, before the first look at pictures:
-  `./port destiny check fingers data/destiny/port/out/NAME/WPNReload.hkx --bake $W/bake/CLIP.npz`.
-  In the M77 port this check found a finger turn of 170 degrees at once, after the user
-  had seen it in a picture.
+  `./port destiny check fingers data/destiny/port/out/NAME/WPNReload.hkx --bake $W/bake/CLIP.npz --vanilla data/destiny/port/rig/combatrifle`.
+  `--vanilla` is the folder with the vanilla clips of the template. Its default is the folder
+  of `revolver44`, and the two rifle templates have the folder `combatrifle`. In the M77 port
+  this check found a finger turn of 170 degrees at once, after the user had seen it in a
+  picture.
 * Pictures of the source beside the result:
 
   ```sh
@@ -280,7 +289,9 @@ has `[third.compose]`, `[third.hold_end]`, `silent` and `[third.power_armor]`.
 gun with the finished tools.
 
 **Gate.** In the line `[third]`, `left hand to gun` is 0.0000 units. The shoulder shift is
-small, or the set file has `gun = "source"`. The first-person clips kept their bytes. The
+small (0.00 to 0.08 units for four of the five ports), or the set file has `gun = "source"`.
+The Chaperone is the exception: `shoulder shift 2.85` and `bone length 0.9111` with no key
+`gun`, a limit that its game test passed with. The first-person clips kept their bytes. The
 step `third` uses results of the first-person steps, so a change of the first-person clips
 changes the third-person clips also.
 
@@ -316,6 +327,11 @@ Points of the records that the ports found:
   `set = { 'FNAM\# Projectiles' = 1, 'DNAM\Attack Delay' = 0.857 }`.
 * The damage, the capacity and the time between two shots are choices. The tools do not read
   the values of Destiny. Write this in the item file and in the document of the mod.
+* A faster or a slower reload: the clips have the speed of the files of Destiny, and no key
+  of a set file changes it. The document of esx (`docs/BEHAVIOR.md` of esx) has a line
+  `speed 1.5` (or `speed reloadSpeedMult * 1.5`) for the `reload` block of a behavior source.
+  No mod of this repository has such a line, and it was not tested here. Do not change
+  `reload_seconds` for this.
 
 The byte checks:
 
@@ -325,7 +341,10 @@ The byte checks:
 ./port destiny regress                       # each earlier weapon, after a change of a tool
 ```
 
-`./port mod build` prints the sha256 of each release file. Write the three values down.
+`./port mod build` prints the sha256 of each release file. `./port baseline check` compares
+each stored result of `data/` (the baseline clips, the release of each mod) with
+`baselines.sha256`: it shows a baseline that a command replaced. For a new mod it reports the
+new files as "not in the list".
 
 **Time.** 2 minutes for the build and the three checks of the Khvostov, with one correction
 of a keyword.
@@ -333,9 +352,33 @@ of a keyword.
 **Gate.** The build has 0 issues and 0 warnings. `check-weapons` has 0 findings.
 `scene weapon` has 0 findings, or 2 notes for the two effect materials of a sight. The second
 run gives the same bytes. `./port destiny regress` prints 0 clips that differ, or you can
-name each clip that changed and say why.
+name each clip that changed and say why. `./port baseline check` has `0 different`.
 
-### 9. The game tests
+### 9. The numbers of each clip and the hands, before the game
+
+```sh
+V=data/destiny/port/validation/NAME
+./port destiny check validate FILE.glb --set destiny/port/sets/NAME.toml --out $V --clips CLIPS --no-video
+./port destiny check touch-table FILE.glb --set destiny/port/sets/NAME.toml --clips CLIPS --out $V/hand_distance.txt
+./port destiny check validate FILE.glb --set destiny/port/sets/NAME.toml --out $V --clips CLIPS --left-hand --only WPNReload
+```
+
+Do this step before the game test. The first port of The Chaperone did the game test first,
+and the user found in a game picture that the left hand did not touch the gun. Add the
+weapon to `destiny/port/regress.toml` here, with the clip folders of the mod as its baseline:
+`./port destiny regress` then finds each later change of its clips. The videos of
+one clip need about 10 minutes, so make the numbers of each clip first (`--no-video`), then
+the hand distance, then the videos of the clips that a person must see: one reload and the
+idle. [checks.md](checks.md) says how to read the numbers. Look at each hand in pictures of
+the hold pose and of the reload, from more than the first-person camera (step 5).
+
+**Gate.** `summary.txt` has one line for each clip. No finger joint bends back. The largest
+distance of a gun vertex to the source is at most about 0.015 units (the five ports have
+0.009 to 0.015 as their largest value). `hand_distance.txt` shows each hand on the gun in the
+hold pose: the lowest value of the five ports is 5 percent of the vertices nearer than 0.5
+cm. A value above 0 does not prove the place of the hand (The Huckleberry, step 3).
+
+### 10. The game tests
 
 Do this step only when the user asked for a game test or permitted it.
 [game-test.md](game-test.md) has the rules and how to read a trace.
@@ -350,45 +393,39 @@ esx probe status                                               # the probe has o
 esx probe stop --session ID                                    # only the ID that your start command printed
 ```
 
-This is the order of `./port destiny game all`, which runs each test of each weapon of a mod
-in one session. Look at each recording before you use it
-(`./port destiny check strip VIDEO OUT.jpg`). In the pictures at the hip, look at each hand,
-the gun and the sight, also when you made the picture for the sight. A first check with
-pictures before the first recording finds a fault early. Do it in a session of its own: in
-one session the program for the sight pictures ran first, and each first-person test after
-it had one failed `ammo.set` op.
+This is the order of `./port destiny game all --session ID ...`, which runs each test of each
+weapon of a mod in one session. Give it `--session ID`: with no `--session` it takes the ID of
+the session file, which is one file for all users. When the session file has a session with a
+different label, `./port destiny game session` does not stop that session and has the exit
+code 1. Its option `--take-over` stops that session: ask the user first. For a release that
+passed a game test before, give `--no-build`: the session then has the bytes on record.
+
+Look at each recording before you use it (`./port destiny check strip VIDEO OUT.jpg`). In the
+pictures at the hip, look at each hand, the gun and the sight, also when you made the picture
+for the sight. A first check with pictures before the first recording finds a fault early. Do
+it in a session of its own: in one session the program for the sight pictures ran first, and
+each first-person test after it had one failed `ammo.set` op.
 
 **Time.** A session starts in 20 seconds. A first-person recording is 78 to 92 seconds long,
 and a third-person recording 109 to 122 seconds. Nine tests in one session took about 17
 minutes.
 
 **Gate.** 0 failed ops. You looked at frames of each recording. The trace has the clips and
-the events that you expect. The hashes of the release are the hashes of step 8. `esx probe
-status` shows no session and no game process.
+the events that you expect. The release has the same sha256 before and after the tests
+(`--mod NAME --tested FILE` of `game all`). `esx probe status` shows no session and no game
+process.
 
-### 10. The numbers, the videos and the documents
+### 11. The documents
 
-```sh
-V=data/destiny/port/validation/NAME
-./port destiny check validate FILE.glb --set destiny/port/sets/NAME.toml --out $V --clips CLIPS --no-video
-./port destiny check validate FILE.glb --set destiny/port/sets/NAME.toml --out $V --clips CLIPS --left-hand --only WPNReload
-./port destiny check touch-table FILE.glb --set destiny/port/sets/NAME.toml --clips CLIPS --out $V/hand_distance.txt
-```
+Write the section of the weapon in `destiny/port/README.md` and the `README.md` of the mod
+(`mods/NAME/README.md`): what the mod has, the choices, what is proved, what is not proved,
+the limits. The weapon is in `destiny/port/regress.toml` from step 9. For a new sign, add a
+row to [troubleshooting.md](troubleshooting.md). When the user accepts the port,
+run `./port baseline update`: it puts the new clips and the new release on record in
+`baselines.sha256`. Put that file into git with the port.
 
-The videos of one clip need about 10 minutes, so make the numbers of each clip first
-(`--no-video`), and the videos of the clips that a person must see: one reload and the
-idle. [checks.md](checks.md) says how to read the numbers.
-
-Then write the section of the weapon in `destiny/port/README.md` and the `README.md` of the
-mod (`mods/NAME/README.md`): what the mod has, the choices, what is proved, what is not
-proved, the limits. Add the weapon to `destiny/port/regress.toml` with the clip folders of
-the mod as its baseline. Then `./port destiny regress` finds each later change of its clips.
-For a new sign, add a row to [troubleshooting.md](troubleshooting.md).
-
-**Gate.** `summary.txt` has one line for each clip. No finger joint bends back. The largest
-distance of a gun vertex to the source is in the range of the five ports (0.009 to 0.015
-units). `hand_distance.txt` shows each hand on the gun in the hold pose: the lowest value of
-the five ports is 5 percent of the vertices nearer than 0.5 cm.
+**Gate.** Each statement of the documents has its command or its file. `./port baseline check`
+has `0 different` and no file that the list does not have.
 
 ## The Fallout 4 clip of each state
 
@@ -579,6 +616,8 @@ weapon, and [checks.md](checks.md) has the numbers. In short:
 * `./port destiny regress` made the clips of the five guns and of the M77 again on
   2026-10-06, after the move of the tools into this repository: 162 first-person clips, 16
   third-person clips and 6 clips of the power armor, 0 differ.
+* `./port baseline check` on 2026-10-06: 602 stored files (the baseline clips and the
+  releases), 0 different from `baselines.sha256`.
 * Each of the five weapons passed its game tests with 0 failed ops in the chat of
   2026-10-06, before the move. The release of the mod `TexMechanica` in `data/mods/` has
   the sha256 values of the tested release
@@ -586,10 +625,13 @@ weapon, and [checks.md](checks.md) has the numbers. In short:
 
 ## What is not proved
 
-* The program of step 3 was not run again for this document. The chat ran it with the paths
-  of that time.
-* The game test commands of step 9: [game-test.md](game-test.md), "The state of the game test
+* `./port destiny check gun-on-grip` (step 3) ran on 2026-10-06 for The Huckleberry and for
+  two clips of The Chaperone. It did not run for the other weapons for this document. The
+  form of the step `parts` with no set file (step 3) was not run.
+* The game test commands of step 10: [game-test.md](game-test.md), "The state of the game test
   programs", says what ran in this repository.
+* The `speed` line of a behavior source (step 8) is from the document of esx. No build and no
+  game test of this repository used it.
 * The lever of The Chaperone in a third-person reload with 1 to 5 shells: no picture shows
   if it opens.
 * A body in power armor: no game test. The third-person reload there is the vanilla clip.

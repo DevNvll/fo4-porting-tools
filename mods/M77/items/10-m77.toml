@@ -3,7 +3,9 @@
 # ammunition and the third-person animations. The editor ID of the weapon is M77.
 # Damage, weight, value and ammunition are those of the combat rifle. The capacity is 30
 # rounds: a choice (the tools do not read the value of Marathon). The reload time is the time
-# of the event reloadEnd in WPNReload (frame 91 of 104).
+# of frame 91 of the 104 frames of WPNReload. The converter prints the event reloadEnd of that
+# clip at frame 90 (3.0000 s, with initiateStart at frame 89): the value below is one frame
+# (0.0333 s) later than the event. The game test passed with this value.
 kind = "weapon"
 name = "M77 Assault Rifle"
 prefix = "M77"

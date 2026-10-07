@@ -21,10 +21,12 @@ command.
 | `./port list [--json]` | Each command of each `port.toml`, sorted by name. | 0 |
 | `./port AREA`, `./port AREA WORD` | The commands of one area, or the commands whose name starts with the two words (`./port destiny check`). | 0 |
 | `./port AREA COMMAND [ARGUMENTS]` | Run a command. | That of the program |
-| `./port doctor [--json]` | The Python version, numpy, each setting, each `[[check]]`, and the programs `git`, `cargo`, `uv`, `ffmpeg`. | 1 when a setting or a check is not ok |
+| `./port doctor [AREA] [--json]` | The Python version, numpy, Pillow (a report only), each setting, each `[[check]]`, and the programs `git`, `cargo`, `uv`, `ffmpeg`. AREA is `fnv`, `destiny`, `marathon`, or a path such as `destiny/port`: only the `port.toml` files below that folder. It names each key of `data/config.toml` that is not a setting. | 1 when a setting or a check is not ok, or when Python has no numpy |
 | `./port paths [--json]`, `./port paths get NAME` | The folders and the settings. | 0 (`get`: 1 when there is no value) |
 | `./port mod list`, `status NAME`, `sync NAME [--force]`, `build NAME [...]` | The mod projects. See below. | See below |
-| `./port selftest` | Each `.py` file compiles, each `port.toml` is correct, the tests of `tests/` pass. | 1 when a part fails |
+| `./port selftest` | Four parts. `python`: each `.py` file compiles. `port.toml`: each table is correct and each program file is there. `tests`: the tests of `tests/` pass. `git`: no file that git has, or can add, has a game file ending or a NUL byte. | 1 when a part fails |
+| `./port baseline check` | Compares each file of the `[[baseline]]` patterns with `baselines.sha256`. It prints `DIFFERENT`, `not there` or `not in the list` for a file, and one line with the counts. | 1 when a file is different. 1 when `baselines.sha256` is not there. |
+| `./port baseline update` | Writes `baselines.sha256` again: the sha256 and the path below `data/` of each file of the patterns. Only for a change that the user accepted. | 0 |
 
 Other exit codes of `./port`:
 
@@ -33,7 +35,11 @@ Other exit codes of `./port`:
 * 3: a thing that the command needs is missing. The program did not start. The message tells
   what is missing and how to make it.
 
-A program can also give 2 or 3. The message of `./port` starts with `port:`.
+A program can also give 2 or 3. The message of `./port` starts with `port:`. `./port` starts
+a program with `exec`, so the program takes its place: the exit code is that of the program,
+and a signal to the process ID of `./port` goes to the program. A program that imports
+`portkit` shows a file error as one line (`FO4PORTS_TRACEBACK=1` shows the traceback). A
+fault in `data/config.toml` is one line also.
 
 ## Add a command
 
@@ -58,7 +64,7 @@ make = "./port fnv make-rig --nvcs /path/to/NVCS/Skeleton.nif"
 
 | Key | Necessary | Rule |
 | --- | --- | --- |
-| `name` | yes | Two or three words with one space between them. A word has small letters, digits, `-` and `_`. The first word is the area. It cannot be `list`, `doctor`, `paths`, `mod`, `selftest` or `help`. Each name is in only one `port.toml`. |
+| `name` | yes | Two or three words with one space between them. A word has small letters, digits, `-` and `_`. The first word is the area. It cannot be `list`, `doctor`, `paths`, `mod`, `selftest`, `baseline` or `help`. Each name is in only one `port.toml`. |
 | `help` | yes | One line of text. |
 | `run` | yes | A list of words: the start of the command line. The arguments of the user go after it. |
 | `env` | no | A table of text values: variables for the program. |
@@ -98,7 +104,8 @@ When two names start with the same words, the longest name wins: with `destiny c
 * The working folder of the caller. Thus a path that the user gives is correct.
 * `FO4PORTS_ROOT` and `FO4PORTS_DATA`.
 * One variable for each setting that has a value: `BLENDER`, `ESX_BIN`, `FO4_DATA`,
-  `PROTON_DIR`, `D2X_GAME`, `MARATHON_GAME`. A setting with no value gives no variable.
+  `PROTON_DIR`, `D2X_GAME`, `MARATHON_GAME`, `NVCS_SKELETON`. A setting with no value gives no
+  variable.
 * `PYTHONDONTWRITEBYTECODE=1`.
 * `PYTHONPATH`: the root, then the folders of `env`, then the `PYTHONPATH` of the caller.
 * The other variables of `env`, and the environment of the caller.
@@ -124,6 +131,18 @@ that the help of a command is always available. The Python of `python:d2x` is st
 the same path or setting. If there is none, it uses the check of the nearest folder above the
 path. A check with `make` is before a check without it, and a check of the same `port.toml` is
 before a check of a different file.
+
+### `[[baseline]]`
+
+| Key | Necessary | Rule |
+| --- | --- | --- |
+| `files` | yes | A pattern that starts with `data/` (`*` is one name, `**` is each folder below). The files are stored results: a baseline of a regress command, or a release. |
+| `what` | yes | What these files are. |
+
+`./port baseline update` writes the sha256 of each file of each pattern into
+`baselines.sha256`, in the root, and `./port baseline check` compares the files with that
+list. A regress command compares new results with the stored results. The baseline check
+proves that nobody replaced a stored result. `mods/port.toml` has only such tables.
 
 ### A fault in a `port.toml`
 

@@ -18,7 +18,8 @@ which git ignores.
 
 ## What you need
 
-Linux, Python 3.11 or later with `numpy`, and Blender 4.5. Then, for each thing that you do:
+Linux, Python 3.11 or later with `numpy` and `Pillow` (`requirements.txt`), and Blender 4.5.
+Then, for each thing that you do:
 
 | To do this | You need |
 | --- | --- |
@@ -26,7 +27,8 @@ Linux, Python 3.11 or later with `numpy`, and Blender 4.5. Then, for each thing 
 | Extract a weapon of Destiny 2 | The game (the build of 23 August 2020), `git`, `cargo` |
 | Extract a weapon of Marathon | The game, a C compiler, `cargo`, and the setup of the Destiny extraction |
 | Convert a weapon of Destiny 2 or Marathon | The two lines above, and Fallout 4 |
-| Make a model, build a mod, test in the game | esx (a separate program), and Proton for the game test |
+| Make a model, build a mod, test in the game | esx, and Proton for the game test. esx is a separate program of the owner of this repository: [docs/getting-started.md](docs/getting-started.md), "esx", says where it is and what works with no esx. |
+| Make the check pictures of a Destiny 2 or Marathon port | The arm meshes of Fallout 4, which esx makes one time (`./port fnv make-rig --arm-meshes`) |
 | Make videos and picture sheets | `ffmpeg` |
 
 [docs/getting-started.md](docs/getting-started.md) has the complete list and the setup of
@@ -35,14 +37,17 @@ each area.
 ## The first 5 minutes
 
 ```sh
-cp config.example.toml data/config.toml     # then give your own paths in this file
+cp -n config.example.toml data/config.toml  # only when the file is not there; then give your own paths in it
 ./port doctor                               # each setting, each tool and each necessary file: ok or MISSING
 ./port list                                 # each command with one line of help
 ./port selftest                             # checks that need no game file
+./port baseline check                       # each stored result of data/ has the bytes on record
 ```
 
 `./port doctor` tells you how to make each thing that is missing. `./port AREA COMMAND
---help` shows the arguments of a command.
+--help` shows the arguments of a command. If `data/config.toml` is there, edit it: a copy of
+the example over it removes your paths. On a new clone `./port baseline check` reports each
+stored result as "not there": that is correct for an empty data folder.
 
 ## A map of the folders
 
@@ -71,13 +76,19 @@ New Vegas mod (.kf, .nif) -----------------> convert -> clips
 
 Each command runs in the root of the repository. Each example is a weapon that is ported.
 
+On a computer that has the stored results of these weapons, the commands of an example write
+over them: the extraction, the clips, the model and the release. The bytes stay the same when
+nothing changed. Run `./port baseline check` after an example: `DIFFERENT` names a stored
+result that has other bytes now. To try a command with no risk, give it a scratch folder
+(`-o`, `--out`, `--work`, `--project`).
+
 ### New Vegas: the Walther PPK
 
 ```sh
 # one time: the rig folder
 ./port fnv make-rig --nvcs /path/to/NVCS/Meshes/Characters/_1stPerson/Skeleton.nif
 
-# the clips of an extracted mod, with no configuration file (into data/fnv/out/NAME)
+# the clips of an extracted mod, with no conversion file (into data/fnv/out/NAME)
 ./port fnv convert /path/to/extracted-mod
 
 # the mod project of the PPK: the clips into the project, then the build
@@ -148,8 +159,9 @@ SET=marathon/port/sets/m77_omnipositor.toml
 Do not start Marathon for this work: it has an anti-cheat program. The tools only read the
 game folder. [docs/porting/marathon.md](docs/porting/marathon.md) has the procedure.
 
-The release of a mod is `data/mods/NAME/build/release/`: the plugin and two archives. The
-game test of a mod is in [docs/porting/game-test.md](docs/porting/game-test.md).
+The release of a mod is `data/mods/NAME/build/release/`: the plugin and two archives.
+`baselines.sha256` has the sha256 of each release that was tested. The game test of a mod is
+in [docs/porting/game-test.md](docs/porting/game-test.md).
 
 ## Where each document is
 
@@ -176,14 +188,20 @@ game test of a mod is in [docs/porting/game-test.md](docs/porting/game-test.md).
 
 In git: the programs, the set files, the templates, the hand-written files of each mod
 (`esx.toml`, the item files, the behavior sources, the lock files), two measurement files
-(`fnv/rig/finger_tips.json`, `destiny/port/rig/d2_hands.json`), and the documents.
+(`fnv/rig/finger_tips.json`, `destiny/port/rig/d2_hands.json`), `baselines.sha256`, and the
+documents.
 
 Not in git: `data/`, with the exception of [data/README.md](data/README.md). It has each
 file of a game, each extracted model, texture and animation, each work file, each clip, each
 validation picture and video, each built mod, the third-party clones and builds, and the
 local settings (`data/config.toml`). No tool writes a generated file into the source tree.
 
-Nothing in git is a file of a game, a part of a file of a game, or a result made from one.
+No file of a game, no part of one and no asset that a tool made from one is in git. Three
+kinds of tracked files have numbers that were calculated from game files. The two
+measurement files have lengths and skin centers of the hand meshes. The lock files have the
+object ID of each record and the hashes of the vanilla graphs. `baselines.sha256` has the
+sha256 of each stored result. `./port selftest` fails when git has, or can add, a file with a
+game file ending or with a NUL byte.
 
 ## The state
 
@@ -192,18 +210,24 @@ was tested.
 
 | Weapon | Source | Mod | Clips | The game test | The regression in this repository |
 | --- | --- | --- | --- | --- | --- |
-| The Last Word (a hand cannon) | Destiny 2 | `TheLastWord`, `TexMechanica` | 24 first person, 2 third person | 2026-10-06: first person 44 ops, third person 94 ops (the mod `TheLastWord`) and 73 ops (the mod `TexMechanica`), 0 failed | `./port destiny regress`: the same bytes |
+| The Last Word (a hand cannon) | Destiny 2 | `TheLastWord`, `TexMechanica` | 24 first person, 2 third person | 2026-10-06, the mod `TexMechanica`: first person 44 ops, third person 73 ops, 0 failed. The mod `TheLastWord`: third person 94 ops, 0 failed; its first-person recording is older and has 44 ops with 1 failed op (`ammo.set` with no reserve count). | `./port destiny regress`: the same bytes |
 | Khvostov 7G-02 (an auto rifle) | Destiny 2 | `Khvostov` | 27 first person, 2 third person | 2026-10-06: first person 40 ops, third person 88 ops, 0 failed | The same bytes |
 | Hammerhead (a machine gun) | Destiny 2 | `Hammerhead` | 27 first person, 2 third person | 2026-10-06: first person 40 ops, third person 109 ops, 0 failed | The same bytes |
 | The Chaperone (a shotgun with a lever) | Destiny 2 | `TexMechanica` | 30 first person, 8 third person, 6 copies of a vanilla clip for power armor | 2026-10-06: first person 44 ops, third person 94 ops, 12 reloads (one for each count of rounds in each view), 0 failed | The same bytes |
 | The Huckleberry (a submachine gun) | Destiny 2 | `TexMechanica` | 27 first person, 2 third person | 2026-10-06: first person 40 ops, third person 88 ops, 0 failed | The same bytes |
-| M77 (an assault rifle) | Marathon | `M77` | 27 first person | 2026-10-06: 40 steps, 0 failed | `./port marathon regress` and `regress-clips`: the same bytes |
+| M77 (an assault rifle) | Marathon | `M77` | 27 first person | 2026-10-06: 40 ops, 0 failed | `./port marathon regress` and `regress-clips`: the same bytes |
 | Walther PPK (a pistol) | New Vegas | `PPK` | 27 first person | 2026-10-05: 34 of 34 steps, and 27 of 27 with the suppressor | `./port fnv regress`: the same bytes |
 | FAMAS F1 (a bullpup rifle) | New Vegas | `FAMAS` | 26 first person | 2026-10-05: 32 of 32 steps, and 55 of 55 with the parts | The same bytes |
 
-* Each game test ran in the test copy of the game of `esx probe`, with no window, before the
-  tools came into this repository. The clips of today have the same bytes as the clips of
-  those tests (the regress commands, 2026-10-06).
+* Each game test of the table ran in the test copy of the game of `esx probe`, with no
+  window, before the tools came into this repository. The clips of today have the same bytes
+  as the clips of those tests (the regress commands, 2026-10-06). One more run was in this
+  repository: the three weapons of `TexMechanica` in the test world, 10 commands, 0 failed
+  ([docs/porting/game-test.md](docs/porting/game-test.md)).
+* The release of each of the 7 mods is on record in `baselines.sha256`. On 2026-10-06 esx at
+  the commit `d3e520c` built each of the 7 mods from nothing (a copy of the project with no
+  `build/` folder, in a scratch folder): each of the 21 release files had the bytes on record.
+  The older esx (`a996de8`) made the stored releases.
 * The Destiny and Marathon weapons also have the numbers of each clip in
   `data/destiny/port/validation/NAME/` ([docs/porting/checks.md](docs/porting/checks.md)).
 * The models and the textures of the two New Vegas mods came from the tools at the git tag
@@ -223,7 +247,14 @@ was tested.
 * **The hands of a New Vegas port.** `fnv/` has no check with pictures. Its regression
   compares bytes only.
 * **A second computer.** Each setup and each "same bytes" result is from one computer
-  (Linux, Blender 4.5.13, `numpy` 2.3).
+  (Linux, Blender 4.5.13, `numpy` 2.3). The same bytes on a second computer are not proved.
+* **The regression with new data.** `./port destiny regress` reads the frozen first
+  extraction of The Last Word (`data/destiny/extract/handoff/the_last_word_v1/`), not a new
+  extraction. It also needs the extraction of the M77 of Marathon, because the M77 is in its
+  table. With no such data it fails for those weapons (`--only NAME` does one weapon).
+* **The builds.** `./port mod build` ran in this repository for `TexMechanica`, `PPK` and
+  `FAMAS`. For the 7 mods there is the one comparison of "The state" (a build from nothing
+  with esx `d3e520c`). No other esx version was compared.
 * **A new weapon class.** The tools have templates for a revolver, a combat rifle, a
   submachine gun and a 10mm pistol. A different class needs a new template, and can need
   programming.

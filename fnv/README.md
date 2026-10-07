@@ -1,7 +1,7 @@
 # New Vegas weapon animations for Fallout 4
 
 These tools convert the first-person animations of a Fallout: New Vegas weapon mod to
-Fallout 4 clips. One command does it, with no configuration file:
+Fallout 4 clips. One command does it, with no conversion file:
 
 ```sh
 ./port fnv convert /path/to/extracted-mod
@@ -30,7 +30,7 @@ the commands of this area.
 
 `./port doctor` shows each of these things, and tells you how to make one that is missing.
 
-* Python 3.11 or later with `numpy`
+* Python 3.11 or later with `numpy` (`requirements.txt` in the root)
 * Blender 4.5: the setting `blender`. It comes from the variable `BLENDER`, then from
   `data/config.toml`, then from `blender` in the `PATH`. It runs with no window.
 * The rig folder `data/fnv/rig`. It has files of Fallout 4 and of the New Vegas compatibility
@@ -79,10 +79,11 @@ A sneak copy, a jam, and a variant for the empty gun or the last shot get no cli
 other clip of a gun (walk, run, sprint, automatic fire, gun down) has the weapon motion of
 the vanilla clip of the template, with the hands of the mod on the gun.
 
-## The configuration file
+## The conversion file
 
 The command writes a small file (`conversion.toml`) into the work folder and reads it. A
-file of your own replaces a value that the tools assume:
+conversion file of your own replaces a value that the tools assume (the help text of the
+program calls it "configuration file"):
 
 ```sh
 ./port fnv convert /path/to/ppk.toml
@@ -207,7 +208,9 @@ The command converts each folder of `data/fnv/fixtures/` again, into a scratch f
 `data/fnv/work/_regress/`. It compares each clip with the clip in `data/fnv/out/NAME/`. It
 prints one line for each fixture, and the exit code is 1 when a clip is different. Run it
 after each change of a tool. A change must keep the bytes of each clip, or you must say
-which clips are different and why.
+which clips are different and why. Then run `./port baseline check`: `baselines.sha256` has
+the sha256 of each clip of `data/fnv/out/`, so the check shows a stored clip that a command
+replaced. Run `./port baseline update` only for a change that the user accepted.
 
 To add a weapon: copy the extracted mod to `data/fnv/fixtures/NAME`, run
 `./port fnv convert data/fnv/fixtures/NAME --name NAME`, and check the clips. They are then
@@ -287,9 +290,13 @@ Walther PPK (9 `.kf` clips) and of the FAMAS F1 (one `.kf` reload).
   tools put the fingertip at its place first.
 * The defaults are rules for the names and the motion of the mods that these two weapons
   come from. Read the output of `./port fnv convert CONFIG show` for a new mod.
-* This area has no program that shows the result. Look at the clips in the game or in an
-  animation tool. The area `destiny/port/` has check programs with pictures for its own
-  weapons.
+* The work tree of this area has no program that shows the result. The check programs of
+  the first work (pictures of the source above the result, contact counts) are in git at the
+  tag `before-animation-only` (`tools/validate_clip.sh`, `tools/blender/render_fo4.py`,
+  `render_source.py`, `hand_contact.py`), with the paths of the old layout. Nobody adapted
+  them or ran them in this repository. Look at pictures of the hands before a game test
+  (`docs/porting/fnv.md`, step 4). The area `destiny/port/` has check programs with pictures
+  for its own weapons.
 
 ## Origin of one file
 

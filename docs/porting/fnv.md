@@ -25,8 +25,9 @@ Each command runs in the root of the repository.
 
 ### 1. Check the input
 
-1. Extract the archive of the mod into a folder below `data/`. The tools do not read an
-   archive.
+1. Extract the archive of the mod into a new empty folder below `data/`, for example
+   `data/fnv/work/_source/NAME`. The tools do not read an archive. Do not extract it into
+   `data/fnv/fixtures/`: each folder there is a fixture of the regression (step 5).
 2. Look for first-person `.kf` files and a `.nif` model. The `.kf` files are in
    `meshes/characters/_male/`, in `meshes/characters/_1stperson/`, or in
    `meshes/AnimGroupOverride/NAME/_1stPerson/`.
@@ -81,7 +82,7 @@ SOURCE`), the events of each reload, and the end time of each reload.
 ```
 
 When a clip, a part or the trigger is wrong, write a small conversion file with only the
-values that are wrong ([fnv/README.md](../../fnv/README.md#the-configuration-file)). The
+values that are wrong ([fnv/README.md](../../fnv/README.md#the-conversion-file)). The
 conversion file of the PPK went from 165 lines to 2 keys.
 
 The steps of the command are `bake`, `parts`, `retarget`, `synth`, `hkx` and `install`. The
@@ -97,10 +98,19 @@ two weapons).
 
 ### 4. Check the hands
 
-`fnv/` has no program that shows the result. This is the largest gap of the area: in the
-chat the user found each hand fault in a picture, and no number of the agent found one.
+The work tree of `fnv/` has no program that shows the result. This is the largest gap of the
+area: in the chat the user found each hand fault in a picture, and no number of the agent
+found one. The first correction of the user was: "validate the retarget with blender before
+testing ingame."
 
-What the chat did before each game test, with programs that are not in this repository:
+The check programs of the chat are in git, at the tag `before-animation-only`
+(`git ls-tree -r --name-only before-animation-only` lists them): `tools/validate_clip.sh`,
+`tools/closeup.sh`, `tools/fpcmp.sh`, `tools/blender/render_fo4.py`,
+`tools/blender/render_source.py` and `tools/blender/hand_contact.py`. `git show
+before-animation-only:tools/validate_clip.sh` prints one. They have the paths and the
+configuration of the old layout. Nobody adapted them to this repository or ran them in it.
+
+What the chat did with those programs before each game test:
 
 1. Pictures in Blender from the camera of the game (the bone `Camera`, a horizontal view
    angle of about 87 degrees at 16:9), with the source hands and gun above and the Fallout 4
@@ -114,19 +124,20 @@ What the chat did before each game test, with programs that are not in this repo
 5. The largest turn of a finger from one frame to the next, the old poses against the new
    poses.
 
-What you can do in this repository: look at the clips in the game or in an animation tool.
-The check programs of `destiny/port/` read a first-person file of Destiny 2 and do not read
-a New Vegas source.
+What you can do in this repository: take the check programs from the tag and adapt them, or
+look at the clips in an animation tool. The check programs of `destiny/port/` read a
+first-person file of Destiny 2 and do not read a New Vegas source.
 
 **Gate.** You looked at each hand of each clip that has hand motion from the source, and
 you found none of the four defects of [overview.md](overview.md). Without pictures this gate
-is not true: say so in the report.
+is not true: do not start a game test before the user accepts that, and say so in the report.
 
 ### 5. The byte checks
 
 ```sh
 ./port fnv regress                  # each fixture of data/fnv/fixtures against data/fnv/out
 ./port destiny regress              # after a change of fnv/tools: destiny/port uses these modules
+./port baseline check               # no stored clip and no release was replaced
 ```
 
 For a weapon with no fixture: convert two times into two work folders (`--work`, `-o`) and
@@ -135,9 +146,11 @@ collision step does not run.
 
 To add a weapon to the regression: copy the extracted mod to `data/fnv/fixtures/NAME`, run
 `./port fnv convert data/fnv/fixtures/NAME --name NAME`, and check the clips. They are then
-the results that the regression compares with.
+the results that the regression compares with. `./port baseline check` reports the new clips
+as files that the list does not have. When the user accepts them, run `./port baseline update`.
 
-**Gate.** `./port fnv regress` prints `same` for each fixture.
+**Gate.** `./port fnv regress` prints `same` for each fixture. `./port baseline check` has
+`0 different`.
 
 ### 6. The mod project
 
@@ -188,7 +201,7 @@ rules for a plan. Look at each picture of a test: a pass count is not a look.
 Results of 2026-10-05: the PPK 34 of 34 steps and 27 of 27, the FAMAS 32 of 32 and 55 of 55.
 
 **Gate.** Each step of each plan passed. You looked at each picture of each report. The
-release files have the sha256 values that `./port mod build` printed.
+release files have the sha256 values of `baselines.sha256` (`./port baseline check`).
 
 ## The rules of the conversion, with their numbers
 
@@ -244,7 +257,9 @@ No template was added after the pistol, so these steps are not proved.
   `./port fnv convert data/mods/PPK/conversion.toml` and `./port mod build PPK` ran in this
   repository: the 27 clips have the same bytes as before. The release files of the two mods
   have the sha256 values that they had before the move into this repository
-  (`data/mods/NAME/release_before_import.sha`).
+  (`data/mods/NAME/release_before_import.sha`). `baselines.sha256` has these values now.
+* On 2026-10-06 esx at the commit `d3e520c` built `PPK` and `FAMAS` from nothing (a copy of
+  each project with no `build/` folder): each release file had the bytes on record.
 * A rig folder that `./port fnv make-rig` makes from the game files gives the same clips
   ([fnv/README.md](../../fnv/README.md#what-is-proved)).
 
@@ -253,7 +268,8 @@ No template was added after the pistol, so these steps are not proved.
 * No command of this repository proves that the clips are correct in the game. The game
   tests of the two weapons ran on 2026-10-05, on clips with the same bytes as the clips of
   today. No game test ran on 2026-10-06.
-* The regression compares bytes. It does not look at the hands.
+* The regression compares bytes. It does not look at the hands. The check programs at the tag
+  `before-animation-only` were not run in this repository.
 * A weapon class that is not a magazine gun.
 * The finger values on other grips. The four first values were tuned with pictures of the
   MP7.

@@ -43,7 +43,7 @@ Words of the list:
 | Sign | Cause | Rule or correction | Found in |
 | --- | --- | --- | --- |
 | The left hand does not touch the gun. 0 percent of its vertices are nearer than 0.5 cm (`./port destiny check touch`), in the source also. | The clip of the hands is a clip of the weapon class. The source has the same gap, so each check against the source passes. | `./port destiny pose` with a pose clip of the gun, and `[hand_pose]`. Measure each candidate: two candidates had the same offsets with opposite signs. | The Chaperone |
-| The left hand touches the gun (12.4 percent), but it is not at its place on the magazine. | The same cause. The left wrist was 2.5 cm from the place that it has in a clip of this gun. | Compare the hold pose with a clip of the gun itself. Then `./port destiny pose` and `[hand_pose]`. | The Huckleberry |
+| The left hand touches the gun (12.4 percent), but it is not at its place on the magazine. | The same cause. The left wrist was 2.5 cm from the place that it has in a clip of this gun. | Compare the hold pose with a clip of the gun itself, and measure each pose clip candidate (`./port destiny pose MANIFEST.json --list`, `--measure --pose TAG`). Then `[hand_pose]`. | The Huckleberry |
 | The joint after the knuckle turns 20 to 38 degrees to the side. | The Fallout 4 palm is 0.8 units wider, and the collision step moves a joint in any direction. | One plane for each finger (in the tool). | The Last Word |
 | In the hold pose a finger is deeper in the grip than the source finger (0.93 against 0.69 units). | The plane through the fingertip cancelled the push of the collision step. | The plane is fitted to the joints after the collision step (in the tool). | The Last Word |
 | In the sights, or now and then in the idle, the hands have the pose of the vanilla gun. | The mod has no clip with that name, so the graph takes the vanilla clip. | A clip for each name of the graph: `WPNIdleReadyA` to `D`, `WPNIdleSightedWobble`, `WPNEquipFast`, `WPNFireSingleReadyA` and `B`. | The Last Word |
@@ -66,7 +66,7 @@ Words of the list:
 
 | Sign | Cause | Rule or correction | Found in |
 | --- | --- | --- | --- |
-| The hands hold no gun. The gun bone is at the origin of the world. | The clip is a clip of a different rig. The cause in the decoder is not known. | `[gun] rest = true`. Measure the distance of the gun bone to the grip bone for each clip ([destiny.md](destiny.md), step 3): the node count alone does not find each such clip. | The Huckleberry |
+| The hands hold no gun. The gun bone is at the origin of the world. | The clip is a clip of a different rig. The cause in the decoder is not known. | `[gun] rest = true`. Measure the distance of the gun bone to the grip bone for each clip (`./port destiny check gun-on-grip`; [destiny.md](destiny.md), step 3): the node count alone does not find each such clip. | The Huckleberry |
 | In one frame of a Blender picture the gun is 0.9 m from the hand. The user wrote: "the gun is disassembled floating". | A clip had keys only for the bones that move. Blender keeps the pose of the clip before for a bone with no key. | Each clip has keys for each bone (in the tool). `./port destiny check-glb` reports "bones without keys". Reset the pose before each clip. | The Last Word |
 | A part does not move in the clip of the hands. | Its motion is in a second clip. | `[gun.parts]`, with the additive clip that has the same frame count, or with a clip of the gun entity (`weapon_NNN_TAG`; its frame count can be different by one: 104 and 105). | The Huckleberry, M77 |
 | A part is at a wrong place in a vanilla clip (a belt that is a straight line). | The bind pose of the file is not the hold pose. | `part_rest = "hold"` | Hammerhead |
@@ -78,7 +78,7 @@ Words of the list:
 | A shot has no motion of a part. | The file has none there. | Limit. Sounds can come from `[events]`. | The Chaperone (at the hip), The Huckleberry |
 | A hammer clip plays after each shot. esx warns `WEAPON_BOLT_ACTION`. | The vanilla .44 has the flag `Bolt Action`. | `flags = { "Bolt Action" = false }` in the item file. | The Last Word |
 | `esx plugin check-weapons --reference` warns about `WeaponOptics1` and `WeaponOptics2`. | The template has no such node. | Add the two nodes to the template. | The Last Word |
-| In the first picture of a weapon file the pieces are on top of the grip. | Each piece of a Marathon weapon was at its own coordinates. | The named points of the weapon entity give the place of each piece (in the tool). Only a piece with a known place is in the weapon file. | M77 |
+| In the first picture of a weapon file the pieces are on top of the grip. | Each piece of a Marathon weapon was at its own coordinates. | The named points of the gun entity give the place of each piece (in the tool). Only a piece with a known place is in the weapon file. | M77 |
 | The extraction prints "the rest places of the gun parts differ by 1.000000". | The arm entity has the gun bones of a different weapon. | Not solved. The first-person file of that weapon is not correct. | V75 SCAR (Marathon) |
 | The bolt does not show in the reload. | The body of the gun is one rigid mesh in the files of Marathon. No mesh is on the bone of the bolt. | Limit. Only the events show the bolt. | M77 |
 | A casing passes near the camera at each shot. | A bullpup gun with the hold pose of New Vegas ejects near the face. | Limit. | FAMAS |
@@ -98,6 +98,7 @@ Words of the list:
 | The game test refuses a reload. | The magazine is full. | Set a lower count first (`ammo.set`). | The New Vegas game tests |
 | The reload clip is the reload of a different gun of the class. | The full first-person file has the clips of each weapon of the class. A choice from pictures and from `moving_weapon_bones` was wrong. | Read the graph: `./port destiny states`, or `states` of the manifest. | The Last Word |
 | A clip of an ammunition check plays as the first idle. | The graph plays `WPNIdleReadyA` to `D` at random, one directly after the draw. | These four clips are plain idles. | MP7 |
+| The user wants a faster or a slower reload. | The clips have the speed of the source files (30 frames for each second). No key of a set file changes the speed of a clip. | A line `speed 1.5` in the `reload` block of the behavior source (the document of esx, `docs/BEHAVIOR.md`). No mod of this repository has it, and it was not tested here. Do not change `reload_seconds` for this. | Not tested |
 | The item file needs the time of the reload. | `reload_seconds` is the time of the event `reloadEnd`. It is not the length of the clip. | The frame of `reloadEnd` / 30. `./port fnv convert CONFIG plan` prints it for a New Vegas weapon. | Each weapon |
 
 ## The sight
@@ -122,6 +123,7 @@ Words of the list:
 | Sign | Cause | Rule or correction | Found in |
 | --- | --- | --- | --- |
 | A dark metal is light gray in the game. | A specular value of 0.7 to 0.9 for each metal pixel, with the reflection of the environment. | The specular value from the reflectance of the surface (in the tool). `specular` and `occlusion` of `[model]` change the weights. | The Last Word, the Khvostov, Hammerhead |
+| The light parts of a gun are too bright, with a glow, in direct daylight. | Not known. The run in the test world (the cell `WeapTest`, direct daylight) showed it. In the dark test cell `QASmoke` the same materials looked correct. | No rule yet. The materials are not corrected for it: write it as a limit. `specular` and `occlusion` of `[model]` are the two weights of the conversion, but no value was tested for this sign. | The Chaperone, The Huckleberry |
 | The gun has flat gray surfaces where the source game has paint. | The colors are in the dyes, not in the textures. | `./port destiny dyes`, then `dyes = "dyes.json"` in `[model]`. | Hammerhead |
 | A shader item does not change the gun. | The gun has no pixel with a dye (The Last Word 0 percent, the Khvostov less than 0.1 percent), or its dyes are locked. | No rule. Say so. | The Last Word, the Khvostov |
 | Three pieces of the gun are gray. | A `detail` material of Marathon has seven regions. The game calculates the colors of six of them when it runs. | Limit. | M77 |
@@ -164,6 +166,8 @@ Words of the list:
 | Each shader part shows the default colors. | A second `item.give` in one session keeps the first gun. | One new session for each shader. Do not use `player.removeitem`: it stopped the game. | Hammerhead |
 | "Another client holds the connection to the probe". | The probe has one connection. | Send the op again when the error is `retryable`, up to 8 times. | The Destiny game tests |
 | The hash of the plugin is not the tested hash. | One build gave other bytes: the first build after a change of a behavior source. For the MP7 the cause was not found. | Do each test again on the last release, and compare the hashes before and after. | The Tex Mechanica mod, MP7 |
+| `./port baseline check` prints `DIFFERENT` for a file of `data/`. | A command replaced a stored result: a convert run with `-o` into a baseline folder, a new extraction, or a build. | Find the command. For a release: a build with another esx version can give other bytes. Run `./port baseline update` only for a change that the user accepted. | This repository |
+| `./port destiny game session` stops with the exit code 1: "the session file has the session ... with the label ...". | The session file has a session with a different label. A second user can have started it. | Run `esx probe status`. Wait, or ask the owner of that session. `--take-over` stops it: ask the user first. | This repository |
 | The recording has no frame, or black frames. | The capture settings. | The pipeline of [game-test.md](game-test.md). | The Last Word |
 | A test fails, and the probe has no session. | A second agent stopped the session: the two used one session file. | `esx probe status` before each start and each stop. Stop only your ID. Run the test again before you look for a fault in the mod. | M77, the Tex Mechanica mod |
 | A wait for a sound event fails. | The event name `SoundPlay.NAME` is wrong for a wait. | `{ event = "SoundPlay", payload = "WPNRifleSubmachineGunReloadMagOut" }` | MP7 |
@@ -186,6 +190,8 @@ Words of the list:
 | Sign | Cause | Rule or correction | Found in |
 | --- | --- | --- | --- |
 | `./port` stops with the exit code 3. | A thing that the command needs is missing. The program did not start. | Read the message, or run `./port doctor`: each missing thing has the command that makes it. | This repository |
+| `./port selftest` prints `FAIL` for a part. | `python`: a file does not compile. `port.toml`: a table has a fault, or a program file is not there. `tests`: a test of `portkit` failed. `git`: git has, or can add, a file with a game file ending or a NUL byte. | The lines below the part name each fault. For `git`: move the file below `data/`. | This repository |
+| A program prints one line for a file that is not there, with no traceback. | A program that imports `portkit` shows a file error as one line. | `FO4PORTS_TRACEBACK=1` shows the place in the program. | This repository |
 | `./port destiny states` gives no state for the weapon. | The weapon tag is the tag of the class. The content group is not in the tag tree. | The weapon tag comes from the row of the pattern entity (in the tool). | Hammerhead |
 | The set file of the extraction has no `ready`, `fire` or `reload`. | The tag rule of the extraction is proved for a hand cannon only. | `./port destiny states MANIFEST.json` reads the graph again. | The Khvostov, The Chaperone |
 | `./port destiny find` prints "No item name contains ..." (exit code 1). | The weapon is not in this build of the game. | Tell the user the build date. Do not take a different weapon in its place. | Hawkmoon |
@@ -210,7 +216,6 @@ Words of the list:
 | `./port marathon extract` stops: "has no row in the art table. Give --art ITEM". | The item is a variant of a different item. | `--art "BASE ITEM"`. `./port marathon find` prints `no entity of its own` for such an item. | M77 |
 | A text search of the packages gives thousands of matches. | The text has 3 characters. | A longer text (`Omnipositor`, not `M77`). | M77 |
 | The shader reader prints nothing useful for a shader of Marathon. | The shader is DXIL, not the bytecode of Direct3D 11. | `./port marathon notes dxil MATERIAL` (it needs `llvm-dis`). | M77 |
-| `./port destiny measure-template --help` and `./port destiny shader-text --help` print a Python error. | The two programs have no help text. | `./port list` has their arguments. [commands.md](../reference/commands.md) has each command with no help text. | This repository, 2026-10-06 |
 
 ## What is not proved
 
@@ -221,6 +226,9 @@ Words of the list:
 * The cause is "not known" in these rows: the gun bone at the origin of the world, the wait
   with `clip_end`, the second case of `ammo.set`, the plugin with other bytes, the sights
   that come 2.1 s late, the vanilla Deliverer that does not draw, the window of gamescope
-  that closed.
+  that closed, the light parts that are too bright in daylight.
+* The row for a faster reload is from the document of esx. It was not tested.
+* [The sign table of the skill](../../.claude/skills/diagnose-port-fault/references/signs.md)
+  is a short copy of this document. Change the two together.
 * The rows of the New Vegas chat for esx and for the probe are from esx of 2026-10-05. A
   later version of esx can behave in a different way.

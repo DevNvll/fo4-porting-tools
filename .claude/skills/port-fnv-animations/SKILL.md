@@ -12,12 +12,10 @@ textures, the sounds, the records or the behavior graph.
 ## When to use it, and when not
 
 * Use it for a New Vegas mod with first-person `.kf` files and a `.nif` model.
-* Decide the scope with the user first. The first answer to "port this" is the animations.
-  Do not make a mod project, attachments or textures unless the user asks. Ask only what the
-  tools cannot find.
-* The clips fit only the gun of the source mod.
-* A weapon that is not a magazine gun (a revolver, a bolt action, a shotgun with single
-  shells) needs a new template. That is not done. Tell the user.
+* Decide the scope with the user first. The first answer to "port this" is the animations:
+  no mod project, attachments or textures unless the user asks. Ask only what the tools cannot find.
+* The clips fit only the gun of the source mod. A weapon that is not a magazine gun (a revolver,
+  a bolt action, a shotgun with single shells) needs a new template: not done. Tell the user.
 
 ## Before the start
 
@@ -27,8 +25,9 @@ textures, the sounds, the records or the behavior graph.
    ```sh
    ./port fnv make-rig --nvcs /path/to/NVCS/Meshes/Characters/_1stPerson/Skeleton.nif
    ```
-2. Extract the archive of the mod yourself, into `data/fnv/fixtures/NAME`. The tools do not
-   read an archive.
+2. Extract the archive of the mod yourself, into a new empty folder: `data/fnv/work/_source/NAME`.
+   The tools do not read an archive. Do not put it into `data/fnv/fixtures/` before step 5:
+   each folder there is a fixture of the regression.
 3. Read the readme of the mod for its permissions. Say in the report what it permits.
 
 ## Steps
@@ -50,7 +49,7 @@ input of these tools.
 ### 2. Convert
 
 ```sh
-./port fnv convert data/fnv/fixtures/NAME --name NAME
+./port fnv convert data/fnv/work/_source/NAME --name NAME
 ```
 
 The tool selects the model (the fewest shapes, then the shortest name), the animation folder
@@ -74,23 +73,29 @@ trigger, an event). [references/fnv-facts.md](references/fnv-facts.md) has the k
 
 ### 4. Look at the hands
 
-This area has no program that shows the result. The regression compares bytes. It does not
-look at the hands. Each hand fault of the first work was found by the user in a picture,
-while the game test passed. So before you say that the clips are correct:
+The first correction of the user was: "validate the retarget with blender before testing
+ingame". The user found each hand fault of that chat in a picture, while the game test passed.
+The work tree of `fnv/` has no program that shows the result. The check programs of that chat
+are in git at the tag `before-animation-only` (`git show before-animation-only:tools/validate_clip.sh`,
+`tools/blender/render_fo4.py`, `render_source.py`, `hand_contact.py`). They have the paths of
+the old layout and are not adapted. So before a game test, and before you say "correct":
 
 * Read the numbers of the retarget step: the wrist error is 0, the arm length error is below
   0.0001, and `max_shoulder_adjustment` is small in each clip where the gun is in the view.
-* Look at the clips in the game (step 6) or in an animation tool. Look at each hand in a
-  close view, and compare the place of each thumb with the source.
+* Make pictures with those programs or in an animation tool. Look at each hand in a close
+  view, and compare the place of each thumb with the source.
 * No finger joint bends to the back of the finger. Only the last thumb joint can, 17 degrees.
 
-Gate: you looked at pictures of each hand in the reload and in the hold pose, or the report
-says under "What is not proved" that nobody looked.
+Gate: you looked at pictures of each hand in the reload and in the hold pose. With no
+picture: do not start a game test before the user accepts that, and say under "What is not
+proved" that nobody looked.
 
 ### 5. Add the weapon to the regression
 
-`./port fnv regress` converts each folder of `data/fnv/fixtures/` again and compares each
-clip with `data/fnv/out/NAME`. Gate: each line is `same`.
+Copy the extracted mod to `data/fnv/fixtures/NAME`. `./port fnv regress` converts each folder
+of `data/fnv/fixtures/` again and compares each clip with `data/fnv/out/NAME`. Gate: each line
+is `same`. `./port baseline check` reports the new clips as "not in the list": run
+`./port baseline update` when the user accepts the clips.
 
 ### 6. The mod project (only when the user asks for a mod)
 
@@ -106,14 +111,13 @@ source and `tests/`. The extracted mod is the folder `source` in `data/mods/NAME
 
 * The game plays `WPNReloadEmpty` only when the behavior source has the line
   `when empty play WPNReloadEmpty` (see `mods/PPK/behavior/ppk/ppk.bhv`).
-* The tools make no model. `out/fo4mesh/parts.json` of the work folder has each shape of
-  the gun in the space of its weapon bone: a model must have its shapes at these places. The
-  models and the textures of `PPK` and `FAMAS` came from the tools at the tag
-  `before-animation-only`.
+* The tools make no model. `out/fo4mesh/parts.json` of the work folder has each shape of the
+  gun in the space of its weapon bone: a model must have its shapes at these places. The models
+  and the textures of `PPK` and `FAMAS` came from the tools at the tag `before-animation-only`.
 * The game test is a test plan of esx. Only with the permission of the user:
   `game-test-port` ("A test plan of a New Vegas mod"). Look at each screenshot of the report.
 
-Gate: the build has 0 warnings, and the sha256 of each release file is written down.
+Gate: the build has 0 warnings. For `PPK` and `FAMAS`, `./port baseline check` has `0 different`.
 
 ## Stop and ask the user
 
@@ -131,20 +135,15 @@ Gate: the build has 0 warnings, and the sha256 of each release file is written d
 | A straight finger with lumps, or a thumb beside its place | The two finger rules are off | `[fingers] min_bend = 0.3`, `skin_center = true` (the defaults) |
 | The game does not play the reload of the empty gun | No state for it in the vanilla graph | The line in the behavior source |
 | Each clip is different after a run of some steps | The step `parts` did not run | Run each step. Only `install` copies the clips to the output folder. |
-| A shorter clip list, with no error | The rig folder has no clip of the template | `./port fnv make-rig` |
-| The weapon does not draw in the test game | A fault of the template weapon (the vanilla Deliverer does not draw there) | Test the vanilla template weapon alone first |
 
 ## What to report
 
-The count of clips, which clips come from the source and which have the weapon motion of
-the template, the source clips that got no clip (a sneak copy, a jam, an empty-gun pose, a
-last shot), the time of `reloadEnd`, the permissions of the source mod, and what is not
-proved: no command of this repository proves that the clips are correct in the game.
+* The count of clips. Which clips come from the source, and which have the weapon motion of
+  the template. The source clips that got no clip (a sneak copy, a jam, a last shot).
+* The time of `reloadEnd`. The permissions of the source mod.
+* What is not proved: no command of this repository proves that the clips are correct in the game.
 
 ## More
 
-* [references/fnv-facts.md](references/fnv-facts.md): the names, the keys, the events, the
-  rules of the solver, the limits.
-* [fnv/README.md](../../../fnv/README.md): the reference of this area.
-* [docs/porting/fnv.md](../../../docs/porting/fnv.md),
-  [mods/README.md](../../../mods/README.md).
+* [references/fnv-facts.md](references/fnv-facts.md): the names, the keys, the events, the rules of the solver.
+* [fnv/README.md](../../../fnv/README.md), [docs/porting/fnv.md](../../../docs/porting/fnv.md), [mods/README.md](../../../mods/README.md).

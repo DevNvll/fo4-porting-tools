@@ -190,8 +190,9 @@ mesh with the names and the texture paths of the weapon, which gives the two eff
 ## Limits
 
 * The reload of The Chaperone with 6 shells is 7.2 s long: the clips have the speed of the
-  files of Destiny. A `speed` line in `behavior/thechaperone/thechaperone.bhv` makes each
-  reload faster.
+  files of Destiny. The document of esx (`docs/BEHAVIOR.md`) says that a `speed` line in the
+  `reload` block of `behavior/thechaperone/thechaperone.bhv` (`speed 1.5`) makes each reload
+  faster. This mod has no such line, and it was not tested.
 * The shot of The Chaperone at the hip has no motion of the lever (the file of Destiny has
   none there). The shot in the sights has it.
 * In third person I think that the lever of The Chaperone does not open in a reload with 1

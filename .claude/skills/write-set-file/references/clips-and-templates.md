@@ -4,6 +4,8 @@
 
 `states.json` has the clip of each state of the animation graph for the tags of the weapon.
 The names of the states are the same words in the two games.
+[docs/porting/destiny.md](../../../../docs/porting/destiny.md) has the same table with fewer
+notes: change the two together.
 
 | State | Fallout 4 clip | Notes |
 | --- | --- | --- |
@@ -68,6 +70,11 @@ reload events. Then:
    for the file from the vanilla clips: the rest place of each weapon bone, the bones that
    each clip moves, and the grip point.
 5. A template is a shared file: follow `change-shared-tool`, and run `./port destiny regress`.
+
+The Chaperone is a shotgun with a lever, and it uses `combatrifle`: its lever is the kind
+`bolt` (`[roles] b_pump = "bolt"`). So look at the motion of the parts before you ask for a
+new template. For a New Vegas mod, the templates are those of `fnv/templates/`:
+[docs/porting/fnv.md](../../../../docs/porting/fnv.md), "A new template weapon".
 
 What is not proved: the combat rifle template took 6 minutes in the first work. No template
 was added in this repository after its tools moved here.

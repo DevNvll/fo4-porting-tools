@@ -41,6 +41,7 @@ PORT = os.path.join(ROOT, 'port')
 BUILT_IN = {
     'list': {'--json'}, 'doctor': {'--json'}, 'paths': {'--json'}, 'selftest': set(), 'help': set(),
     'mod list': set(), 'mod status': set(), 'mod sync': {'--force'}, 'mod build': None, 'mod': set(),
+    'baseline check': set(), 'baseline update': set(), 'baseline': set(),
 }
 # A program that gets its help text from a module that it imports.
 HELP_BY_IMPORT = {'destiny/extract/d2x_cli.py'}

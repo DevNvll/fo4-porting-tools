@@ -63,7 +63,8 @@ def patched(code):
 def main():
     args = sys.argv[1:]
     if not args or args[0] in ('-h', '--help'):
-        raise SystemExit(__doc__.strip())
+        print(__doc__.strip())
+        raise SystemExit(0 if args else 2)
     if not shutil.which('llvm-dis'):
         raise SystemExit('The program llvm-dis is not in the PATH. It is a part of LLVM: install LLVM.')
     material = int(args[0], 16)

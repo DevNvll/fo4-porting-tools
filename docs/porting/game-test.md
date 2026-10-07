@@ -26,6 +26,8 @@ the layout of this repository, and one complete run in it passed on 2026-10-06:
 * No recording has the turn of the idle camera.
 * The six videos, the step files and the log are in
   `data/destiny/port/validation/tex_mechanica/world/`.
+* That `game all` command had no `--session`: it used the ID of the session file. In a new
+  run, give `--session ID` (rule 5).
 
 `game results`, `game trace` and `game shots` did not run in this repository. Each other
 result of this document is from the chats of 2026-10-05 and 2026-10-06, with the folders of
@@ -45,7 +47,9 @@ the Destiny chat had the rule: "Do not write into a game Data folder and do not 
 game unless the user asks." When you started the game with no new request, say so in the
 report.
 
-Do not start Marathon for a check of a port: it has an anti-cheat program.
+Do not start Marathon for a check of a port: it has an anti-cheat program. Do not write into
+a game folder, `plugins.txt`, the saves or the Proton prefix. Use esx as it is: do not change
+its code, and do not start its graphical interface.
 
 ## The rules
 
@@ -58,19 +62,27 @@ Do not start Marathon for a check of a port: it has an anti-cheat program.
    owner.
 4. **After a stop, wait.** Read `esx probe status` until `fallout4_pids` is empty. Then the
    next start is possible.
-5. **A label of your own.** `./port destiny game session NAME LABEL` keeps the session ID in
-   one file for all users (`data/destiny/port/work/probe_session.txt`). It prints a warning
-   when the session of the file has a different label. Read that warning.
+5. **A label of your own, and `--session ID`.** `./port destiny game session NAME LABEL` keeps
+   the session ID and its label in one file for all users
+   (`data/destiny/port/work/probe_session.txt`). When the file has a session with a different
+   label, the program does not stop it and has the exit code 1. `--take-over` stops that
+   session: ask the user before you give it. Give `--session ID` to each other game test
+   program: with no `--session`, `game all` takes the ID of the shared file.
 6. **The idle camera.** About 2 minutes after the start of a session the game turns the
    camera about the player, because the session has no input. A recording must end before
    that time or start after it. An op that sets the view ends that camera.
-7. **The hashes of the release.** Write down the sha256 of the three files of
-   `data/mods/NAME/build/release/` before the tests. Compare them after the tests and after
-   each later change of a file. Do the last tests on the last build.
+7. **The hashes of the release.** `baselines.sha256` (in git) has the sha256 of the release
+   of each mod that was tested, and `./port baseline check` compares the files of `data/` with
+   it. For a test, take the sha256 of the three files of `data/mods/NAME/build/release/`
+   after the build and before the first test. Compare them after the tests and after each
+   later change of a file. Do the last tests on the last build. Do not write a
+   `release_tested.sha` file again: the two files of the validation folders are from the
+   chats.
 8. **No other load.** Record with no other heavy job on the computer. A Blender validation
    at the same time gave a recording that was not usable.
 9. **Look at each recording.** Make a frame sheet (`./port destiny check strip` or
-   `video-sheet`) and look at it before you use the recording.
+   `video-sheet`) and look at it before you use the recording. Compare a recording that is
+   made again with the old one: its ops, its step times and its clips.
 10. **Read the trace.** A count of passed ops is not a correct clip.
 11. **Compare with the vanilla weapon in the same session** when the game does a thing that
     the Blender checks do not show.
@@ -86,11 +98,13 @@ esx probe stop --session ID                     # only the ID that the start com
 esx probe status                                # no session, no game process
 ```
 
-`./port destiny game session NAME LABEL [--cell ID | --world] [--no-build]` takes the name of
-a mod. Its steps:
+`./port destiny game session NAME LABEL [--cell ID | --world] [--no-build] [--take-over]` takes
+the name of a mod. Its steps:
 
-1. It stops the session that it started before (the ID in the session file), and no other
-   session.
+1. It reads the session file. When the file has a session with a different label, the
+   program stops here with the exit code 1 and stops nothing: a second user can have started
+   that session. `--take-over` goes on. When the label is the same, or with `--take-over`,
+   it stops the session of the file, and no other session.
 2. It builds the mod with `./port mod build NAME --update-lock`. With `--no-build` it does
    not build: it starts the session with the release that is there. Use `--no-build` to test
    the release that you tested before, with its bytes.
@@ -103,6 +117,7 @@ a mod. Its steps:
 | `--cell ID` | The cell where the game starts. Default: `QASmoke`, a test cell of the game. |
 | `--world` | Give no cell: the game starts in the cell of the test world of the test folder (below). An esx version with no test world stays in the main menu then. |
 | `--no-build` | Do not build. |
+| `--take-over` | Stop the session of the session file also when it has a different label. Ask the user first. |
 
 The same start with no `./port`:
 
@@ -155,15 +170,18 @@ game COMMAND --help` gives each option.
 | `sight --session ID --weapon WEAPON --capacity N --out DIR` | Pictures at the hip and in the sights. | `hip.png`, `sighted.png`. |
 | `trace --session ID --weapon WEAPON --loaded N --view first\|third` | The clips and the events of one reload. | Text. |
 | `shots --session ID --weapon WEAPON --loaded N --from T0 --to T1 --count N --out DIR` | Pictures of the gun in a slow third-person reload. | One picture for each time. |
-| `all --weapon EDITORID:CAPACITY[:auto][:reloads] ... --out DIR [--mod NAME --tested FILE.sha] [--dry-run]` | Each test of each weapon of a mod in one session: `record`, `third --record`, `reloads`, `sight`, in this order. | One folder for each weapon, with `record/`, `third/`, `reloads/`, `sight/`. |
+| `all --session ID --weapon EDITORID:CAPACITY[:auto][:reloads] ... --out DIR [--mod NAME --tested FILE.sha] [--dry-run]` | Each test of each weapon of a mod in one session: `record`, `third --record`, `reloads`, `sight`, in this order. | One folder for each weapon, with `record/`, `third/`, `reloads/`, `sight/`. |
 | `results --out FOLDER [--record DIR] [--third DIR] [--sight DIR] [--reloads DIR]` | Copies the results of a weapon into its validation folder and prints the numbers. | `game_test.mp4`, `game_test.log`, `game_test_steps.json`, `game_test_third_person.mp4`, `third_person_reload_game.jpg`, `red_dot_game.jpg`, `game_test_reloads.txt`. |
 
 `./port destiny game all` does not start and does not stop a session. It uses the session
-of `--session`, or the session of the session file. `--wait` is the age of the session in
+of `--session`. With no `--session` it takes the ID of the session file, which can be the
+session of a second user: give `--session ID` each time. `--wait` is the age of the session in
 seconds at which the first test starts (default 140). The program then sets the first-person
 view, which ends the one turn of the idle camera, so a recording does not have it. With
 `--mod NAME` it prints the sha256 of each release file after the tests, and with `--tested
-FILE` it compares them with a file of `sha256sum` lines. `--dry-run` prints each command and
+FILE` it compares them with a file of `sha256sum` lines. The file has the three lines of the
+release, with or with no folder before each name: `grep -F "mods/NAME/build/release/"
+baselines.sha256` gives the lines of a release on record. `--dry-run` prints each command and
 runs nothing.
 
 The steps of `record`: the first-person view, give and equip the weapon, draw, idle, three
@@ -359,6 +377,13 @@ Results of 2026-10-05: the PPK 34 of 34 steps and 27 of 27 (the suppressor), the
 * One build gave a plugin with other bytes: the first build after a change of a behavior
   source, with the same count of records and the same two archives. Each build after that
   gave the same bytes. A change of a comment in an item file gives the same release hashes.
+* A build with another esx version can give other bytes than a release that was tested
+  before. The rule is: compare the hashes (`./port baseline check`). One comparison was made,
+  on 2026-10-06: esx at the commit `d3e520c` built each of the 7 mods from nothing (a copy of
+  `data/mods/NAME` with no `build/` folder, in a scratch folder), and each of the 3 release
+  files of each mod had the bytes of `baselines.sha256`. So a build from nothing gives the
+  tested release, and esx `d3e520c` gives the bytes of the older esx (`a996de8`) that made the
+  stored releases. No other version was compared.
 * The vanilla Deliverer does not draw in the test game, also with no mod.
 * A game window for the user (`esx probe start --display inherit`) failed on the display of
   the desktop. A gamescope window worked for 2 minutes and then closed.
@@ -381,10 +406,12 @@ the M77. The two used one session file through the program that is now
 4. The M77 thread started a new session with a session file of its own, and ran the test
    again.
 
-The program now prints a warning for a session with a different label, and it does not start
-when the probe has a session that it did not start. The session file is still one file for
-all users. So two agents that use the command at the same time must have different labels,
-must read the warning, and must run `esx probe status` before each start and each stop.
+The program now stops with the exit code 1 for a session file with a different label, and it
+does not start when the probe has a session that it did not start. `--take-over` stops the
+session of the file with a different label. The session file is still one file for all
+users. So two agents that use the command at the same time must have different labels, must
+give `--session ID` to each game test program, must run `esx probe status` before each start
+and each stop, and must ask the user before `--take-over`.
 
 A test that ran when a second agent stopped the session is not a result. Run it again
 before you look for a fault in the mod.

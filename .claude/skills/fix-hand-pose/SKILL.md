@@ -5,9 +5,8 @@ description: Gives the procedure to correct a hand or a finger of a ported weapo
 
 # Correct a hand or a finger
 
-Each hand fault of the three chats was found by the user in a picture, not by a number of
-the agent. So this skill starts with the picture, measures the property that the user sees,
-and corrects the rule, not the one frame.
+The user found in a picture each hand fault that had passed the checks. So this skill starts
+with the picture, measures the property that the user sees, and corrects the rule, not the frame.
 
 ## When to use it, and when not
 
@@ -44,8 +43,9 @@ frame, the wrong clip or an old build.
 ```
 
 The first command gives the frame and the bone of a joint that bends back or turns too far
-in one frame. The second gives the distance of the nearest vertex of each hand to the gun, and
-the percent of vertices nearer than 0.5 cm and 1.5 cm, for the source and for the result.
+in one frame. Its `--vanilla` is the clip folder of the template: `combatrifle` also for
+`combatrifle_parts`. The second gives the distance of the nearest vertex of each hand to the
+gun, and the percent of vertices nearer than 0.5 cm and 1.5 cm, for the source and the result.
 
 Gate: you know which of the four cases you have.
 
@@ -100,7 +100,7 @@ at most. If no key corrects the fault, the solver needs a new rule: `change-shar
 
 ### 3C. A New Vegas port
 
-The configuration file of `./port fnv convert` has `[fingers] min_bend` (default 0.3) and
+The conversion file of `./port fnv convert` has `[fingers] min_bend` (default 0.3) and
 `skin_center` (default `true`). `./port fnv convert CONFIG show` prints the values. The tool has
 no key for one finger or one frame ([the rules](../port-fnv-animations/references/fnv-facts.md)).
 
@@ -116,7 +116,7 @@ the gun is not the target: the source hands are partly in the gun.
 2. `./port destiny check touch-table $G --set $S --clips $C --out data/destiny/port/validation/NAME/hand_distance.txt`.
 3. Look for the same fault in the other frames and clips. Make the pictures of step 1 again,
    with a new file name.
-4. `./port destiny regress`: each other weapon keeps its bytes.
+4. `./port destiny regress`: each other weapon keeps its bytes. The new baseline: `write-set-file`, step 6.
 5. With the permission of the user, a game picture of the hold pose (`game-test-port`).
 
 Gate: the numbers of step 2 are better, the pictures show a correct hand, and you can name
@@ -139,9 +139,9 @@ each clip that changed.
 
 ## What to report
 
-The cause with its numbers, the rule, the picture of before and after, the percent of each
-hand before and after, the clips that changed, and the limit that stays. A pose clip is a
-choice: no file says which state uses it.
+The cause with its numbers, and the rule. The picture of before and after. The percent of
+each hand before and after. The clips that changed, and the limit that stays. A pose clip is
+a choice: no file says which state uses it.
 
 ## More
 

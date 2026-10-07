@@ -1,7 +1,7 @@
 # The commands of `./port`
 
 `./port list` and `./port AREA COMMAND --help` are the source of truth. This document is a
-map: each command of `./port list` (73 commands on 2026-10-06), in groups by area and by
+map: each command of `./port list` (74 commands on 2026-10-06), in groups by area and by
 stage, with one line and its most used options. When this document and `--help` do not
 agree, `--help` is correct.
 
@@ -9,18 +9,11 @@ Run each command in the root of the repository. Each program also runs with no `
 (`python3 PATH/program.py`). `./port` adds the names, the environment and the check of what a
 command needs ([portkit/README.md](../../portkit/README.md)).
 
-## Commands with no `--help`
+## The help of a command
 
-These commands do not have a help text. With `--help` they take the word as an argument:
-
-| Command | What `--help` does | Where its arguments are |
-| --- | --- | --- |
-| `destiny measure-template`, `destiny shader-text` | A Python error | The line of `./port list` |
-| `destiny check sheet`, `destiny check video`, `destiny check strip` | The shell script takes the word as its first argument (a folder or a video) | The line of `./port list`, and the first lines of each script in `destiny/port/check/` |
-| `marathon notes describe`, `walk`, `find-value`, `paths`, `class-graph`, `scan-text` | The program takes the word as an argument (`class-graph`: a Python error). **Do not give `--help` to `scan-text`**: it then reads each package entry, which needs minutes. | The line of `./port list`, and the first lines of each file in `marathon/extract/notes/` |
-
+Each command has a help text: `./port AREA COMMAND --help` prints it and starts no work.
 `destiny check render`, `destiny check touch` and `destiny check contact` start Blender to
-print their help.
+print their help. `./port marathon notes dxil --help` prints its help with the exit code 1.
 
 ## The commands of `./port` itself
 
@@ -29,9 +22,11 @@ print their help.
 | `./port list [--json]` | Each command of each `port.toml`, with one line of help |
 | `./port AREA`, `./port AREA WORD` | The commands of one area (`fnv`, `destiny`, `marathon`), or those that start with two words (`./port destiny check`) |
 | `./port AREA COMMAND --help` | The arguments of one command |
-| `./port doctor [AREA] [--json]` | Each setting, each tool and each necessary file: `ok` or `MISSING`, and how to make it. Exit code 1 when a line is not ok. |
+| `./port doctor [AREA] [--json]` | Each setting, each tool and each necessary file: `ok` or `MISSING`, and how to make it. AREA is `fnv`, `destiny`, `marathon`, or a path such as `destiny/port`. Exit code 1 when a line is not ok, or when Python has no `numpy`. A line for `Pillow` is a report only. |
 | `./port paths [--json]`, `./port paths get NAME` | The folders and the settings |
-| `./port selftest` | Each Python file compiles, each `port.toml` is correct, the tests of `portkit` pass. It needs no game file. |
+| `./port selftest` | Four parts: each Python file compiles (`python`), each `port.toml` is correct (`port.toml`), the tests of `portkit` pass (`tests`), and git has no file that is not source (`git`). It needs no game file. |
+| `./port baseline check` | Compares each stored result of `data/` (the baseline clips of the regress commands, the clips and the release of each mod) with `baselines.sha256`. Exit code 1 when a file is different. It reports a file that is not there and a file that the list does not have. |
+| `./port baseline update` | Writes `baselines.sha256` again. Only for a change that the user accepted: put the file into git with that change. |
 | `./port mod list` | Each mod of `mods/`, its plugin, and if it has a release |
 | `./port mod status NAME` | The source files that differ from their copies in `data/mods/NAME` |
 | `./port mod sync NAME [--force]` | Copy the files of `mods/NAME/` into `data/mods/NAME/`. It deletes nothing. `--force` replaces a lock file of `data/` that is different and newer. |
@@ -39,7 +34,9 @@ print their help.
 
 The exit codes of `./port` itself: 2 for words that are not a command, 3 for a thing that a
 command needs and that is missing (the program did not start), 1 for a fault that `doctor`,
-`selftest` or `mod sync` found.
+`selftest`, `mod sync` or `baseline check` found. `./port` starts a program with `exec`: a
+signal to the process ID of `./port` goes to the program. A program shows a file error as one
+line, and `FO4PORTS_TRACEBACK=1` shows the traceback.
 
 ## New Vegas: `./port fnv`
 
@@ -56,7 +53,7 @@ command needs and that is missing (the program did not start), 1 for a fault tha
 
 | Stage | Command | What it does | Most used options |
 | --- | --- | --- | --- |
-| Setup | `destiny setup` | Prepares d2x below `data/destiny/extract`: the clones, the patch, the cargo build, the Python environment, the Oodle link | None. Safe to run again. |
+| Setup | `destiny setup` | Prepares d2x below `data/destiny/extract`: the clones, the patch, the cargo build, the Python environment, the Oodle link. It needs `git`, `cargo`, and `uv` or a `python3` of 3.12 or later. | None. Safe to run again. |
 | Extract | `destiny find TEXT` | Lists the items whose name has the text: item hash, pattern entity, name | |
 | Extract | `destiny extract ITEM ...` | Exports a weapon as glTF files with a manifest: the model, the textures, the rigs, the clips | `--arms ARMOR`, `--out DIR` (for a port: `data/destiny/port/extract`), `--transparent`, `--feminine`, `--all` |
 | Extract | `destiny tag HASH ...` | Writes the raw data of package entries to files | `--out DIR` |
@@ -98,13 +95,14 @@ command needs and that is missing (the program did not start), 1 for a fault tha
 | --- | --- | --- |
 | `destiny regress` | Makes the clips of each ported weapon again and compares the bytes with the baseline clips (`destiny/port/regress.toml`) | `--only NAME`, `--jobs N`, `--list`, `--no-run`, `--against DIR` |
 | `destiny check validate FILE.glb --set SET.toml --out FOLDER` | The numbers and the videos of each clip of a set | `--clips FOLDER`, `--no-video`, `--left-hand`, `--only NAME`, `--resume` |
+| `destiny check gun-on-grip MANIFEST.json` | For each full-pose clip of an extraction: the distance of the gun bone to the grip bone. Do this before you write a set file. | `--clip CLIP` (only these clips; exit code 1 when one is not correct), `--rig N`, `--limit M` |
 | `destiny check gun FILE.glb CLIP WORK/parts.json CLIP.hkx` | Compares the gun of a clip with the gun of the source, vertex by vertex | |
-| `destiny check fingers CLIP.hkx` | The finger joints of a clip against the vanilla clips of the template | `--bake FILE.npz`, `--vanilla FOLDER` |
+| `destiny check fingers CLIP.hkx` | The finger joints of a clip against the vanilla clips of the template | `--bake FILE.npz`, `--vanilla FOLDER` (default: the folder of `revolver44`; for a long gun `data/destiny/port/rig/combatrifle`) |
 | `destiny check contact --glb FILE.glb --bake FILE.npz --poses CLIP.hkx --parts FILE.json` | The hand vertices inside the gun, source and result (in Blender) | `--frames all`, `--quiet`, `--out FILE.json` |
 | `destiny check contact-table FILE.json` | A short table of a file of `check contact` | |
 | `destiny check touch --glb FILE.glb --bake FILE.npz --poses CLIP.hkx --parts FILE.json` | How near each hand is to the gun, source and result (in Blender) | `--frames 0` |
 | `destiny check touch-table FILE.glb --set SET.toml --clips FOLDER` | The distance of each hand to the gun for each clip of a set | `--out FILE.txt`, `--only NAME` |
-| `destiny check render --glb FILE.glb --clip CLIP --poses CLIP.hkx --parts FILE.json --out DIR` | Pictures of the source and of the result of a clip (in Blender) | `--frames 0,10,20\|all`, `--views fp,l_thumb,...`, `--kinds src,fo4`, `--template NAME` |
+| `destiny check render --glb FILE.glb --clip CLIP --poses CLIP.hkx --parts FILE.json --out DIR` | Pictures of the source and of the result of a clip (in Blender) | `--frames 0,10,20\|all`, `--views fp,l_thumb,...`, `--kinds src,fo4`, `--template NAME` (default `revolver44`: give the template of the set file) |
 | `destiny check sheet DIR CLIP VIEW "0 10 20" OUT.jpg` | Pictures of `check render` in one picture, the source above the result | |
 | `destiny check look-sheet DIR CLIP FRAME OUT.jpg VIEW[,VIEW...]` | One frame from more views, the source above the result | |
 | `destiny check frame-sheet DIR TAG OUT.jpg` | Each frame of one view in one picture | `--columns N`, `--view fp` |
@@ -123,14 +121,14 @@ The probe has one session at a time for the whole computer. Read
 
 | Command | What it does | Most used options |
 | --- | --- | --- |
-| `destiny game session NAME LABEL` | Builds a mod, starts a game test session with its release, prints the session ID | `--cell ID` (default `QASmoke`), `--world` (the cell of the test world), `--no-build` (the release that is there) |
+| `destiny game session NAME LABEL` | Builds a mod, starts a game test session with its release, prints the session ID. When the session file has a session with a different label, it stops nothing and has the exit code 1. | `--cell ID` (default `QASmoke`), `--world` (the cell of the test world), `--no-build` (the release that is there), `--take-over` (stop the session of a different label: ask the user first) |
 | `destiny game record --session ID --weapon EDITORID --out DIR` | Records the first-person game test of a weapon as a video | `--capacity N`, `--auto` |
 | `destiny game third --session ID --weapon EDITORID --out DIR` | The game test of the third-person clips, with pictures from three sides | `--capacity N`, `--record` |
 | `destiny game reloads --session ID --weapon EDITORID --capacity N --out DIR` | One reload for each count of rounds, in the two views | |
 | `destiny game sight --session ID --weapon EDITORID --capacity N --out DIR` | Game pictures of a weapon at the hip and in the sights | |
 | `destiny game trace --session ID --weapon EDITORID --loaded N` | Prints the clips and the events of one reload in the game | `--view first\|third` |
 | `destiny game shots --session ID --loaded N --from T0 --to T1 --count N --out DIR` | Game pictures of the gun in a slow third-person reload | `--weapon EDITORID`, `--speed`, `--yaw` |
-| `destiny game all --weapon EDITORID:CAPACITY[:auto][:reloads] ... --out DIR` | Each game test of the weapons of a mod in one session. It does not start and does not stop a session. | `--session ID`, `--wait SECONDS` (the age of the session at which the first test starts; default 140), `--mod NAME`, `--tested FILE`, `--dry-run` |
+| `destiny game all --session ID --weapon EDITORID:CAPACITY[:auto][:reloads] ... --out DIR` | Each game test of the weapons of a mod in one session. It does not start and does not stop a session. With no `--session` it takes the ID of the shared session file: give `--session ID`. | `--wait SECONDS` (the age of the session at which the first test starts; default 140), `--mod NAME`, `--tested FILE` (the three `sha256sum` lines of the release, with or with no folder before each name), `--dry-run` |
 | `destiny game results --out FOLDER` | Copies the results of the game tests of a weapon into its validation folder and prints the numbers | `--record DIR`, `--third DIR`, `--sight DIR`, `--reloads DIR` |
 
 ### The analysis programs of the game data
@@ -204,14 +202,14 @@ and this repository does not check them.
 | `nvcs_skeleton` | `NVCS_SKELETON` | `fnv make-rig` |
 
 `FO4PORTS_DATA` moves the data folder. `PORT_RIG` names a different rig folder of `fnv/` for
-a program that you start with `python3`.
+a program that you start with `python3`. `FO4PORTS_TRACEBACK=1` shows the traceback of a file
+error. `./port doctor` names each key of `data/config.toml` that is not a setting.
 
 ## What is not proved
 
 * The lines of this document are from `./port list` and from the `--help` of each command
-  that has one (2026-10-06). The author ran no converter, no build and no game test for
-  this document.
-* The help of `destiny check render`, `destiny check touch` and `destiny check contact` was
-  not run (it starts Blender). Their options are from the source files.
+  (2026-10-06). The author ran no converter, no build and no game test for this document.
+* `./port baseline update` was not run for this document. `./port baseline check` ran: 602
+  files, 0 different.
 * The esx commands are from the chats and from the documents of the areas. This repository
   does not check them.

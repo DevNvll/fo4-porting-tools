@@ -13,15 +13,15 @@ your own copies of the games.
 | Thing | For | Setting or check |
 | --- | --- | --- |
 | Linux | Each area was made and tested on Linux. The two Oodle shims are for Linux only. | |
-| Python 3.11 or later, with `numpy` | Each area. `Pillow` for the model program and the picture programs. | `./port doctor` prints the versions |
+| Python 3.11 or later, with `numpy` and `Pillow` (`pip install -r requirements.txt`) | `numpy`: each area. `Pillow`: the model program and the picture programs. | `./port doctor` prints the versions. A missing `numpy` fails the result. The line `pillow` is a report only. |
 | Blender 4.5 | The retarget steps and each check with pictures. It runs with no window. | `blender` |
 | Fallout 4, its `Data` folder | The rig folders, the model program, the build of a mod | `fo4_data` |
 | The skeleton file of the New Vegas compatibility skeleton mod (NVCS), `Meshes/Characters/_1stPerson/Skeleton.nif` | The rig folder of `fnv/` | `nvcs_skeleton`, or `--nvcs` |
-| esx | The arm meshes for the checks, the textures and the materials of a model, the build of a mod, the game test | `esx` |
+| esx (see "esx" below) | The arm meshes for the checks, the textures and the materials of a model, the build of a mod, the game test | `esx` |
 | Proton | The game test on Linux | `proton` |
 | Destiny 2, the build `86657.20.08.23.1800.d2_rc` (23 August 2020) | `destiny/extract/` | `destiny_game` |
 | Marathon (the build of 2026-10-06) | `marathon/extract/` | `marathon_game` |
-| `git`, `cargo`, and `uv` (or `python3 -m venv`) | `./port destiny setup` | `./port doctor` lists them |
+| `git`, `cargo`, and `uv` (or a `python3` of 3.12 or later, for `python3 -m venv`) | `./port destiny setup` | `./port doctor` lists them |
 | A C compiler, `cargo` | `./port marathon setup` | |
 | `ffmpeg` | Each video and each picture sheet | `./port doctor` lists it |
 | GStreamer, PipeWire and gamescope | The recording of a game test | |
@@ -30,16 +30,36 @@ your own copies of the games.
 You need only the things of the area that you use. A person who converts New Vegas
 animations needs Python, `numpy`, Blender, Fallout 4 and the NVCS skeleton file.
 
+### esx
+
+esx is a separate program: a command line tool that builds a Fallout 4 mod from a project
+folder and that starts the game probe. It is a project of the owner of this repository, at
+`https://github.com/DevNvll/esx`. On 2026-10-06 that address answered "not found" to a request
+with no login, so the repository was not public then: ask the owner for it. Build it with
+cargo (its `README.md` has `cargo install --path crates/esx-cli`), and give the program as the
+setting `esx`. Version 0.1.0 at the commit `a996de8` made the stored releases. The commit
+`d3e520c` (2026-10-06) is the first one with the test world of the game test.
+
+| With no esx | With the arm meshes that esx makes one time (`./port fnv make-rig --arm-meshes`) | Only with esx |
+| --- | --- | --- |
+| Each extraction. Each conversion (`fnv convert`, `destiny convert`, `marathon convert`). The regress commands. `destiny check gun`, `fingers`, `gun-on-grip`, `third-sheet`. `./port selftest`, `doctor`, `baseline check`. | `destiny check validate`, `touch`, `touch-table`, `contact`, `render` (each check with the hand meshes), `destiny measure-hands` | `destiny model` and `marathon model`, `./port mod build`, `fnv make-rig --arm-meshes`, each `destiny game` command |
+
+The test world of the game test is a file that the user supplies: a ZIP file or a folder
+with one plugin (the plugin `TestWorldspace.esp` in the run of 2026-10-06). No document of
+this repository or of esx gives its source.
+
 ## 1. The settings
 
 ```sh
-cp config.example.toml data/config.toml      # then give your own paths in it
+cp -n config.example.toml data/config.toml   # only when the file is not there; then give your own paths in it
 ./port doctor                                # each setting, each tool and each necessary file: ok or MISSING
 ./port list                                  # each command with one line of help
 ```
 
 `config.example.toml` has one line for each setting. A setting comes from its environment
 variable, then from `data/config.toml`, then from its default (for a program: the `PATH`).
+If `data/config.toml` is there, edit it. A copy of the example over it removes your paths, and
+`data/` is not in git.
 
 | Setting | Variable | What it is |
 | --- | --- | --- |
@@ -55,8 +75,11 @@ variable, then from `data/config.toml`, then from its default (for a program: th
 
 **How to know that it worked.** `./port doctor` shows `ok` for each setting that your area
 needs. `./port doctor fnv`, `./port doctor destiny` and `./port doctor marathon` look at one
-area only. A line `MISSING` has the command that makes the thing. The exit code is 1 when a
-line is not ok.
+area only, and a path such as `./port doctor destiny/port` looks at one folder. A line
+`MISSING` has the command that makes the thing. The exit code is 1 when a line is not ok, or
+when Python has no `numpy`. With no `data/config.toml` the command tells you to copy the
+example. It names each key of the file that is not a setting (a wrong spelling). A fault in
+the file is one line.
 
 ## 2. The shared part
 
@@ -65,9 +88,11 @@ line is not ok.
 ```
 
 It needs no game file. It checks that each Python file compiles, that each `port.toml` is
-correct, and that the tests of `portkit` pass.
+correct, that the tests of `portkit` pass, and that git has no file that is not source (a
+game file ending, or a NUL byte).
 
-**How to know that it worked.** Three lines that start with `ok`.
+**How to know that it worked.** Four lines that start with `ok`: `python`, `port.toml`,
+`tests`, `git`.
 
 ## 3. New Vegas (`fnv/`)
 
@@ -78,7 +103,8 @@ correct, and that the tests of `portkit` pass.
 | `./port fnv convert /path/to/extracted-mod` | The clips of a weapon in `data/fnv/out/NAME`, and the work files in `data/fnv/work/NAME` | 27 seconds for the PPK |
 
 **How to know that it worked.** `./port doctor fnv` prints
-`Result: each setting and each check is ok.` Then `./port fnv regress`: it converts each
+`Result: each setting and each check is ok.` It can be ok with no esx: the arm meshes are a
+check of `destiny/port/`. Then `./port fnv regress`: it converts each
 fixture of `data/fnv/fixtures/` again and compares the clips with `data/fnv/out/`. On a new
 clone there is no fixture: the command says so, and its exit code is 0. To make the first
 fixture, see [porting/fnv.md](porting/fnv.md), step 5.
@@ -92,7 +118,9 @@ fixture, see [porting/fnv.md](porting/fnv.md), step 5.
 | `./port destiny extract "NAME" --arms "ARMOR" --out data/destiny/port/extract` | `NAME/` with the glTF files, `textures/`, `raw/`, `manifest.json` | 30 seconds |
 
 The setup does each step that does not need the game first. With no value for
-`destiny_game` it stops at the last step (the Oodle link) with the exit code 1.
+`destiny_game` it stops at the last step (the Oodle link) with the exit code 1. With no `uv`
+it needs a `python3` of 3.12 or later for the Python environment (the fixed versions of
+`destiny/extract/requirements.txt` need it), and it stops with a message if `python3` is older.
 
 `tiger-pkg` keeps an index of the packages in the cache folder of the user (the folder
 `tiger-pkg` in `XDG_CACHE_HOME`, about 50 MB for this game). It is not below `data/`.
@@ -186,6 +214,7 @@ esx probe stop --session ID                  # only the ID that the start comman
 | `marathon/extract/` | `./port doctor marathon` | `./port marathon regress` |
 | `marathon/port/` | `./port doctor marathon`, `./port doctor destiny` | `./port marathon regress-clips` |
 | A mod | `./port mod status NAME` | `./port mod build NAME`, and the sha256 of each release file |
+| Each stored result of `data/` | | `./port baseline check`: the baseline clips of the regress commands and the release of each mod have the sha256 of `baselines.sha256` |
 
 ## What is not proved
 
@@ -199,5 +228,11 @@ esx probe stop --session ID                  # only the ID that the start comman
   `destiny/port/`.
 * The time of `./port destiny setup`, `./port fnv make-rig` and `./port destiny make-rig`: no
   source has it.
-* esx 0.1.0 (commit `a996de8`) made the arm meshes and built the mods. The test world of the
-  game test needs an esx version of 2026-10-06 or later. No other version was used.
+* esx 0.1.0 (commit `a996de8`) made the arm meshes and built the stored mods. The test world
+  of the game test needs esx at the commit `d3e520c` (2026-10-06) or later. On 2026-10-06 esx
+  at `d3e520c` built each of the 7 mods from nothing with the bytes of `baselines.sha256`. No
+  other version was compared.
+* If the repository of esx is public: on 2026-10-06 its address gave "not found" with no
+  login. The source of the test world file is not known.
+* `./port baseline check` on a new clone: the code reports each stored result as "not there"
+  with the exit code 0. No run started from an empty data folder.
