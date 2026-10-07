@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "graphs": {
+    "Actors\\Character\\Behaviors\\BothArmInjuredWeaponWrappingBehavior.hkx": "ff0d89de33c2cac1fefc59e2dc3a146d5fd4ec69c97b631fec81d016c4fe6b3d",
+    "Actors\\Character\\Behaviors\\LeftArmInjuredWeaponWrappingBehavior.hkx": "0aac4f4719d87fa380082ab7ce4ba3207b04b2dcfb7da74590f694cef00f0bf2",
+    "Actors\\Character\\Behaviors\\RightArmInjuredWeaponWrappingBehavior.hkx": "3a23dbe37f0e12a2ee492ebe4739bc9581590b808c3abbc8a781e36aac1ab052",
+    "Actors\\Character\\Behaviors\\WeaponBehavior.hkx": "d283e6eaf612e555e23c959f7226ae9447ca93e1989e7e81aef297e31d2b3d16",
+    "Actors\\Character\\_1stPerson\\Behaviors\\GunBehavior.hkx": "864f1f81aec6443270dc2a29a73457a6840bc1b3776bea6ff9802cdb78aee623"
+  }
+}

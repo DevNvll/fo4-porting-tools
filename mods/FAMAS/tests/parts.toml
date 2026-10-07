@@ -1,0 +1,380 @@
+# A game test of the parts of the FAMAS. The base is the plan of `esx probe plan`
+# (build/test-plan.toml). Added: a first-person picture of each part, the view through the
+# scope, and one case with the three parts.
+# Run it after `esx build`:
+#   esx probe run tests/parts.toml --proton DIR --label famas -o build/test-parts
+
+plan = 1
+name = "FAMAS: each part and the three parts together"
+
+[profile]
+mod = [
+  "../build/release/FAMAS - Main.ba2",
+  "../build/release/FAMAS - Textures.ba2",
+  "../build/release/FAMAS.esp",
+]
+plugins = ["FAMAS.esp"]
+creation_club = false
+cell = "QASmoke"
+
+[defaults]
+timeout_ms = 10000
+on_fail = "continue"
+
+# A failure of a setup step stops the plan with the result "error".
+# The plan has no group: its steps run in the order of this file.
+
+[[step]]
+id = "environment"
+do = "env.check"
+setup = true
+expect = { problems = [] }
+
+# ---- FAMAS: ./behavior/famas/famas.bhv ----
+
+[[step]]
+id = "famas-give"
+do = "item.give"
+args = { form = "FAMAS", equip = true }
+timeout_ms = 20000
+expect = { equipped = true, weapon_loaded = true, name = "FAMAS F1" }
+save = { weapon_famas = "form_id" }
+
+[[step]]
+id = "famas-ammo"
+do = "ammo.set"
+args = { loaded = 25, reserve = 100 }
+expect = { loaded = 25 }
+
+[[step]]
+id = "famas-draw"
+do = "weapon.draw"
+args = { drawn = true }
+timeout_ms = 20000
+expect = { drawn = true, ready = true }
+
+[[step]]
+id = "famas-weapon"
+do = "weapon.get"
+expect = { drawn = true, graph_first_person = true, name = "FAMAS F1", capacity = 25, keywords = { contains = "AnimsFAMAS" } }
+
+# The false-pass guard: the first-person view runs the graphs of this weapon, not a vanilla graph.
+
+[[step]]
+id = "famas-graph"
+do = "anim.state"
+expect = { "graphs.player_1st.behavior_files" = { contains = "FAMASGunBehavior.hkb" } }
+
+# The pictures are after the reload cases: screenshot.orbit leaves the camera in the third-person view.
+
+[[step]]
+id = "famas-pictures"
+do = "screenshot.orbit"
+args = { name = "famas-default", target = "weapon", yaws = [45, 90, 135] }
+timeout_ms = 60000
+expect = { count = 3 }
+
+# The part FAMASSuppressor on ap_gun_Muzzle. The game attaches a part only to a weapon that the player gets new,
+# so the console removes the weapon first. The new weapon has its default parts and this part.
+
+[[step]]
+id = "famas-part-suppressor-remove"
+do = "console.run"
+args = { command = "removeitem ${weapon_famas} 100", target = "player" }
+
+[[step]]
+id = "famas-part-suppressor-form"
+do = "form.find"
+args = { form = "FAMASSuppressor" }
+expect = { type = "OMOD" }
+save = { part_famassuppressor = "form_id" }
+
+[[step]]
+id = "famas-part-suppressor-give"
+do = "item.give"
+args = { form = "FAMAS", equip = true, mods = ["FAMASSuppressor"] }
+timeout_ms = 20000
+expect = { equipped = true, weapon_loaded = true }
+
+[[step]]
+id = "famas-part-suppressor-draw"
+do = "weapon.draw"
+args = { drawn = true }
+timeout_ms = 20000
+expect = { drawn = true, ready = true }
+
+[[step]]
+id = "famas-part-suppressor-weapon"
+do = "weapon.get"
+expect = { mods = { contains = { form_id = "${part_famassuppressor}", name = "Suppressor" } }, keywords = { contains = "remapNode" } }
+
+[[step]]
+id = "famas-part-suppressor-keyword-2"
+do = "weapon.get"
+expect = { keywords = { contains = "s_20_Silenced" } }
+
+[[step]]
+id = "famas-part-suppressor-keyword-3"
+do = "weapon.get"
+expect = { keywords = { contains = "dn_HasMuzzle_Suppressor" } }
+
+[[step]]
+id = "famas-part-suppressor-keyword-4"
+do = "weapon.get"
+expect = { keywords = { contains = "HasSilencer" } }
+
+[[step]]
+id = "famas-part-suppressor-pictures"
+do = "screenshot.orbit"
+args = { name = "famas-suppressor", target = "weapon", yaws = [45, 90, 135] }
+timeout_ms = 60000
+expect = { count = 3 }
+
+[[step]]
+id = "famas-part-suppressor-first-person"
+do = "camera.set"
+args = { view = "first" }
+expect = { view = "first" }
+
+[[step]]
+id = "famas-part-suppressor-picture"
+do = "screenshot.take"
+args = { name = "fp-suppressor", hud = false }
+
+
+# The part FAMASScope on ap_gun_Scope. The game attaches a part only to a weapon that the player gets new,
+# so the console removes the weapon first. The new weapon has its default parts and this part.
+
+[[step]]
+id = "famas-part-scope-remove"
+do = "console.run"
+args = { command = "removeitem ${weapon_famas} 100", target = "player" }
+
+[[step]]
+id = "famas-part-scope-form"
+do = "form.find"
+args = { form = "FAMASScope" }
+expect = { type = "OMOD" }
+save = { part_famasscope = "form_id" }
+
+[[step]]
+id = "famas-part-scope-give"
+do = "item.give"
+args = { form = "FAMAS", equip = true, mods = ["FAMASScope"] }
+timeout_ms = 20000
+expect = { equipped = true, weapon_loaded = true }
+
+[[step]]
+id = "famas-part-scope-draw"
+do = "weapon.draw"
+args = { drawn = true }
+timeout_ms = 20000
+expect = { drawn = true, ready = true }
+
+[[step]]
+id = "famas-part-scope-weapon"
+do = "weapon.get"
+expect = { mods = { contains = { form_id = "${part_famasscope}", name = "Short Scope" } }, keywords = { contains = "dn_HasScope" } }
+
+[[step]]
+id = "famas-part-scope-keyword-2"
+do = "weapon.get"
+expect = { keywords = { contains = "HasScope" } }
+
+[[step]]
+id = "famas-part-scope-pictures"
+do = "screenshot.orbit"
+args = { name = "famas-scope", target = "weapon", yaws = [45, 90, 135] }
+timeout_ms = 60000
+expect = { count = 3 }
+
+[[step]]
+id = "famas-part-scope-first-person"
+do = "camera.set"
+args = { view = "first" }
+expect = { view = "first" }
+
+[[step]]
+id = "famas-part-scope-picture"
+do = "screenshot.take"
+args = { name = "fp-scope", hud = false }
+
+# The view through the scope: the game shows the scope overlay.
+[[step]]
+id = "famas-part-scope-aim"
+do = "action.run"
+args = { action = "ActionSighted" }
+timeout_ms = 5000
+wait = [{ clip_start = "WPNIdleSighted", owner = "player_1st" }]
+
+[[step]]
+id = "famas-part-scope-aim-picture-1"
+do = "screenshot.take"
+args = { name = "aim-scope-1", hud = true }
+
+[[step]]
+id = "famas-part-scope-aim-picture-2"
+do = "screenshot.take"
+args = { name = "aim-scope-2", hud = true }
+
+# The part FAMASDBAL on ap_gun_Foregrip. The game attaches a part only to a weapon that the player gets new,
+# so the console removes the weapon first. The new weapon has its default parts and this part.
+
+[[step]]
+id = "famas-part-dbal-remove"
+do = "console.run"
+args = { command = "removeitem ${weapon_famas} 100", target = "player" }
+
+[[step]]
+id = "famas-part-dbal-form"
+do = "form.find"
+args = { form = "FAMASDBAL" }
+expect = { type = "OMOD" }
+save = { part_famasdbal = "form_id" }
+
+[[step]]
+id = "famas-part-dbal-give"
+do = "item.give"
+args = { form = "FAMAS", equip = true, mods = ["FAMASDBAL"] }
+timeout_ms = 20000
+expect = { equipped = true, weapon_loaded = true }
+
+[[step]]
+id = "famas-part-dbal-draw"
+do = "weapon.draw"
+args = { drawn = true }
+timeout_ms = 20000
+expect = { drawn = true, ready = true }
+
+[[step]]
+id = "famas-part-dbal-weapon"
+do = "weapon.get"
+expect = { mods = { contains = { form_id = "${part_famasdbal}", name = "DBAL Laser" } }, keywords = { contains = "dn_HasScope_IronSights" } }
+
+[[step]]
+id = "famas-part-dbal-pictures"
+do = "screenshot.orbit"
+args = { name = "famas-dbal", target = "weapon", yaws = [45, 90, 135] }
+timeout_ms = 60000
+expect = { count = 3 }
+
+[[step]]
+id = "famas-part-dbal-first-person"
+do = "camera.set"
+args = { view = "first" }
+expect = { view = "first" }
+
+[[step]]
+id = "famas-part-dbal-picture"
+do = "screenshot.take"
+args = { name = "fp-dbal", hud = false }
+
+
+# The next weapon starts in the first-person view.
+
+[[step]]
+id = "famas-view-first"
+do = "camera.set"
+args = { view = "first" }
+expect = { view = "first" }
+
+# The three parts together.
+[[step]]
+id = "famas-all-remove"
+do = "console.run"
+args = { command = "removeitem ${weapon_famas} 100", target = "player" }
+
+[[step]]
+id = "famas-all-give"
+do = "item.give"
+args = { form = "FAMAS", equip = true, mods = ["FAMASSuppressor", "FAMASScope", "FAMASDBAL"] }
+timeout_ms = 20000
+expect = { equipped = true, weapon_loaded = true }
+
+[[step]]
+id = "famas-all-ammo"
+do = "ammo.set"
+args = { loaded = 25, reserve = 200 }
+expect = { loaded = 25 }
+
+[[step]]
+id = "famas-all-draw"
+do = "weapon.draw"
+args = { drawn = true }
+timeout_ms = 20000
+expect = { drawn = true, ready = true }
+
+[[step]]
+id = "famas-all-weapon"
+do = "weapon.get"
+expect = { keywords = { contains = "HasSilencer" } }
+
+[[step]]
+id = "famas-all-scope"
+do = "weapon.get"
+expect = { keywords = { contains = "HasScope" } }
+
+[[step]]
+id = "famas-all-pictures"
+do = "screenshot.orbit"
+args = { name = "famas-all", target = "weapon", yaws = [45, 90, 135] }
+timeout_ms = 60000
+expect = { count = 3 }
+
+[[step]]
+id = "famas-all-first-person"
+do = "camera.set"
+args = { view = "first" }
+expect = { view = "first" }
+
+[[step]]
+id = "famas-all-picture"
+do = "screenshot.take"
+args = { name = "fp-all", hud = false }
+
+[[step]]
+id = "famas-all-fire"
+do = "action.run"
+args = { action = "ActionFireSingle" }
+timeout_ms = 4000
+wait = [{ event = "weaponFire" }]
+screenshot = true
+
+# The reload with the three parts, at one fifth of the game speed: three pictures.
+[[step]]
+id = "famas-all-slow"
+do = "console.run"
+args = { command = "sgtm 0.2" }
+
+[[step]]
+id = "famas-all-reload"
+do = "action.run"
+args = { action = "ActionReload" }
+timeout_ms = 40000
+expect = { accepted = true }
+wait = [
+  { clip_start = "WPNReload", owner = "player_1st" },
+  { event = "SoundPlay", payload = "WPNRifleSubmachineGunReloadMagOut" },
+]
+
+[[step]]
+id = "famas-all-reload-picture-1"
+do = "screenshot.take"
+args = { name = "reload-all-1", hud = false }
+
+[[step]]
+id = "famas-all-reload-picture-2"
+do = "screenshot.take"
+args = { name = "reload-all-2", hud = false }
+
+[[step]]
+id = "famas-all-reload-picture-3"
+do = "screenshot.take"
+args = { name = "reload-all-3", hud = false }
+timeout_ms = 40000
+wait = [{ clip_end = "WPNReload", owner = "player_1st" }]
+
+[[step]]
+id = "famas-all-normal-speed"
+do = "console.run"
+args = { command = "sgtm 1" }

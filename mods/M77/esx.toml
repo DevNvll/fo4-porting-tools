@@ -1,0 +1,10 @@
+# The M77 (the assault rifle of Marathon) for Fallout 4: the gun model and its first-person
+# clips, retargeted to the Fallout 4 first-person rig. `esx build` makes M77.esp,
+# "M77 - Main.ba2" and "M77 - Textures.ba2" in build/release/.
+plugin = "M77.esp"
+author = "Port made with esx"
+description = "The M77 assault rifle of Marathon, with its first-person animations retargeted to the Fallout 4 rig."
+
+# The model file of the gun is in game units.
+[meshes]
+scale = 1.0

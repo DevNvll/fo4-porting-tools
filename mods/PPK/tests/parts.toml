@@ -1,0 +1,214 @@
+# A game test of the suppressor of the PPK. The base is the plan of `esx probe plan`
+# (build/test-plan.toml). Added: a first-person picture and one shot with the suppressor.
+# Run it after `esx build`:
+#   esx probe run tests/parts.toml --proton DIR --label ppk -o build/test-parts
+
+plan = 1
+name = "PPK: the suppressor"
+
+[profile]
+mod = [
+  "../build/release/PPK - Main.ba2",
+  "../build/release/PPK - Textures.ba2",
+  "../build/release/PPK.esp",
+]
+plugins = ["PPK.esp"]
+creation_club = false
+cell = "QASmoke"
+
+[defaults]
+timeout_ms = 10000
+on_fail = "continue"
+
+# A failure of a setup step stops the plan with the result "error".
+# The plan has no group: its steps run in the order of this file.
+
+[[step]]
+id = "environment"
+do = "env.check"
+setup = true
+expect = { problems = [] }
+
+# ---- PPK: ./behavior/ppk/ppk.bhv ----
+
+[[step]]
+id = "ppk-give"
+do = "item.give"
+args = { form = "PPK", equip = true }
+timeout_ms = 20000
+expect = { equipped = true, weapon_loaded = true, name = "Walther PPK" }
+save = { weapon_ppk = "form_id" }
+
+[[step]]
+id = "ppk-ammo"
+do = "ammo.set"
+args = { loaded = 7, reserve = 100 }
+expect = { loaded = 7 }
+
+[[step]]
+id = "ppk-draw"
+do = "weapon.draw"
+args = { drawn = true }
+timeout_ms = 20000
+expect = { drawn = true, ready = true }
+
+[[step]]
+id = "ppk-weapon"
+do = "weapon.get"
+expect = { drawn = true, graph_first_person = true, name = "Walther PPK", capacity = 7, keywords = { contains = "AnimsPPK" } }
+
+# The false-pass guard: the first-person view runs the graphs of this weapon, not a vanilla graph.
+
+[[step]]
+id = "ppk-graph-1"
+do = "anim.state"
+expect = { "graphs.player_1st.behavior_files" = { contains = "PPKGunBehavior.hkb" } }
+
+[[step]]
+id = "ppk-graph-2"
+do = "anim.state"
+expect = { "graphs.player_1st.behavior_files" = { contains = "PPKPistol_GunWrappingBehavior.hkb" } }
+
+# `when ammo == 0 play WPNReloadEmpty`
+
+[[step]]
+id = "ppk-reload-0-set"
+do = "ammo.set"
+args = { loaded = 0 }
+expect = { loaded = 0 }
+save = { total_before = "total" }
+
+[[step]]
+id = "ppk-reload-0"
+do = "action.run"
+args = { action = "ActionReload" }
+timeout_ms = 13200
+expect = { accepted = true }
+wait = [
+  { clip_start = "WPNReloadEmpty", owner = "player_1st" },
+  { event = "reloadComplete" },
+  { clip_end = "WPNReloadEmpty", owner = "player_1st" },
+]
+
+[[step]]
+id = "ppk-reload-0-count"
+do = "ammo.get"
+expect = { loaded = 7, total = "${total_before}" }
+
+# No rule names the count 1: the clip of the vanilla action plays.
+
+[[step]]
+id = "ppk-reload-1-set"
+do = "ammo.set"
+args = { loaded = 1 }
+expect = { loaded = 1 }
+save = { total_before = "total" }
+
+[[step]]
+id = "ppk-reload-1"
+do = "action.run"
+args = { action = "ActionReload" }
+timeout_ms = 12000
+expect = { accepted = true }
+wait = [
+  { clip_start = "WPNReload", owner = "player_1st" },
+  { event = "reloadComplete" },
+  { clip_end = "WPNReload", owner = "player_1st" },
+]
+
+[[step]]
+id = "ppk-reload-1-count"
+do = "ammo.get"
+expect = { loaded = 7, total = "${total_before}" }
+
+# The pictures are after the reload cases: screenshot.orbit leaves the camera in the third-person view.
+
+[[step]]
+id = "ppk-pictures"
+do = "screenshot.orbit"
+args = { name = "ppk-default", target = "weapon", yaws = [45, 90, 135] }
+timeout_ms = 60000
+expect = { count = 3 }
+
+# The part PPKSuppressor on ap_gun_Muzzle. The game attaches a part only to a weapon that the player gets new,
+# so the console removes the weapon first. The new weapon has its default parts and this part.
+
+[[step]]
+id = "ppk-part-suppressor-remove"
+do = "console.run"
+args = { command = "removeitem ${weapon_ppk} 100", target = "player" }
+
+[[step]]
+id = "ppk-part-suppressor-form"
+do = "form.find"
+args = { form = "PPKSuppressor" }
+expect = { type = "OMOD" }
+save = { part_ppksuppressor = "form_id" }
+
+[[step]]
+id = "ppk-part-suppressor-give"
+do = "item.give"
+args = { form = "PPK", equip = true, mods = ["PPKSuppressor"] }
+timeout_ms = 20000
+expect = { equipped = true, weapon_loaded = true }
+
+[[step]]
+id = "ppk-part-suppressor-draw"
+do = "weapon.draw"
+args = { drawn = true }
+timeout_ms = 20000
+expect = { drawn = true, ready = true }
+
+[[step]]
+id = "ppk-part-suppressor-weapon"
+do = "weapon.get"
+expect = { mods = { contains = { form_id = "${part_ppksuppressor}", name = "Suppressor" } }, keywords = { contains = "remapNode" } }
+
+[[step]]
+id = "ppk-part-suppressor-keyword-2"
+do = "weapon.get"
+expect = { keywords = { contains = "s_20_Silenced" } }
+
+[[step]]
+id = "ppk-part-suppressor-keyword-3"
+do = "weapon.get"
+expect = { keywords = { contains = "dn_HasMuzzle_Suppressor" } }
+
+[[step]]
+id = "ppk-part-suppressor-keyword-4"
+do = "weapon.get"
+expect = { keywords = { contains = "HasSilencer" } }
+
+[[step]]
+id = "ppk-part-suppressor-pictures"
+do = "screenshot.orbit"
+args = { name = "ppk-suppressor", target = "weapon", yaws = [45, 90, 135] }
+timeout_ms = 60000
+expect = { count = 3 }
+
+# The next weapon starts in the first-person view.
+
+[[step]]
+id = "ppk-view-first"
+do = "camera.set"
+args = { view = "first" }
+expect = { view = "first" }
+
+[[step]]
+id = "ppk-part-suppressor-first-person"
+do = "camera.set"
+args = { view = "first" }
+expect = { view = "first" }
+
+[[step]]
+id = "ppk-part-suppressor-picture"
+do = "screenshot.take"
+args = { name = "fp-suppressor", hud = false }
+
+[[step]]
+id = "ppk-part-suppressor-fire"
+do = "action.run"
+args = { action = "ActionFireSingle" }
+timeout_ms = 4000
+wait = [{ event = "weaponFire" }]
+screenshot = true

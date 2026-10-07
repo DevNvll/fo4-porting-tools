@@ -1,0 +1,7 @@
+mod TheHuckleberry {
+  plugin "TexMechanica.esp"
+  prefix TXH
+}
+
+weapon TheHuckleberry like AnimsCombatShotgun {
+}

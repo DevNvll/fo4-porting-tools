@@ -1,0 +1,11 @@
+# Three weapons of Tex Mechanica (Destiny 2) for Fallout 4: The Last Word (a revolver), The
+# Chaperone (a shotgun with a lever) and The Huckleberry (a submachine gun). Each one has its
+# gun model and its clips of Destiny 2, retargeted to the Fallout 4 rigs. `esx build` makes
+# TexMechanica.esp, "TexMechanica - Main.ba2" and "TexMechanica - Textures.ba2" in build/release/.
+plugin = "TexMechanica.esp"
+author = "Port made with esx"
+description = "The Last Word, The Chaperone and The Huckleberry of Destiny 2 (Tex Mechanica), with their animations retargeted to the Fallout 4 rigs."
+
+# The model files of the guns are in game units.
+[meshes]
+scale = 1.0

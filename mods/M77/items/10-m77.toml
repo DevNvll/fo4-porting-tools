@@ -1,0 +1,40 @@
+# The weapon. `esx build` makes the records from this file. `esx help-topic items` gives the keys.
+# The template is the vanilla combat rifle: it gives the behavior graph, the sounds, the
+# ammunition and the third-person animations. The editor ID of the weapon is M77.
+# Damage, weight, value and ammunition are those of the combat rifle. The capacity is 30
+# rounds: a choice (the tools do not read the value of Marathon). The reload time is the time
+# of the event reloadEnd in WPNReload (frame 91 of 104).
+kind = "weapon"
+name = "M77 Assault Rifle"
+prefix = "M77"
+from = "CombatRifle"
+damage = 33
+capacity = 30
+weight = 7.0
+value = 75
+reload_seconds = 3.0333
+ammo = "Ammo45Caliber"
+model = 'Weapons\HandMade\Recievers\DummyReciever.nif'
+# The combat rifle has two animation keywords. AnimsCombatShotgun gives the graphs and the
+# clips of each view (the combat rifle has the clips of the combat shotgun). AnimsCombatRifle
+# gives one first-person clip of its own (WPNFireSingleSighted). The behavior source of this
+# weapon is a copy of AnimsCombatShotgun with the clips of the M77, so the second keyword
+# must not stay: it would give the vanilla clip in place of the clip of this weapon.
+remove_keywords = ["AnimsCombatRifle"]
+
+# The receiver part has the whole gun, and it is the automatic receiver of the combat rifle:
+# the M77 is an automatic rifle. Its mesh has the node that the clips move: WeaponMagazine
+# (the magazine). The weapon has no barrel, stock, magazine or sight part: the four pieces
+# of the weapon of Marathon (the body, the muzzle device, the magazine and the sight unit)
+# are in this mesh.
+[part.Receiver]
+from = "mod_CombatRifle_Receiver_Automatic1"
+name = "M77 Receiver"
+model = 'Weapons\M77\M77.nif'
+recipe = false
+
+# The recipe of the weapon, at the chemistry station.
+[recipe]
+workbench = "WorkbenchChemlab"
+category = "RecipeUtility"
+components = { c_Steel = 8, c_Aluminum = 4, c_Springs = 2, c_Screws = 3 }

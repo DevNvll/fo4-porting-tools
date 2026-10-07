@@ -1,0 +1,31 @@
+# The conversion data of the Walther PPK for the tools of fnv/ (New Vegas animations to Fallout 4).
+#   ./port mod sync PPK                                          copy this file into data/mods/PPK/
+#   ./port fnv convert data/mods/PPK/conversion.toml              make the clips again
+#   ./port fnv convert data/mods/PPK/conversion.toml show         print each value that the tools assume
+#
+# The folder `source` has the extracted mod. The tools find the model, the animations, the
+# gun parts, the clips and their events there, and they write the HKX clips to `output`.
+#
+# The tools make only the animations now. The tables [[attachment]] and [textures] below are
+# for the tools at the tag `before-animation-only` (the history of fnv/ has it), which also made the
+# model, the attachments and the textures of this project. The tools of today do not use
+# them.
+name = "PPK"
+template = "pistol10mm"
+output = "behavior/ppk/animations/first_person"
+
+# The mod has no texture file: the models use the textures of the base mod. Put the folder
+# `textures` of the base mod into `source`, and the tools convert it. Without it each material
+# has one of these colors.
+[textures.stand_in]
+default = [58, 58, 62]
+blackgrip = [30, 30, 32]
+bullet = [150, 110, 50]
+
+# New Vegas has a complete model for each set of weapon mods. This table takes the suppressor
+# from one of them.
+[[attachment]]
+name = "Suppressor"
+model = "meshes/tigerx87/weapons/ppk/ppk sil.nif"
+shapes = ["ppk_sil_lo"]
+connect = "Muzzle"

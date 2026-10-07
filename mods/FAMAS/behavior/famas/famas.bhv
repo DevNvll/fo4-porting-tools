@@ -1,0 +1,7 @@
+mod FAMAS {
+  plugin "FAMAS.esp"
+  prefix FAMAS
+}
+
+weapon FAMAS like AnimsSubmachineGun {
+}

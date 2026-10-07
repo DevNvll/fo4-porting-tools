@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "graphs": {
+    "Actors\\Character\\_1stPerson\\Behaviors\\GunBehavior.hkx": "864f1f81aec6443270dc2a29a73457a6840bc1b3776bea6ff9802cdb78aee623",
+    "Actors\\Character\\_1stPerson\\Behaviors\\Pistol_GunWrappingBehavior.hkx": "3daacf9ecc5f58c16a7d3fd38ab0b3ee9d614cf010d598b31bd1d66adf17713c"
+  }
+}

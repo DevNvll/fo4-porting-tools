@@ -1,0 +1,7 @@
+mod Khvostov {
+  plugin "Khvostov.esp"
+  prefix KHV
+}
+
+weapon Khvostov like AnimsCombatShotgun {
+}

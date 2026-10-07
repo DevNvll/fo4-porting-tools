@@ -1,0 +1,42 @@
+# A short game test: give the weapon, draw it, and take one picture. It shows if the
+# animation graph of the weapon becomes active.
+plan = 1
+name = "PPK: draw only"
+
+[profile]
+mod = [
+  "../build/release/PPK - Main.ba2",
+  "../build/release/PPK - Textures.ba2",
+  "../build/release/PPK.esp",
+]
+plugins = ["PPK.esp"]
+creation_club = false
+cell = "QASmoke"
+
+[defaults]
+timeout_ms = 10000
+on_fail = "continue"
+
+[[step]]
+id = "give"
+do = "item.give"
+args = { form = "PPK", equip = true }
+timeout_ms = 20000
+expect = { equipped = true }
+
+[[step]]
+id = "draw"
+do = "weapon.draw"
+args = { drawn = true }
+timeout_ms = 20000
+expect = { drawn = true, ready = true }
+
+[[step]]
+id = "graph"
+do = "anim.state"
+expect = { "graphs.player_1st.behavior_files" = { contains = "PPKGunBehavior.hkb" } }
+
+[[step]]
+id = "picture"
+do = "screenshot.take"
+args = { name = "fp-idle", hud = false }

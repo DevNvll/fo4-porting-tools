@@ -1,0 +1,10 @@
+# The Khvostov 7G-02 (the Destiny 2 auto rifle) for Fallout 4: the gun model and its
+# first-person clips, retargeted to the Fallout 4 first-person rig. `esx build` makes
+# Khvostov.esp, "Khvostov - Main.ba2" and "Khvostov - Textures.ba2" in build/release/.
+plugin = "Khvostov.esp"
+author = "Port made with esx"
+description = "The Khvostov 7G-02 of Destiny 2, with its first-person animations retargeted to the Fallout 4 rig."
+
+# The model file of the gun is in game units.
+[meshes]
+scale = 1.0

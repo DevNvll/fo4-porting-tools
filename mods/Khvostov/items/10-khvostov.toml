@@ -1,0 +1,52 @@
+# The weapon. `esx build` makes the records from this file. `esx help-topic items` gives the keys.
+# The template is the vanilla combat rifle: it gives the behavior graph, the sounds, the
+# ammunition and the third-person animations. The editor ID of the weapon is Khvostov.
+# Damage, weight, value and ammunition are those of the combat rifle. The capacity is 30
+# rounds: a choice (the magazine of the model is of the 30-round kind; the tools do not read
+# the Destiny value). The reload time is the time of the event reloadEnd in WPNReload
+# (frame 83 of 105).
+kind = "weapon"
+name = "Khvostov 7G-02"
+prefix = "Khvostov"
+from = "CombatRifle"
+damage = 33
+capacity = 30
+weight = 7.0
+value = 75
+reload_seconds = 2.7667
+ammo = "Ammo45Caliber"
+model = 'Weapons\HandMade\Recievers\DummyReciever.nif'
+# The combat rifle has two animation keywords. AnimsCombatShotgun gives the graphs and the
+# clips of each view (the combat rifle has the clips of the combat shotgun). AnimsCombatRifle
+# gives one first-person clip of its own (WPNFireSingleSighted). The behavior source of this
+# weapon is a copy of AnimsCombatShotgun with the clips of the Khvostov, so the second
+# keyword must not stay: it would give the vanilla clip in place of the clip of this weapon.
+remove_keywords = ["AnimsCombatRifle"]
+
+# The receiver part has the whole gun, and it is the automatic receiver of the combat rifle:
+# the Khvostov is an auto rifle. Its mesh has the nodes that the clips move: WeaponMagazine
+# (the magazine) and WeaponBolt (the charging handle). The weapon has no barrel, stock or
+# magazine part: they are in this mesh, and so is the housing of the sight.
+[part.Receiver]
+from = "mod_CombatRifle_Receiver_Automatic1"
+name = "Khvostov Receiver"
+model = 'Weapons\Khvostov\Khvostov.nif'
+recipe = false
+
+# The sight part: the glass of the sight (two red marks at the sides, one below, a dark
+# edge) and the reticle, a red dot with four arcs (tools/d2reticle.py and tools/d2model.py,
+# [model.sight] of the set file). The two shapes have an effect material, so they are not in
+# the mesh of the gun: esx makes an effect shader only from a template mesh. The mesh of the
+# gun has the connect point P-Scope on the node KhvostovReceiver, and this mesh has C-Scope.
+# The base is the standard sights part of the combat rifle: it changes no value of the weapon.
+[part.Sight]
+from = "mod_CombatRifle_Scope_SightsIron"
+name = "Khvostov reflex sight"
+model = 'Weapons\Khvostov\KhvostovSight.nif'
+recipe = false
+
+# The recipe of the weapon, at the chemistry station.
+[recipe]
+workbench = "WorkbenchChemlab"
+category = "RecipeUtility"
+components = { c_Steel = 8, c_Aluminum = 4, c_Springs = 2, c_Screws = 3 }

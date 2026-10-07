@@ -1,0 +1,8 @@
+# Walther PPK for Fallout 4. A port of the models and the first-person animations of the
+# New Vegas mod "FNV Anim Set - Walther PPK" to the Fallout 4 first-person rig.
+plugin = "PPK.esp"
+author = "Port made with esx"
+description = "Walther PPK with the first-person animations of the New Vegas animation set, retargeted to the Fallout 4 rig."
+
+[meshes]
+scale = 1.0

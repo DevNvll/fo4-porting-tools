@@ -1,0 +1,19 @@
+mod TheChaperone {
+  plugin "TexMechanica.esp"
+  prefix TXC
+}
+
+weapon TheChaperone like AnimsCombatShotgun {
+  # One reload clip for each count of shells: WPNReload1 has 1 shell (5 rounds in the gun),
+  # and WPNReload6 has 6 shells (an empty gun). The clip with the vanilla name, WPNReload, is
+  # the reload with 6 shells with no sound in third person: the third-person graph plays it
+  # on its clip node for the gun parts at the same time as each clip of this list.
+  reload {
+    when ammo == 0 play WPNReload6
+    when ammo == 5 play WPNReload1
+    when ammo == 4 play WPNReload2
+    when ammo == 3 play WPNReload3
+    when ammo == 2 play WPNReload4
+    when ammo == 1 play WPNReload5
+  }
+}

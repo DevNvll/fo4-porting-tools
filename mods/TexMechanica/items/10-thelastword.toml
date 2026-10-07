@@ -1,0 +1,38 @@
+# The Last Word. `esx build` makes the records from this file. `esx help-topic items` gives the keys.
+# The template is the vanilla .44 revolver: it gives the behavior graph, the sounds, the
+# ammunition and the third-person animations. The editor ID of the weapon is TheLastWord.
+# Damage, weight and value are those of the .44. The capacity is 8 rounds, as the magazine of
+# The Last Word in Destiny 2 (the cylinder of the model has 6 chambers).
+# The reload time is the time of the event reloadEnd in WPNReload (frame 102 of 127).
+# This file has the values of ../../TheLastWord/items/10-thelastword.toml.
+kind = "weapon"
+name = "The Last Word"
+prefix = "TheLastWord"
+from = "44"
+damage = 48
+capacity = 8
+weight = 4.0
+value = 85
+reload_seconds = 3.4
+ammo = "Ammo44"
+model = 'Weapons\10mmPistol\10mmRecieverDummy.nif'
+# The vanilla .44 has the flag Bolt Action: the game plays WPNBoltChargeReady (the hammer)
+# after each shot. The fire clip of The Last Word has the hammer motion in it (the left hand
+# fans the hammer), so the weapon does not have the flag.
+flags = { "Bolt Action" = false }
+
+# The receiver part has the whole gun. Its mesh has the nodes that the clips move:
+# WeaponMagazine (the crane), WeaponMagazineChild1 (the cylinder), WeaponMagazineChild2 (the
+# yoke), WeaponMagazineChild5 (the rounds) and WeaponExtra1 (the hammer). The weapon has no
+# grip, barrel or sights part: they are in this mesh.
+[part.Receiver]
+from = "mod_44_Receiver_Standard"
+name = "The Last Word Receiver"
+model = 'Weapons\TheLastWord\TheLastWord.nif'
+recipe = false
+
+# The recipe of the weapon, at the chemistry station.
+[recipe]
+workbench = "WorkbenchChemlab"
+category = "RecipeUtility"
+components = { c_Steel = 4, c_Gold = 1, c_Springs = 1, c_Screws = 2 }

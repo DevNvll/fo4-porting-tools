@@ -1,0 +1,7 @@
+mod TheLastWord {
+  plugin "TexMechanica.esp"
+  prefix TXL
+}
+
+weapon TheLastWord like Anims44 {
+}

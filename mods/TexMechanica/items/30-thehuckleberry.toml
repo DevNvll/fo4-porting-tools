@@ -1,0 +1,54 @@
+# The Huckleberry. `esx build` makes the records from this file. `esx help-topic items` gives the keys.
+# The template is the vanilla combat rifle: it gives the behavior graph, the sounds, the
+# ammunition and the third-person animations. The editor ID of the weapon is TheHuckleberry.
+# Weight, value and ammunition are those of the combat rifle. These values are choices (the
+# tools do not read the values of Destiny):
+#   capacity   30 rounds
+#   damage     26. The combat rifle has 33, and the vanilla submachine gun has 15.
+# The reload time is the time of the event reloadEnd in WPNReload (frame 64 of 91).
+kind = "weapon"
+name = "The Huckleberry"
+prefix = "TheHuckleberry"
+from = "CombatRifle"
+damage = 26
+capacity = 30
+weight = 7.0
+value = 75
+reload_seconds = 2.1333
+ammo = "Ammo45Caliber"
+model = 'Weapons\HandMade\Recievers\DummyReciever.nif'
+# The combat rifle has two animation keywords. AnimsCombatShotgun gives the graphs and the
+# clips of each view (the combat rifle has the clips of the combat shotgun). AnimsCombatRifle
+# gives one first-person clip of its own (WPNFireSingleSighted). The behavior source of this
+# weapon is a copy of AnimsCombatShotgun with the clips of The Huckleberry, so the second
+# keyword must not stay: it would give the vanilla clip in place of the clip of this weapon.
+remove_keywords = ["AnimsCombatRifle"]
+
+# The receiver part has the whole gun, and it is the automatic receiver of the combat rifle:
+# The Huckleberry is a submachine gun. Its mesh has the nodes that the clips move:
+# WeaponMagazine (the magazine) and WeaponBolt (the housing of the barrel). The weapon has no
+# barrel, stock or magazine part: they are in this mesh, and so is the housing of the sight.
+[part.Receiver]
+from = "mod_CombatRifle_Receiver_Automatic1"
+name = "The Huckleberry Receiver"
+model = 'Weapons\TheHuckleberry\TheHuckleberry.nif'
+recipe = false
+
+# The sight part: the glass of the sight (four green marks and a border of the color of
+# gold) and the reticle, a dot with a red ring (tools/d2reticle.py and tools/d2model.py,
+# [model.sight] of the set file). The two shapes have an effect material, so they are not in
+# the mesh of the gun: esx makes an effect shader only from a template mesh. The mesh of the
+# gun has the connect point P-Scope on the node TheHuckleberryReceiver, and this mesh has
+# C-Scope. The base is the standard sights part of the combat rifle: it changes no value of
+# the weapon.
+[part.Sight]
+from = "mod_CombatRifle_Scope_SightsIron"
+name = "The Huckleberry sight"
+model = 'Weapons\TheHuckleberry\TheHuckleberrySight.nif'
+recipe = false
+
+# The recipe of the weapon, at the chemistry station.
+[recipe]
+workbench = "WorkbenchChemlab"
+category = "RecipeUtility"
+components = { c_Steel = 6, c_Gold = 2, c_Wood = 2, c_Springs = 2, c_Screws = 3 }

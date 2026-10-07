@@ -1,0 +1,8 @@
+# FAMAS F1 for Fallout 4. A port of the model, the textures and the reload animation of the
+# New Vegas mod "FAMAS F1" to the Fallout 4 first-person rig.
+plugin = "FAMAS.esp"
+author = "Port made with esx"
+description = "FAMAS F1 with the reload animation of the New Vegas mod, retargeted to the Fallout 4 rig."
+
+[meshes]
+scale = 1.0

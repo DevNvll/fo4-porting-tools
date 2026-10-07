@@ -1,0 +1,11 @@
+mod PPK {
+  plugin "PPK.esp"
+  prefix PPK
+}
+
+weapon PPK like AnimsFP10mm {
+  reload {
+    views first_person, power_armor_first_person
+    when empty play WPNReloadEmpty
+  }
+}

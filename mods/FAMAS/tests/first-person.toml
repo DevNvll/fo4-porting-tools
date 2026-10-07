@@ -1,0 +1,222 @@
+# A game test of the FAMAS with pictures of the first-person view.
+# Run it after `esx build`:
+#   esx probe run tests/first-person.toml --proton DIR --label famas -o build/test-first-person
+plan = 1
+name = "FAMAS: first-person view, reload, aim and fire"
+
+[profile]
+mod = [
+  "../build/release/FAMAS - Main.ba2",
+  "../build/release/FAMAS - Textures.ba2",
+  "../build/release/FAMAS.esp",
+]
+plugins = ["FAMAS.esp"]
+creation_club = false
+cell = "QASmoke"
+
+[defaults]
+timeout_ms = 10000
+on_fail = "continue"
+
+[[step]]
+id = "environment"
+do = "env.check"
+setup = true
+expect = { problems = [] }
+
+[[step]]
+id = "give"
+do = "item.give"
+setup = true
+args = { form = "FAMAS", equip = true }
+timeout_ms = 20000
+expect = { equipped = true, weapon_loaded = true, name = "FAMAS F1" }
+
+[[step]]
+id = "ammo"
+do = "ammo.set"
+args = { loaded = 25, reserve = 200 }
+expect = { loaded = 25 }
+
+[[step]]
+id = "draw"
+do = "weapon.draw"
+args = { drawn = true }
+timeout_ms = 20000
+expect = { drawn = true, ready = true }
+
+[[step]]
+id = "weapon"
+do = "weapon.get"
+expect = { drawn = true, graph_first_person = true, name = "FAMAS F1", capacity = 25, keywords = { contains = "AnimsFAMAS" } }
+
+[[step]]
+id = "graph"
+do = "anim.state"
+expect = { "graphs.player_1st.behavior_files" = { contains = "FAMASGunBehavior.hkb" } }
+
+[[step]]
+id = "idle-picture"
+do = "screenshot.take"
+args = { name = "fp-idle", hud = false }
+
+# The reload, at one fifth of the game speed, so that each picture is at a known place of
+# the clip. Six pictures with no HUD.
+[[step]]
+id = "reload-set"
+do = "ammo.set"
+args = { loaded = 12 }
+expect = { loaded = 12 }
+
+[[step]]
+id = "slow"
+do = "console.run"
+args = { command = "sgtm 0.2" }
+
+[[step]]
+id = "reload-start"
+do = "action.run"
+args = { action = "ActionReload" }
+timeout_ms = 40000
+expect = { accepted = true }
+wait = [
+  { clip_start = "WPNReload", owner = "player_1st" },
+  { event = "SoundPlay", payload = "WPNRifleSubmachineGunReloadMagOut" },
+]
+
+[[step]]
+id = "reload-picture-1"
+do = "screenshot.take"
+args = { name = "reload-1-magazine-out", hud = false }
+
+[[step]]
+id = "reload-picture-2"
+do = "screenshot.take"
+args = { name = "reload-2", hud = false }
+
+[[step]]
+id = "reload-picture-3"
+do = "screenshot.take"
+args = { name = "reload-3", hud = false }
+
+[[step]]
+id = "reload-magazine-in-sound"
+do = "ammo.get"
+timeout_ms = 40000
+wait = [
+  { event = "SoundPlay", payload = "WPNRifleSubmachineGunReloadMagIn" },
+  { event = "reloadComplete" },
+]
+
+[[step]]
+id = "reload-picture-4"
+do = "screenshot.take"
+args = { name = "reload-4-magazine-in", hud = false }
+
+[[step]]
+id = "reload-picture-5"
+do = "screenshot.take"
+args = { name = "reload-5", hud = false }
+
+# The wait of this step starts before its picture, so the end of the clip is not lost.
+[[step]]
+id = "reload-picture-6"
+do = "screenshot.take"
+args = { name = "reload-6", hud = false }
+timeout_ms = 40000
+wait = [{ clip_end = "WPNReload", owner = "player_1st" }]
+
+[[step]]
+id = "normal-speed"
+do = "console.run"
+args = { command = "sgtm 1" }
+
+[[step]]
+id = "reload-count"
+do = "ammo.get"
+expect = { loaded = 25 }
+
+# One shot, before the aim test. The probe sends no held input, so these steps show
+# only that the fire action starts and that a round leaves the magazine.
+[[step]]
+id = "fire-single"
+do = "action.run"
+args = { action = "ActionFireSingle" }
+timeout_ms = 4000
+wait = [{ event = "weaponFire" }]
+screenshot = true
+
+[[step]]
+id = "after-fire-single"
+do = "ammo.get"
+
+[[step]]
+id = "fire-auto"
+do = "action.run"
+args = { action = "ActionFireAuto" }
+timeout_ms = 4000
+wait = [{ event = "weaponFire" }]
+screenshot = true
+
+[[step]]
+id = "fire-stop"
+do = "action.run"
+args = { action = "ActionRightRelease" }
+timeout_ms = 4000
+
+[[step]]
+id = "after-fire-auto"
+do = "ammo.get"
+
+# Aim: three pictures, so that the last one is after the blend into the aim pose.
+[[step]]
+id = "aim"
+do = "action.run"
+args = { action = "ActionSighted" }
+timeout_ms = 5000
+wait = [{ clip_start = "WPNIdleSighted", owner = "player_1st" }]
+screenshot = true
+
+[[step]]
+id = "aim-picture-2"
+do = "screenshot.take"
+args = { name = "aim-2", hud = true }
+
+[[step]]
+id = "aim-picture-3"
+do = "screenshot.take"
+args = { name = "aim-3", hud = true }
+
+[[step]]
+id = "aim-picture-4"
+do = "screenshot.take"
+args = { name = "aim-4", hud = false }
+
+# Sheathe and draw: the equip and unequip clips.
+[[step]]
+id = "sheathe"
+do = "weapon.draw"
+args = { drawn = false }
+timeout_ms = 20000
+wait = [{ clip_start = "WPNUnEquip", owner = "player_1st" }]
+
+[[step]]
+id = "draw-again"
+do = "weapon.draw"
+args = { drawn = true }
+timeout_ms = 20000
+expect = { drawn = true, ready = true }
+
+# Third person: the gun in the hand from three sides.
+[[step]]
+id = "third-person-pictures"
+do = "screenshot.orbit"
+args = { name = "tp", target = "weapon", yaws = [45, 90, 135] }
+timeout_ms = 60000
+expect = { count = 3 }
+
+[[step]]
+id = "view-first"
+do = "camera.set"
+args = { view = "first" }
+expect = { view = "first" }

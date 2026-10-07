@@ -1,0 +1,55 @@
+# The Chaperone. `esx build` makes the records from this file. `esx help-topic items` gives the keys.
+# The template is the vanilla combat shotgun: it gives the behavior graph, the sounds, the
+# ammunition and the third-person animations. The editor ID of the weapon is TheChaperone.
+# Weight and value are those of the combat shotgun. These values are choices (the tools do not
+# read the values of Destiny):
+#   capacity   6 shells. The reload clips put in one shell at a time, and the behavior source
+#              has one reload clip for each count of shells from 1 to 6.
+#   damage     80, with one projectile: The Chaperone fires a slug. The combat shotgun has a
+#              damage of 50 on 8 projectiles.
+# The reload time is the time of the event reloadEnd in WPNReload, the reload of an empty gun
+# (frame 217 of 226).
+kind = "weapon"
+name = "The Chaperone"
+prefix = "TheChaperone"
+from = "CombatShotgun"
+damage = 80
+capacity = 6
+weight = 7.0
+value = 65
+reload_seconds = 7.2333
+ammo = "AmmoShotgunShell"
+model = 'Weapons\HandMade\Recievers\DummyReciever.nif'
+# One projectile for each shot. The time between two shots is 0.857 s (70 shots for each
+# minute, a choice): the combat shotgun has 0.5 s. The clip of a shot at the hip has 36 frames
+# (1.2 s), and the gun is near the hold pose from frame 26. The clip of a shot in the sights
+# has the motion of the lever from frame 14 to frame 22.
+set = { 'FNAM\# Projectiles' = 1, 'DNAM\Attack Delay' = 0.857 }
+
+# The receiver part has the whole gun. Its mesh has the nodes that the clips move: WeaponBolt
+# (the lever), WeaponMagazine (the shell that the hand puts in) and WeaponExtra1 (the gate of
+# the loading port). The weapon has no barrel, stock or magazine part: they are in this mesh,
+# and so is the rear sight.
+[part.Receiver]
+from = "mod_CombatShotgun_Receiver_Standard"
+name = "The Chaperone Receiver"
+model = 'Weapons\TheChaperone\TheChaperone.nif'
+recipe = false
+
+# The sight part: the glass between the two horns of the rear sight (two red rings) and the
+# reticle, a dot with a red ring (tools/d2reticle.py and tools/d2model.py, [model.sight] of
+# the set file). The two shapes have an effect material, so they are not in the mesh of the
+# gun: esx makes an effect shader only from a template mesh. The mesh of the gun has the
+# connect point P-Scope on the node TheChaperoneReceiver, and this mesh has C-Scope. The base
+# is the standard sights part of the combat shotgun: it changes no value of the weapon.
+[part.Sight]
+from = "mod_CombatRifle_Scope_SightsIron"
+name = "The Chaperone sight"
+model = 'Weapons\TheChaperone\TheChaperoneSight.nif'
+recipe = false
+
+# The recipe of the weapon, at the chemistry station.
+[recipe]
+workbench = "WorkbenchChemlab"
+category = "RecipeUtility"
+components = { c_Steel = 8, c_Silver = 2, c_Springs = 2, c_Screws = 3 }

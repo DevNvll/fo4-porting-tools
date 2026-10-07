@@ -1,0 +1,7 @@
+mod Hammerhead {
+  plugin "Hammerhead.esp"
+  prefix HMH
+}
+
+weapon Hammerhead like AnimsCombatShotgun {
+}

@@ -1,0 +1,44 @@
+# The weapon. `esx build` makes the records from this file. `esx help-topic items` gives the keys.
+# The template is the vanilla 10mm pistol: it gives the behavior graph, the sounds and the
+# third-person animations. The editor ID of the weapon is PPK.
+# The New Vegas record has damage 14, a magazine of 7 and weight 1.5.
+kind = "weapon"
+name = "Walther PPK"
+prefix = "PPK"
+from = "10mm"
+damage = 20
+capacity = 7
+weight = 1.5
+value = 100
+reload_seconds = 3.6333
+ammo = "Ammo38Caliber"
+model = 'Weapons\10mmPistol\10mmRecieverDummy.nif'
+
+# The receiver part has the whole gun. Its mesh has the nodes WeaponBolt (the slide),
+# WeaponMagazine, WeaponMagazineChild2 (the cartridges), WeaponTrigger, WeaponExtra2 (the
+# hammer) and WeaponOptics1 (the safety), which the animations move.
+[part.Receiver]
+from = "mod_10mm_Receiver_Standard"
+name = "PPK Receiver"
+model = 'Weapons\PPK\PPKReceiver.nif'
+add_slots = ["ap_gun_Muzzle"]
+recipe = false
+
+# The muzzle slot: none, or the suppressor of the New Vegas mod.
+[part.NoMuzzle]
+from = "mod_Null_Muzzle"
+default = true
+recipe = {}
+
+[part.Suppressor]
+from = "mod_10mm_Muzzle_Suppressor"
+name = "Suppressor"
+model = 'Weapons\PPK\PPKSuppressor.nif'
+recipe = { components = { c_Aluminum = 3, c_Steel = 2, c_Screws = 2 } }
+loose_mod = {}
+
+# The recipe of the weapon, at the chemistry station.
+[recipe]
+workbench = "WorkbenchChemlab"
+category = "RecipeUtility"
+components = { c_Steel = 4, c_Plastic = 2, c_Springs = 1, c_Screws = 2 }

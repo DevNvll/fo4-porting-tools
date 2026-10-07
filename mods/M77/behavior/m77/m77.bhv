@@ -1,0 +1,7 @@
+mod M77 {
+  plugin "M77.esp"
+  prefix M77
+}
+
+weapon M77 like AnimsCombatShotgun {
+}

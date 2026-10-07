@@ -1,0 +1,35 @@
+# The conversion data of the FAMAS F1 for the tools of fnv/ (New Vegas animations to Fallout 4).
+#   ./port mod sync FAMAS                                          copy this file into data/mods/FAMAS/
+#   ./port fnv convert data/mods/FAMAS/conversion.toml              make the clips again
+#   ./port fnv convert data/mods/FAMAS/conversion.toml show         print each value that the tools assume
+#
+# The folder `source` has the extracted mod. The tools find the model, the animations, the
+# gun parts, the clips and their events there, and they write the HKX clips to `output`.
+#
+# The tools make only the animations now. The tables [[attachment]] and [textures] below are
+# for the tools at the tag `before-animation-only` (the history of fnv/ has it), which also made the
+# model, the attachments and the textures of this project. The tools of today do not use
+# them.
+name = "FAMAS"
+template = "smg"
+output = "behavior/famas/animations/first_person"
+
+# New Vegas has a complete model for each set of weapon mods. Each table takes the shapes of
+# one part from such a model. The beam of the DBAL (Laser:0) is not used.
+[[attachment]]
+name = "Suppressor"
+model = "meshes/weapons/MMP/FAMAS/FAMASSIL.nif"
+shapes = ["Silencer:0"]
+connect = "Muzzle"
+
+[[attachment]]
+name = "Scope"
+model = "meshes/weapons/MMP/FAMAS/FAMAS4X.nif"
+shapes = ["UpperRail:0", "Scope:0", "Lens:0"]
+connect = "Scope"
+
+[[attachment]]
+name = "DBAL"
+model = "meshes/weapons/MMP/FAMAS/FAMASDBAL.nif"
+shapes = ["LowerRail:0", "DBAL:0", "DBALMount:0"]
+connect = "Foregrip"

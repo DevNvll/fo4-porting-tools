@@ -1,0 +1,81 @@
+# The weapon. `esx build` makes the records from this file. `esx help-topic items` gives the keys.
+# The template is the vanilla submachine gun: it gives the behavior graph, the sounds and
+# the third-person animations. The editor ID of the weapon is FAMAS.
+# The New Vegas record has damage 17, a magazine of 25, weight 8 and 13.5 shots for each second.
+kind = "weapon"
+name = "FAMAS F1"
+prefix = "FAMAS"
+from = "SubmachineGun"
+damage = 28
+capacity = 25
+weight = 8.0
+value = 180
+reload_seconds = 2.8667
+ammo = "Ammo556"
+model = 'Weapons\HandMade\Recievers\DummyReciever.nif'
+
+# The receiver part has the whole gun. Its mesh has the nodes WeaponBolt (the charging lever)
+# and WeaponMagazine, which the animations move, and one connect point for each slot below.
+[part.Receiver]
+from = "mod_SubmachineGun_Receiver_Automatic1"
+name = "FAMAS Receiver"
+model = 'Weapons\FAMAS\FAMASReceiver.nif'
+add_slots = ["ap_gun_Muzzle", "ap_gun_Foregrip"]
+recipe = false
+
+# The muzzle slot: none, or the suppressor of the New Vegas mod.
+[part.NoMuzzle]
+from = "mod_Null_Muzzle"
+default = true
+recipe = {}
+
+[part.Suppressor]
+from = "mod_SubmachineGun_Muzzle_Suppressor"
+name = "Suppressor"
+model = 'Weapons\FAMAS\FAMASSuppressor.nif'
+recipe = { components = { c_Aluminum = 4, c_Steel = 3, c_Screws = 2 } }
+loose_mod = {}
+
+# The sights slot: the sights of the carry handle (they are in the receiver mesh, so this part
+# has no model), or the short scope with its rail.
+[part.Sights]
+from = "mod_SubmachineGun_Scope_SightsIron"
+name = "Standard Sights"
+default = true
+remove = ["Model"]
+recipe = {}
+
+[part.Scope]
+from = "mod_CombatRifle_Scope_ScopeShort"
+name = "Short Scope"
+model = 'Weapons\FAMAS\FAMASScope.nif'
+recipe = { components = { c_Aluminum = 3, c_Glass = 2, c_Screws = 2 } }
+loose_mod = {}
+
+# The laser slot uses the attach point ap_gun_Foregrip, which the vanilla submachine gun does
+# not use: none, or the DBAL with its rail. The DBAL makes the cone of fire from the hip smaller.
+[part.NoLaser]
+from = "mod_SubmachineGun_Scope_SightsIron"
+name = "No Laser"
+attach_point = "ap_gun_Foregrip"
+default = true
+remove = ["Model"]
+recipe = {}
+
+[part.DBAL]
+from = "mod_SubmachineGun_Scope_SightsIron"
+name = "DBAL Laser"
+attach_point = "ap_gun_Foregrip"
+model = 'Weapons\FAMAS\FAMASDBAL.nif'
+properties = [
+  { property = "AimModelMinConeDegrees", function = "MUL+ADD", value = -0.3 },
+  { property = "AimModelMaxConeDegrees", function = "MUL+ADD", value = -0.3 },
+]
+recipe = { components = { c_Aluminum = 2, c_Circuitry = 1, c_Screws = 2 } }
+loose_mod = {}
+
+# The recipe of the weapon, at the chemistry station.
+[recipe]
+workbench = "WorkbenchChemlab"
+category = "RecipeUtility"
+components = { c_Steel = 6, c_Plastic = 4, c_Springs = 2, c_Screws = 3 }
