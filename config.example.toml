@@ -1,0 +1,25 @@
+# Local settings. Copy this file to data/config.toml and give your own paths.
+# An environment variable (in the comment of each line) replaces the value of the file.
+# `./port doctor` shows each setting and tells you what is missing.
+
+# Blender 4.5. Default: `blender` in the PATH.                      (BLENDER)
+# blender = "/path/to/blender"
+
+# The esx command. Default: `esx` in the PATH.                       (ESX_BIN)
+# esx = "/path/to/esx"
+
+# The Data folder of Fallout 4.                                      (FO4_DATA)
+# fo4_data = "/path/to/Fallout 4/Data"
+
+# The Proton folder for the game test (Linux).                       (PROTON_DIR)
+# proton = "/path/to/Proton - Experimental"
+
+# The game folder of Destiny 2: it has packages/ and bin/x64/.       (D2X_GAME)
+# destiny_game = "/path/to/Destiny 2"
+
+# The game folder of Marathon: it has packages/ and bin/x64/.        (MARATHON_GAME)
+# marathon_game = "/path/to/Marathon"
+
+# The first-person skeleton of the New Vegas compatibility skeleton mod (NVCS):
+# Meshes/Characters/_1stPerson/Skeleton.nif. Only `./port fnv make-rig` reads it.   (NVCS_SKELETON)
+# nvcs_skeleton = "/path/to/NVCS/Meshes/Characters/_1stPerson/Skeleton.nif"
