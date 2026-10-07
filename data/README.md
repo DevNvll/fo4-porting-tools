@@ -1,12 +1,12 @@
 # data
 
-This folder holds all that is not source: each file of a game, each extracted asset, each
-work file, each result, each validation picture and video, each built mod, the third-party
-clones and builds, and the local settings. Git ignores all of it, with the exception of this
-file. Do not put a file of this folder into git, and do not publish it: the models, the
-textures and the animations belong to the owners of the games.
+This folder holds everything that is not source: game files, extracted assets, work files,
+results, validation pictures and videos, built mods, the third-party clones and builds, and
+the local settings. Git ignores all of it except this file. Do not put a file from this
+folder into git, and do not publish it. The models, the textures and the animations belong
+to the owners of the games.
 
-`docs/ARCHITECTURE.md`, "The data folder", has the table of each folder. In short:
+"The data folder" in `docs/ARCHITECTURE.md` has the full table. In short:
 
 | Folder | Content | Made by |
 | --- | --- | --- |
@@ -19,16 +19,17 @@ textures and the animations belong to the owners of the games.
 | `transcripts/`, `notes/` | The chat transcripts as short text, and the notes that the documents came from | |
 
 The environment variable `FO4PORTS_DATA` moves this folder. `./port doctor` shows which
-necessary files are there. `./port baseline check` compares the stored results of this
-folder (the baseline clips of the regress commands, the clips and the release of each mod)
-with `baselines.sha256` of the root: it shows a stored result that a command replaced.
+necessary files are present. `./port baseline check` compares the stored results in this
+folder with `baselines.sha256` in the root, and shows a stored result that a command
+replaced. The stored results are the baseline clips of the regress commands, and the clips
+and the release of each mod.
 
-Most files of this folder are results that a command makes again from your own copies of
-the games and of the mods. These are not:
+Most files here are results that a command can make again from your own copies of the games
+and of the mods. These are not:
 
-* `destiny/extract/handoff/the_last_word_v1/`: a frozen copy of the first extraction of The
+* `destiny/extract/handoff/the_last_word_v1/`, a frozen copy of the first extraction of The
   Last Word. The regression of The Last Word reads its first-person file.
-* The models and the textures of the mods `PPK` and `FAMAS`: they came from the tools at the
+* The models and the textures of the mods `PPK` and `FAMAS`, which came from the tools at the
   git tag `before-animation-only`.
 * The recordings and the logs of the game tests in `destiny/port/validation/`.
 * `transcripts/` and `notes/`.

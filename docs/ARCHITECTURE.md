@@ -1,28 +1,28 @@
 # Architecture
 
-This repository has the tools that port weapons and their animations to Fallout 4 from three
-sources: Fallout: New Vegas, Destiny 2 and Marathon. A person and an AI agent use the same
-commands, the same documents and the same checks.
+This repository holds the tools that port weapons and their animations to Fallout 4 from
+Fallout: New Vegas, Destiny 2 and Marathon. People and AI agents use the same commands,
+documents and checks.
 
 ## The areas
 
 | Folder | What it is | Needs |
 | --- | --- | --- |
-| `portkit/`, `port` | The shared part: paths, local settings, the command `./port`, the mod projects. Standard library of Python only. | Python 3.11 |
-| `fnv/` | New Vegas animations (`.kf`, `.nif`) to Fallout 4 clips (HKX). It also has the Fallout 4 library that the other areas use: the HKX reader and writer, the archive reader, the hand solver. | numpy, Blender |
-| `destiny/extract/` | `d2x`: a weapon of Destiny 2 (model, textures, rigs, clips) as glTF files. | the game, its own Python environment, cargo |
-| `destiny/port/` | `d2fo4`: a glTF file of `d2x` or `m2x` to Fallout 4 clips, a Fallout 4 model, materials, the sight, the third-person clips. The checks and the game tests are here. | `fnv/`, numpy, Blender, esx |
-| `marathon/extract/` | `m2x`: a weapon of Marathon as glTF files. It uses the modules of `d2x`. | the game, the environment of `d2x`, cargo |
-| `marathon/port/` | The set files of the Marathon weapons. The converter is `destiny/port/`. | `destiny/port/` |
-| `mods/` | The sources of the esx mod projects: `esx.toml`, `items/`, `behavior/WEAPON/WEAPON.bhv`, the lock files, `README.md`. No asset. | esx |
-| `docs/` | The documents for a person. | |
-| `.claude/skills/`, `AGENTS.md` | The instructions for an AI agent. | |
-| `baselines.sha256` | The sha256 of each stored result of `data/` (the baseline clips of the regress commands, the clips and the release of each mod). In git. | |
-| `requirements.txt` | The Python packages of `fnv/` and `destiny/port/`: `numpy`, `pillow`. `destiny/extract/` has its own file. | |
-| `data/` | All that is not source. Not in git. | |
+| `portkit/`, `port` | The shared part: paths, local settings, the `./port` command and the mod projects. Python standard library only. | Python 3.11 |
+| `fnv/` | Converts New Vegas animations (`.kf`, `.nif`) to Fallout 4 HKX clips. The other areas also use its HKX reader and writer, its archive reader and its hand solver. | numpy, Blender |
+| `destiny/extract/` | `d2x`, the Destiny 2 extractor. It writes the model, textures, rigs and clips of a weapon as glTF files. | the game, its own Python environment, cargo |
+| `destiny/port/` | `d2fo4`, the converter. It turns a glTF file from `d2x` or `m2x` into Fallout 4 clips, a model, materials, the sight and the third-person clips. The checks and the game tests live here too. | `fnv/`, numpy, Blender, esx |
+| `marathon/extract/` | `m2x`, the Marathon extractor. It writes a weapon as glTF files and reuses the modules of `d2x`. | the game, the environment of `d2x`, cargo |
+| `marathon/port/` | Set files for the Marathon weapons. The converter is `destiny/port/`. | `destiny/port/` |
+| `mods/` | Sources of the esx mod projects: `esx.toml`, `items/`, `behavior/WEAPON/WEAPON.bhv`, the lock files and `README.md`. No assets. | esx |
+| `docs/` | Documentation for people. | |
+| `.claude/skills/`, `AGENTS.md` | Instructions for AI agents. | |
+| `baselines.sha256` | The sha256 of every stored result in `data/`: the baseline clips of the regress commands, and the clips and release of each mod. In git. | |
+| `requirements.txt` | The Python packages for `fnv/` and `destiny/port/`: `numpy` and `pillow`. `destiny/extract/` has its own file. | |
+| `data/` | Everything that is not source. Not in git. | |
 
-The dependencies go in one direction: `marathon` uses `destiny`, `destiny/port` uses `fnv`,
-and each area uses `portkit`. `fnv` and `portkit` use no other area.
+Dependencies go one way. `marathon` uses `destiny`, `destiny/port` uses `fnv`, and every
+area uses `portkit`. `fnv` uses only `portkit`, and `portkit` uses no area.
 
 ## The stages of a port
 
@@ -34,35 +34,35 @@ New Vegas mod (.kf, .nif) ----------------> fnv/tools/port.py -> clips
 
 ## The data folder
 
-`data/` holds each file of a game, each extracted asset, each work file, each result, each
-validation picture and video, each built mod, each third-party clone and build, and the local
-settings. Git ignores all of it but `data/README.md`. No tool writes a generated file into the
-source tree (the only exception is `__pycache__`, which the tools prevent where they can). The
-Blender user folders of the checks are below `data/destiny/port/work/`.
+`data/` holds every game file, extracted asset, work file, result, validation picture and
+video, built mod, third-party clone and build, plus the local settings. Git ignores all of it
+except `data/README.md`. No tool writes a generated file into the source tree, except
+`__pycache__`, which the tools prevent where they can. The checks keep their Blender user
+folders below `data/destiny/port/work/`.
 
 | Folder | Content |
 | --- | --- |
-| `data/config.toml` | The local settings (`config.example.toml`). |
-| `data/fnv/rig/` | The rig folder of `fnv/`: files of Fallout 4 and of the NVCS skeleton, made by `fnv/tools/make_rig.py`. |
+| `data/config.toml` | The local settings, copied from `config.example.toml`. |
+| `data/fnv/rig/` | The rig folder of `fnv/`: Fallout 4 files and the NVCS skeleton, made by `fnv/tools/make_rig.py`. |
 | `data/fnv/work/NAME/`, `data/fnv/out/NAME/` | The work files and the clips of a New Vegas port. |
 | `data/fnv/fixtures/NAME/` | The extracted New Vegas mods that `fnv regress` converts again. |
 | `data/fnv/nvcs/` | A copy of the skeleton of the NVCS mod, for `fnv make-rig` (the setting `nvcs_skeleton`). |
-| `data/destiny/extract/out/` | The results of `d2x`, and its cache (`out/cache/`). `handoff/` beside it has an earlier result set. |
+| `data/destiny/extract/out/` | The results of `d2x`, with its cache in `out/cache/`. `handoff/` beside it holds an earlier result set. |
 | `data/destiny/extract/vendor/`, `runtime/`, `venv/`, `target/` | The third-party clones, the Oodle library link, the Python environment and the cargo build of `d2x`. |
-| `data/destiny/port/extract/NAME/` | The extraction of each weapon for a port (`manifest.json`, the glTF files, `states.json`, `dyes.json`, `sight.json`, `third_person/`, `posed/`). |
-| `data/destiny/port/rig/` | The vanilla clips of each template weapon (game files, made by `destiny/port/tools/make_rig.py`). |
+| `data/destiny/port/extract/NAME/` | The extraction of each weapon for a port: `manifest.json`, the glTF files, `states.json`, `dyes.json`, `sight.json`, `third_person/` and `posed/`. |
+| `data/destiny/port/rig/` | The vanilla clips of each template weapon. They are game files, and `destiny/port/tools/make_rig.py` makes them. |
 | `data/destiny/port/work/NAME/`, `out/NAME/`, `validation/NAME/` | The work files, the clips and the validation results of each weapon. |
 | `data/marathon/extract/...` | The same for `m2x`: `out/`, `work/`, `runtime/`, `target/`, `notes/`, `validation/`. |
 | `data/mods/NAME/` | The complete esx project of each mod: a copy of `mods/NAME/` plus the meshes, the textures, the clips and `build/`. esx builds here. |
 | `data/transcripts/`, `data/notes/` | The chat transcripts as short text, and the notes that the documents came from. |
 
-A measurement file that a tool needs and that is not a copy of a game file is in the source
-tree: `fnv/rig/finger_tips.json`, `destiny/port/rig/d2_hands.json`. A tool reads such a file
-from the source tree (`paths.repo(...)`), not from `data/`.
+A measurement file that a tool needs and that is not a copy of a game file lives in the
+source tree, like `fnv/rig/finger_tips.json` and `destiny/port/rig/d2_hands.json`. Tools read
+it with `paths.repo(...)`, not from `data/`.
 
 ## The paths and the settings
 
-No program has a path of one computer in it. A program asks `portkit.paths`:
+No program hard-codes a path of one computer. It asks `portkit.paths`:
 
 ```python
 from portkit import paths
@@ -74,19 +74,22 @@ paths.setting('name', env='NAME')             # a value that is not in the table
 ```
 
 A setting comes from its environment variable, then from `data/config.toml`, then from its
-default (for a program: the `PATH`). The names: `blender` (`BLENDER`), `esx` (`ESX_BIN`),
-`fo4_data` (`FO4_DATA`), `proton` (`PROTON_DIR`), `destiny_game` (`D2X_GAME`), `marathon_game`
-(`MARATHON_GAME`), `nvcs_skeleton` (`NVCS_SKELETON`). The seven are in the table `SETTINGS` of
-`portkit/paths.py`. `FO4PORTS_DATA` moves the data folder. A shell script gets a value with
-`python3 "$ROOT/portkit/paths.py" get blender`, or from the variables that `./port` sets
-(below). A fault in `data/config.toml` (TOML that is not correct, a value that is not a text)
-is one line, and `./port doctor` names each key of the file that is not a setting.
+default, which for a program is the `PATH`. The `SETTINGS` table of `portkit/paths.py` has
+the seven. `blender` reads `BLENDER`, `esx` reads `ESX_BIN`, `fo4_data` reads `FO4_DATA`,
+`proton` reads `PROTON_DIR`, `destiny_game` reads `D2X_GAME`, `marathon_game` reads
+`MARATHON_GAME` and `nvcs_skeleton` reads `NVCS_SKELETON`. `FO4PORTS_DATA` moves the data
+folder.
 
-A program that imports `portkit` shows a file error (a wrong file name on the command line)
-as one line. `FO4PORTS_TRACEBACK=1` shows the traceback.
+A shell script gets a value with `python3 "$ROOT/portkit/paths.py" get blender`, or from the
+variables that `./port` sets, as described below. A fault in `data/config.toml`, such as
+invalid TOML or a value that is not text, prints as one line. `./port doctor` names every key
+in the file that is not a setting.
 
-A Python program that can start with no `./port` (each program can, and a program in Blender
-always does) has these lines before its first import of the repository:
+A program that imports `portkit` prints a file error, such as a wrong file name on the
+command line, as one line. Set `FO4PORTS_TRACEBACK=1` to see the traceback.
+
+Every Python program can start without `./port`, and a program in Blender always does. So
+each one has these lines before its first import from the repository:
 
 ```python
 import os, sys
@@ -97,18 +100,19 @@ sys.path.insert(0, _r)
 from portkit import paths
 ```
 
-The Python environment of `d2x` is `data/destiny/extract/venv`. A program that imports `d2x`
-runs with `data/destiny/extract/venv/bin/python` and with `destiny/extract` in `PYTHONPATH`.
+`d2x` has its own Python environment in `data/destiny/extract/venv`. A program that imports
+`d2x` runs with `data/destiny/extract/venv/bin/python` and with `destiny/extract` in
+`PYTHONPATH`.
 
 ## The command `./port`
 
-`./port` is the one entry point. It finds the commands of each area in the `port.toml` files
-(`fnv/port.toml`, `destiny/extract/port.toml`, `destiny/port/port.toml`,
-`marathon/extract/port.toml`, `marathon/port/port.toml`). It reads each file with the name
-`port.toml` in the source tree, and it does not look below `data/`, `.git/`, `__pycache__/`,
-`.venv/` and `target/`. Each program still runs alone with `python3 PATH/program.py`;
-`./port` adds the names, the help, the environment and the checks. `portkit/README.md` is the
-reference of the command and of `port.toml`.
+`./port` is the one entry point. It finds the commands of each area in the `port.toml` files:
+`fnv/port.toml`, `destiny/extract/port.toml`, `destiny/port/port.toml`,
+`marathon/extract/port.toml` and `marathon/port/port.toml`. It reads every file named
+`port.toml` in the source tree and skips `data/`, `.git/`, `__pycache__/`, `.venv/` and
+`target/`. Every program still runs alone with `python3 PATH/program.py`. `./port` adds the
+names, the help, the environment and the checks. `portkit/README.md` is the reference for the
+command and for `port.toml`.
 
 ```sh
 ./port list [--json]          # each command with one line of help
@@ -134,34 +138,33 @@ env = { PYTHONPATH = "destiny/extract" }    # optional
 needs = ["blender", "data/fnv/rig/1st_skeleton.hkx"]   # optional: settings, or paths from the root, that must be there
 ```
 
-* The first word of `run`: `python` (the Python that runs `./port`), `python:d2x` (the Python
-  of the environment of `d2x`), `sh`, `bash`, or a program with a path from the root. After
-  `python`, `python:d2x`, `sh` or `bash` comes the program file, not an option.
-* Each path in `run`, `env` and `needs` is a path from the root of the repository. A path
-  that starts with `data/` is below the data folder, also when `FO4PORTS_DATA` moves it.
-* A name has two or three words of small letters, digits, `-` and `_`. The first word cannot
-  be a word of `./port` itself (`list`, `doctor`, `paths`, `mod`, `selftest`, `baseline`, `help`).
-* `./port` starts the program with `exec`: the program takes the place of `./port`, so a
-  signal to the process ID of `./port` goes to the program. A regress command starts its
-  converters as child processes: stop such a run with Ctrl-C, or stop its children also.
-* `./port` runs the command in the working folder of the caller, and gives it
-  `FO4PORTS_ROOT`, `FO4PORTS_DATA` and one variable for each setting that has a value
-  (`BLENDER`, `ESX_BIN`, `FO4_DATA`, `PROTON_DIR`, `D2X_GAME`, `MARATHON_GAME`,
-  `NVCS_SKELETON`), `PYTHONDONTWRITEBYTECODE=1`, and a `PYTHONPATH` with the root first, then
-  the folders of `env`, then the `PYTHONPATH` of the caller. The exit code is the exit code
-  of the program.
+* The first word of `run` is `python` for the Python that runs `./port`, `python:d2x` for the
+  Python of the `d2x` environment, `sh`, `bash`, or a program given as a path from the root.
+  The program file comes right after `python`, `python:d2x`, `sh` or `bash`. An option cannot
+  go there.
+* Every path in `run`, `env` and `needs` starts at the repository root. A path that starts
+  with `data/` resolves below the data folder, even when `FO4PORTS_DATA` moves it.
+* A name has two or three words made of lowercase letters, digits, `-` and `_`. The first
+  word cannot be one that `./port` uses itself: `list`, `doctor`, `paths`, `mod`, `selftest`,
+  `baseline` or `help`.
+* `./port` starts the program with `exec`. The program takes the place of `./port`, so a
+  signal sent to the process ID of `./port` reaches the program. A regress command starts its
+  converters as child processes. Stop such a run with Ctrl-C, or stop its children too.
+* `./port` runs the command in the caller's working folder. It passes `FO4PORTS_ROOT`,
+  `FO4PORTS_DATA`, `PYTHONDONTWRITEBYTECODE=1` and the variable of each setting that has a
+  value, such as `BLENDER`. `PYTHONPATH` has the root first, then the folders of `env`, then
+  the caller's `PYTHONPATH`. The exit code is the program's.
 * An entry of `needs` is the name of a setting or a path with a `/`. When one is missing,
-  `./port` stops before the program starts (exit code 3), and tells the user which command
-  makes it. With `--help` in the arguments `./port` does not look at `needs`. `python:d2x`
-  needs the environment of `d2x` always.
-* The exit codes of `./port` itself: 2 for wrong words or a program file that is not there,
-  3 for a missing need, 1 for a fault that `doctor`, `selftest`, `mod sync` or
-  `baseline check` found.
-* Blender does not read `PYTHONDONTWRITEBYTECODE`. Each program that runs in Blender has
-  `sys.dont_write_bytecode = True` before its first import of the repository.
+  `./port` stops before the program starts, with exit code 3, and says which command makes
+  it. With `--help` in the arguments, `./port` skips `needs`. `python:d2x` always needs the
+  `d2x` environment.
+* `./port` itself exits with 2 for wrong words or a missing program file, 3 for a missing
+  need, and 1 for a fault that `doctor`, `selftest`, `mod sync` or `baseline check` found.
+* Blender does not read `PYTHONDONTWRITEBYTECODE`. A program that runs in Blender sets
+  `sys.dont_write_bytecode = True` before its first import from the repository.
 
-A `port.toml` also says how to make each thing that its commands need. `./port doctor` shows
-each one:
+A `port.toml` also says how to make everything its commands need. `./port doctor` shows each
+one:
 
 ```toml
 [[check]]
@@ -170,13 +173,12 @@ what = "The rig folder of fnv: files of Fallout 4 and of the NVCS skeleton."
 make = "./port fnv make-rig --nvcs /path/to/NVCS/Skeleton.nif"
 ```
 
-`what` is necessary and `make` is optional. A check of a folder is also the check of each
-path below it. `./port doctor` has the exit code 1 when a check is not ok, or a setting that
-a command or a check uses, or when Python has no `numpy`. It prints a line for `Pillow` (a
-report only). `./port doctor AREA` looks only at the `port.toml` files below one folder
-(`fnv`, `destiny`, `marathon`, or a path such as `destiny/port`), for a person who uses one
-area. The check of the arm meshes is in `destiny/port/port.toml`, so `./port doctor fnv` can
-be ok with no esx.
+`what` is required and `make` is optional. A check of a folder also covers every path below
+it. `./port doctor` exits with 1 when a check is not ok, when a setting that a command or a
+check uses is not ok, or when Python has no `numpy`. Its `Pillow` line is a report only. If
+you use one area, `./port doctor AREA` looks only at the `port.toml` files below one folder.
+AREA is `fnv`, `destiny`, `marathon`, or a path such as `destiny/port`. The check of the arm
+meshes is in `destiny/port/port.toml`, so `./port doctor fnv` can be ok without esx.
 
 A `port.toml` also names the stored results of its area:
 
@@ -186,59 +188,60 @@ files = "data/fnv/out/*/*.hkx"     # a pattern that starts with data/ (`**` is e
 what = "The clips of each fixture: the baseline of `fnv regress`."
 ```
 
-`./port baseline update` writes the sha256 and the path of each file of each pattern into
-`baselines.sha256` (602 files of 8 patterns on 2026-10-06; `mods/port.toml` has the patterns
-of the mods). `./port baseline check` compares the files of `data/` with that list. It prints
-`DIFFERENT` for a file with other bytes and has the exit code 1. It reports a file that is not
-there and a file that the list does not have, with the exit code 0. A regress command compares
-new results with the stored results. The baseline check proves that nobody replaced a stored
-result. So run it after a regress command passes. Run `./port baseline update` only for a
-change that the user accepted, and put the file into git with that change.
+`./port baseline update` writes the sha256 and the path of every file that matches a pattern
+into `baselines.sha256`. On 2026-10-06 that was 602 files from 8 patterns. `mods/port.toml`
+has the patterns of the mods. `./port baseline check` compares the files in `data/` with that
+list. For a file with other bytes it prints `DIFFERENT` and exits with 1. It also reports a
+missing file, or one that the list does not have, and then exits with 0.
 
-`./port selftest` has four parts: `python` (each `.py` file compiles), `port.toml` (each table
-is correct, and each program file is there), `tests` (the tests of `tests/`), and `git` (no
-file that git has, or can add, has a game file ending or a NUL byte).
+A regress command compares new results with the stored results, and the baseline check proves
+that nobody replaced a stored result. So run it after a regress command passes. Run
+`./port baseline update` only for a change that the user accepted, and put the file into git
+with that change.
 
-Each area that converts has a command with the name `AREA regress`. It makes the results of
-each ported weapon again in a scratch folder below `data/`, compares the bytes with the
-results that `data/` has, prints one line for each weapon, and has the exit code 1 when a
-file is different.
+`./port selftest` has four parts. `python` compiles every `.py` file. `port.toml` checks that
+every table is correct and every program file exists. `tests` runs the tests in `tests/`.
+`git` checks that no file that git has, or can add, has a game file ending or a NUL byte.
+
+Every area that converts has an `AREA regress` command. It makes the results of each ported
+weapon again in a scratch folder below `data/`, compares the bytes with the results already
+in `data/`, prints one line per weapon, and exits with 1 when a file differs.
 
 ## The mod projects
 
-`mods/NAME/` has the files that a person writes (`esx.toml`, `items/`,
-`behavior/WEAPON/WEAPON.bhv`, `README.md`, and for a New Vegas port `conversion.toml` and
-`tests/`) and the lock files that esx keeps (`ids.lock` with the object ID of each record,
-`behavior/WEAPON/WEAPON.lock` with the hashes of the vanilla graphs). `data/mods/NAME/` is the
-project that esx builds.
+`mods/NAME/` has the hand-written files: `esx.toml`, `items/`, `behavior/WEAPON/WEAPON.bhv`,
+`README.md`, and for a New Vegas port `conversion.toml` and `tests/`. It also has the lock
+files that esx keeps. `ids.lock` holds the object ID of each record, and
+`behavior/WEAPON/WEAPON.lock` holds the hashes of the vanilla graphs. `data/mods/NAME/` is
+the project that esx builds.
 
-* `./port mod sync NAME` copies the files of `mods/NAME/` into `data/mods/NAME/`. It does not
-  delete a file of `data/mods/NAME/`. It keeps a lock file of `data/` that is different and
-  newer (exit code 1); `--force` replaces it. `./port mod status NAME` shows the files that
-  differ.
+* `./port mod sync NAME` copies the files of `mods/NAME/` into `data/mods/NAME/` and deletes
+  nothing there. If a lock file in `data/` is different and newer, it keeps that file and
+  exits with 1. `--force` replaces it. `./port mod status NAME` shows the files that differ.
 * The convert commands write the meshes, the materials, the textures and the clips into
   `data/mods/NAME/`.
-* `./port mod build NAME [--update-lock]` does the sync, runs `esx build` on
-  `data/mods/NAME/`, and copies each lock file back to `mods/NAME/` when esx changed it and
-  the build passed. It prints the sha256 of each release file. esx prints JSON when its
-  output is not a terminal; `--format text` after NAME gives text.
+* `./port mod build NAME [--update-lock]` syncs, runs `esx build` on `data/mods/NAME/`, and
+  copies a lock file back to `mods/NAME/` when esx changed it and the build passed. It prints
+  the sha256 of each release file. esx prints JSON when its output is not a terminal. Add
+  `--format text` after NAME to get text.
 * A release is `data/mods/NAME/build/release/`.
-* The mods: `TheLastWord`, `Khvostov`, `Hammerhead`, `TexMechanica` (Destiny 2), `M77`
-  (Marathon), `PPK`, `FAMAS` (New Vegas). The model and the textures of the two New Vegas
-  mods came from the tools at the tag `before-animation-only`; the tools of today make their
-  clips.
+* The mods are `TheLastWord`, `Khvostov`, `Hammerhead` and `TexMechanica` from Destiny 2,
+  `M77` from Marathon, and `PPK` and `FAMAS` from New Vegas. The model and the textures of
+  the two New Vegas mods came from the tools at the tag `before-animation-only`. Today's
+  tools make their clips.
 
 ## Rules for a change
 
-1. A change of a converter must keep the bytes of each clip of each weapon that is already
-   ported, or the change must say which clips are different and why. Each area has a
-   regression command that compares new results with the results in `data/`. After it,
-   `./port baseline check` proves that the results in `data/` are those on record.
-2. A document tells the reader which command proves each statement. A statement with no
-   proof is in a part with the title "What is not proved".
-3. A rule in a set file has the measurement that gave it as a comment.
-4. No file of a game, no part of one and no asset made from one is in git. The measurement
-   files, the lock files and `baselines.sha256` have numbers and hashes that were calculated
-   from game files. `./port selftest` (the part `git`) fails for a file that is not source.
-5. The documents use simple English: short sentences, the active voice, one word for one
-   thing, no dash between clauses.
+1. A change to a converter must keep the bytes of every clip of every ported weapon, or say
+   which clips differ and why. Each area has a regress command that compares new results with
+   the results in `data/`. After it, `./port baseline check` proves that the results in
+   `data/` are the ones on record.
+2. A document tells the reader which command proves each statement. A statement without proof
+   goes in a part titled "What is not proved".
+3. A rule in a set file carries the measurement that gave it as a comment.
+4. No game file, no part of one and no asset made from one goes into git. The measurement
+   files, the lock files and `baselines.sha256` hold numbers and hashes calculated from game
+   files. The `git` part of `./port selftest` fails for a file that is not source.
+5. The documents use plain technical English and follow the rules that
+   [README.md](../README.md) shows by example: short, direct, each fact with the command that
+   proves it.

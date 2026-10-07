@@ -1,52 +1,53 @@
 # The mod projects
 
-Each folder here is the source of one Fallout 4 mod, as an esx project. `esx` builds the
-plugin and the two archives of a mod from a project folder.
+Each folder here is the source of one Fallout 4 mod, written as an esx project. `esx` builds
+a mod's plugin and its two archives from the project folder.
 
 | Mod | Weapons | Source of the weapons | Set files |
 | --- | --- | --- | --- |
 | `TheLastWord` | The Last Word (a revolver) | Destiny 2 | `destiny/port/sets/the_last_word.toml` |
 | `Khvostov` | Khvostov 7G-02 (an auto rifle) | Destiny 2 | `destiny/port/sets/khvostov_7g_02.toml` |
 | `Hammerhead` | Hammerhead (a machine gun) | Destiny 2 | `destiny/port/sets/hammerhead.toml` |
-| `TexMechanica` | The Last Word, The Chaperone (a shotgun), The Huckleberry (a submachine gun), in one plugin | Destiny 2 | `the_last_word.toml`, `the_chaperone.toml`, `the_huckleberry.toml` in `destiny/port/sets/` |
+| `TexMechanica` | The Last Word, The Chaperone (a shotgun) and The Huckleberry (a submachine gun), in one plugin | Destiny 2 | `the_last_word.toml`, `the_chaperone.toml`, `the_huckleberry.toml` in `destiny/port/sets/` |
 | `M77` | M77 (an assault rifle) | Marathon | `marathon/port/sets/m77_omnipositor.toml` |
-| `PPK` | Walther PPK (a pistol) | Fallout: New Vegas | None. Its conversion file is `mods/PPK/conversion.toml` (`docs/porting/fnv.md`). |
+| `PPK` | Walther PPK (a pistol) | Fallout: New Vegas | None. It has a conversion file instead, `mods/PPK/conversion.toml`. See `docs/porting/fnv.md`. |
 | `FAMAS` | FAMAS F1 (a bullpup rifle) | Fallout: New Vegas | None. Its conversion file is `mods/FAMAS/conversion.toml`. |
 
-`TheLastWord` and `TexMechanica` have a weapon with the same editor ID (`TheLastWord`). Use
-one of the two in a game.
+`TheLastWord` and `TexMechanica` both have a weapon with the editor ID `TheLastWord`, so use
+only one of them in a game.
 
-The models, the textures and the animations are assets of the games (Bungie). Do not
-publish a built mod.
+The models, textures and animations are assets of the games and of the New Vegas mods that two of the ports come from. Do not publish a built
+mod.
 
 ## What is in git, and what is in the data folder
 
-`mods/NAME/` (in git) has only the files that a person writes:
+`mods/NAME/` is in git. It holds only the files you write yourself, plus the two lock files
+that esx writes.
 
 | File | Content |
 | --- | --- |
-| `esx.toml` | The project: the plugin name, the author, the description, and the scale of the model files. |
-| `items/*.toml` | The records of each weapon: the vanilla weapon that it copies, its values, its parts, its recipe. |
-| `behavior/WEAPON/WEAPON.bhv` | The behavior source of each weapon: its animation keyword, its graph copies, the reload clip of each count of rounds. |
-| `ids.lock` | The object ID of each record. esx writes it; it is in git so that a build gives the same IDs. |
-| `behavior/WEAPON/WEAPON.lock` | The hash of each vanilla graph that the behavior source was built against. esx writes it. |
-| `conversion.toml` | Only in a New Vegas port (`PPK`, `FAMAS`): the conversion data for `./port fnv convert`. |
-| `tests/*.toml` | Only in a New Vegas port: plans for `esx probe`. They were not run in this repository. |
+| `esx.toml` | The project's plugin name, author and description, and the scale of the model files. |
+| `items/*.toml` | Each weapon's records: the vanilla weapon it copies, its values, its parts, its recipe. |
+| `behavior/WEAPON/WEAPON.bhv` | Each weapon's behavior source: its animation keyword, its graph copies, and the reload clip for each round count. |
+| `ids.lock` | The object ID of every record. esx writes it. It is in git so that every build gives the same IDs. |
+| `behavior/WEAPON/WEAPON.lock` | The hash of each vanilla graph the behavior source was built against. esx writes it. |
+| `conversion.toml` | New Vegas ports only (`PPK`, `FAMAS`). The conversion data for `./port fnv convert`. |
+| `tests/*.toml` | New Vegas ports only. Plans for `esx probe`. They were not run in this repository. |
 | `README.md` | What the mod has, how it was made, what is proved, what is not proved, the limits. |
 
-`data/mods/NAME/` (not in git) is the complete project that esx builds:
+`data/mods/NAME/` is not in git. It is the complete project that esx builds.
 
 | Folder or file | Content | Made by |
 | --- | --- | --- |
-| a copy of each file of `mods/NAME/` | | `./port mod sync NAME` |
+| a copy of every file in `mods/NAME/` | | `./port mod sync NAME` |
 | `behavior/WEAPON/animations/first_person/`, `third_person/`, `power_armor_third_person/` | The clips (HKX). | `./port destiny convert` |
 | `meshes/Weapons/WEAPON/` | The model files (`.glb`), their job files (`.mesh.toml`) and the template mesh of a sight. | `./port destiny model` |
 | `assets/Textures/Weapons/WEAPON/`, `assets/Materials/Weapons/WEAPON/` | The textures (DDS) and the materials. | `./port destiny model` |
-| `behavior/WEAPON/WEAPON.lock`, `build/` | The work files of esx, and the release in `build/release/`. | `./port mod build NAME` |
+| `behavior/WEAPON/WEAPON.lock`, `build/` | The esx work files, and the release in `build/release/`. | `./port mod build NAME` |
 | `docs/` | Pictures of each weapon. | `esx render weapon` |
 
-A tool does not write a generated file into `mods/`. The only file that comes back is
-`ids.lock` and `behavior/WEAPON/WEAPON.lock`, when a build changed them.
+No tool writes a generated file into `mods/`. Only `ids.lock` and
+`behavior/WEAPON/WEAPON.lock` come back, and only when a build changed them.
 
 ## The commands
 
@@ -57,19 +58,19 @@ A tool does not write a generated file into `mods/`. The only file that comes ba
 ./port mod build NAME [--update-lock]    # sync, esx build on data/mods/NAME, the lock files back to mods/NAME
 ```
 
-The release of a mod is `data/mods/NAME/build/release/`: the plugin (`NAME.esp`),
-`NAME - Main.ba2` and `NAME - Textures.ba2`. To use the mod, copy these three files into the
-`Data` folder of the game and enable the plugin. A build does not write into the game.
+A mod's release is in `data/mods/NAME/build/release/`. It is three files: the plugin
+`NAME.esp`, `NAME - Main.ba2` and `NAME - Textures.ba2`. To use the mod, copy them into the
+game's `Data` folder and enable the plugin. A build never writes into the game.
 
-`baselines.sha256` (in the root, in git) has the sha256 of the release and of the clips of
-each of the 7 mods: the releases that passed the game tests. `./port baseline check` compares
-the files of `data/mods/` with it. A build replaces the release, so run the check after each
-build of a tested mod: `DIFFERENT` says that the build did not give the tested bytes. Run
-`./port baseline update` only for a change that the user accepted (`mods/port.toml` has the
-patterns of the files).
+`baselines.sha256`, in the repository root and in git, records the sha256 of the release and
+the clips of all 7 mods. Those are the releases that passed the game tests.
+`./port baseline check` compares the files in `data/mods/` against it. A build replaces the
+release, so run the check after every build of a tested mod. `DIFFERENT` means the build did
+not give the tested bytes. Run `./port baseline update` only for a change the user accepted.
+`mods/port.toml` has the file patterns.
 
-To make the generated files of a project again (the example is `Khvostov`; the `README.md`
-of each mod has its commands):
+To make a project's generated files again, use the commands in that mod's `README.md`. For
+`Khvostov` they are:
 
 ```sh
 GLB=data/destiny/port/extract/khvostov_7g_02/khvostov_7g_02_first_person.glb
@@ -81,7 +82,8 @@ M=data/mods/Khvostov
 ./port mod build Khvostov --update-lock
 ```
 
-The checks of a built mod (esx reads the release; `FO4` is the `Data` folder of the game):
+These are the checks for a built mod. esx reads the release, and `FO4` is the game's `Data`
+folder.
 
 ```sh
 esx --data "$FO4" plugin check-weapons data/mods/NAME/build/release/NAME.esp
@@ -92,37 +94,38 @@ esx --data "$FO4" render weapon data/mods/NAME/build/release/NAME.esp WEAPON --s
 ./port destiny game session NAME LABEL        # the game test: docs/porting/game-test.md (--no-build for a release on record)
 ```
 
-A faster or a slower reload is a `speed` line in the `reload` block of the behavior source
-(the document of esx, `docs/BEHAVIOR.md`: `speed 1.5`, or `speed reloadSpeedMult * 1.5`). No
-mod of this repository has such a line, and no build or game test of this repository used it.
+To make a reload faster or slower, put a `speed` line in the `reload` block of the behavior
+source, such as `speed 1.5` or `speed reloadSpeedMult * 1.5`. The esx document
+`docs/BEHAVIOR.md` describes it. No mod here has such a line, and no build or game test in
+this repository used one.
 
 ## A new mod
 
-1. Make the folder `mods/NAME/` with `esx.toml`, one file in `items/` for each weapon and one
-   behavior source for each weapon. Copy the files of `mods/TexMechanica` and change them
-   (`docs/porting/destiny.md`, step 8).
+1. Make the folder `mods/NAME/` with `esx.toml`, one file in `items/` per weapon and one
+   behavior source per weapon. Start from a copy of the `mods/TexMechanica` files and change
+   them. Step 8 of `docs/porting/destiny.md` shows how.
 2. Make the clips and the model with the convert commands. They write into `data/mods/NAME/`.
-3. `./port mod build NAME --update-lock` makes `ids.lock` and the release.
+3. Run `./port mod build NAME --update-lock`. It makes `ids.lock` and the release.
 4. Add the weapon to `destiny/port/regress.toml`, with the clip folders of `data/mods/NAME/`
    as its baseline.
 5. Write `mods/NAME/README.md`.
-6. When the user accepts the mod, run `./port baseline update`, and put `baselines.sha256`
+6. When the user accepts the mod, run `./port baseline update` and put `baselines.sha256`
    into git with the mod.
 
 ## What is not proved
 
-* `./port mod build` ran for `TexMechanica`, `PPK` and `FAMAS` in this repository, and each
-  release has the bytes that it had before the move. It did not run for `TheLastWord`,
+* `./port mod build` ran in this repository for `TexMechanica`, `PPK` and `FAMAS`, and each
+  release came out with the bytes it had before the move. It did not run for `TheLastWord`,
   `Khvostov`, `Hammerhead` and `M77`.
-* One build of each of the 7 mods was compared. On 2026-10-06 esx at the commit `d3e520c`
-  built a copy of each `data/mods/NAME` with no `build/` folder, in a scratch folder. Each
-  of the 3 release files of each mod had the bytes of `baselines.sha256`. So a build from
-  nothing gives the tested release, and esx `d3e520c` gives the bytes of the older esx
-  (`a996de8`) that made the stored releases. No other esx version was compared, and a build
-  on a second computer was not compared.
-* The model program (`./port destiny model`) gives the same bytes as the files of
-  `data/mods/` for 196 of the 200 files of `meshes/` and `assets/` of the five projects (run of
-  2026-10-06, with scratch projects). The 4 other files are the model files of The Chaperone
-  and of The Huckleberry in `data/mods/TexMechanica` (`NAME.glb`, `NAMESight.glb`): they were
-  made before the pose clip of the left hand changed the hold pose. Each vertex is at most
-  0.000012 units from its place in the new file, and each other value is the same.
+* One build of each of the 7 mods was compared. On 2026-10-06, esx at commit `d3e520c` built
+  a copy of each `data/mods/NAME` in a scratch folder, without its `build/` folder. All 3
+  release files of every mod had the bytes of `baselines.sha256`. So a build from nothing
+  gives the tested release, and esx `d3e520c` gives the same bytes as the older esx
+  `a996de8` that made the stored releases. No other esx version was compared, and neither
+  was a build on a second computer.
+* `./port destiny model` gives the same bytes as the files in `data/mods/` for 196 of the
+  200 files in `meshes/` and `assets/` of the five projects. That run was on 2026-10-06, with
+  scratch projects. The other 4 are the model files of The Chaperone and The Huckleberry in
+  `data/mods/TexMechanica`, `NAME.glb` and `NAMESight.glb`. They were made before the pose
+  clip of the left hand changed the hold pose. Every vertex is within 0.000012 units of its
+  place in the new file, and every other value is the same.
